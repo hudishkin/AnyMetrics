@@ -1,0 +1,60 @@
+/* 
+  Localizable.strings
+  AnyMetrics
+
+  Created by Simon Hudishkin on 13.06.2022.
+  
+*/
+
+"appName" = "ЭниМетрикс";
+"common.optional" = "Optional";
+
+"metric.value.good" = "Хорошо";
+"metric.value.bad" = "Не хорошо";
+"metric.add" = "Добавить";
+"metric.add.title" = "Добавить метрику";
+"metric.add.custom" = "Создать метрику";
+"metric.update-value" = "Обновить метрику";
+"metric.delete" = "Удалить";
+"metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
+
+"httpheaders.select.title" = "Select HTTP Header";
+"httpheaders.enter-name" = "HTTP-header title";
+"httpheaders.enter-value" = "Header Value";
+"httpheaders.add.title" = "Add Header";
+"httpheaders.add.button" = "Add";
+"httpheaders.select-from-list" = "Select from HTTP-header list";
+"httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
+
+// MARK: - Add Metric
+
+"addmetric.new.title" = "New metric";
+"addmetric.empty-response" = "Empty response";
+"addmetric.select-type" = "Select type";
+"addmetric.load-file" = "Load JSON file";
+"addmetric.placeholder-json-url" = "Enter URL to JSON file";
+"addmetric.metric-title" = "Title";
+"addmetric.metric-title-example" = "Bitcoin";
+"addmetric.title-param-metric" = "Description";
+"addmetric.title-param-example" = "Price, USD";
+"addmetric.request-url" = "Enter request URL";
+"addmetric.http-method" = "HTTP Method";
+"addmetric.add-header" = "Add header";
+"addmetric.http-headers" = "HTTP headers";
+"addmetric.make-request" = "Make request";
+"addmetric.parse-rule" = "Parsing rule";
+"addmetric.faq-rule" = "How use rule?";
+"addmetric.metric-value-format" = "Format";
+"addmetric.value-title" = "Settings value";
+"addmetric.value-display" = "Value: %@";
+"addmetric.error.invalid-rule" = "Invalid rule";
+"addmetric.details" = "Details";
+"addmetric.detail.author" = "Author";
+"addmetric.detail.site" = "Site";
+"addmetric.add" = "Add metric";
+"addmetric.maxlength" = "Length - %@";
+"addmetric.no-limit-length" = "Without limit";
+"addmetric.type-metric-json" = "JSON";
+"addmetric.type-metric-checker" = "Check status";
+"addmetric.add-type-fromjson" = "JSON";
+"addmetric.add-type-manual" = "Manual";
