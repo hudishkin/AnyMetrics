@@ -43,7 +43,7 @@
 		6D5C0AE82857C004006B8A3C /* GalleryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AE72857C004006B8A3C /* GalleryService.swift */; };
 		6D5C0AF22858E301006B8A3C /* NewMetricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF12858E301006B8A3C /* NewMetricView.swift */; };
 		6D5C0AF42858E400006B8A3C /* HttpHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF32858E400006B8A3C /* HttpHeaders.swift */; };
-		6D5C0AF62858FC95006B8A3C /* HeaderPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF52858FC95006B8A3C /* HeaderPickerView.swift */; };
+		6D5C0AF62858FC95006B8A3C /* SearchPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */; };
 		6D5C0AF8285900E2006B8A3C /* AddHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */; };
 		6D5C0AFA28591175006B8A3C /* NewMetricViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */; };
 		6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */; };
@@ -76,6 +76,12 @@
 		6D6FCCB32860041A00E8387D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6D2C22CA285719F500506A7C /* Assets.xcassets */; };
 		6D6FCCB52860068300E8387D /* Bundle+Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCB42860068300E8387D /* Bundle+Widget.swift */; };
 		6D6FCCB6286006E100E8387D /* Bundle+Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCB42860068300E8387D /* Bundle+Widget.swift */; };
+		6D6FCCB92861A68100E8387D /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 6D6FCCB82861A68100E8387D /* SwiftSoup */; };
+		6D6FCCBB2861A72A00E8387D /* MetricValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */; };
+		6D6FCCBC2861B0A400E8387D /* MetricValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */; };
+		6D6FCCBE2861B0B500E8387D /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 6D6FCCBD2861B0B500E8387D /* SwiftSoup */; };
+		6D6FCCC02861BD0300E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
+		6D6FCCC12861C0AC00E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
 		6DDB0768285C623400F09619 /* View+Dismiss.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB0767285C623400F09619 /* View+Dismiss.swift */; };
 		6DE65E49285DD63500F3EF05 /* MetricStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E48285DD63500F3EF05 /* MetricStore.swift */; };
 		6DE65E57285DDB9100F3EF05 /* MetricContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E56285DDB9100F3EF05 /* MetricContentView.swift */; };
@@ -164,7 +170,7 @@
 		6D5C0AE72857C004006B8A3C /* GalleryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryService.swift; sourceTree = "<group>"; };
 		6D5C0AF12858E301006B8A3C /* NewMetricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMetricView.swift; sourceTree = "<group>"; };
 		6D5C0AF32858E400006B8A3C /* HttpHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpHeaders.swift; sourceTree = "<group>"; };
-		6D5C0AF52858FC95006B8A3C /* HeaderPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderPickerView.swift; sourceTree = "<group>"; };
+		6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchPickerView.swift; sourceTree = "<group>"; };
 		6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHeaderView.swift; sourceTree = "<group>"; };
 		6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMetricViewModel.swift; sourceTree = "<group>"; };
 		6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportMetric+Codable.swift"; sourceTree = "<group>"; };
@@ -176,6 +182,8 @@
 		6D6FCC98285F8AC600E8387D /* Intent.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Intent.entitlements; sourceTree = "<group>"; };
 		6D6FCCAC285FA9AF00E8387D /* ImpactHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImpactHelper.swift; sourceTree = "<group>"; };
 		6D6FCCB42860068300E8387D /* Bundle+Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Widget.swift"; sourceTree = "<group>"; };
+		6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricValueParser.swift; sourceTree = "<group>"; };
+		6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Document+Ex.swift"; sourceTree = "<group>"; };
 		6DDB0767285C623400F09619 /* View+Dismiss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Dismiss.swift"; sourceTree = "<group>"; };
 		6DE65E1E285DCEE900F3EF05 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		6DE65E20285DCEE900F3EF05 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -194,6 +202,7 @@
 			files = (
 				6D2C22F228571A2800506A7C /* SwiftyJSON in Frameworks */,
 				6D5C0ADF2857446F006B8A3C /* Rswift in Frameworks */,
+				6D6FCCB92861A68100E8387D /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +228,7 @@
 				6D6FCC97285F8AA900E8387D /* Rswift in Frameworks */,
 				6D545CC4285F84410013D4F6 /* SwiftUI.framework in Frameworks */,
 				6D545CC3285F84410013D4F6 /* WidgetKit.framework in Frameworks */,
+				6D6FCCBE2861B0B500E8387D /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +315,7 @@
 		6D2C22F328571A6000506A7C /* View */ = {
 			isa = PBXGroup;
 			children = (
+				6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */,
 				6DDB0766285C579500F09619 /* NewMetric */,
 				6D5C0AE22857BF15006B8A3C /* Gallery */,
 				6D2C231C2857252700506A7C /* Main */,
@@ -332,6 +343,7 @@
 				6D5C0AE72857C004006B8A3C /* GalleryService.swift */,
 				6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */,
 				6D5C0AFF2859136D006B8A3C /* ImportMetricParser.swift */,
+				6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -347,6 +359,7 @@
 				6D5C0AE0285744F8006B8A3C /* Font+Ex.swift */,
 				6DDB0767285C623400F09619 /* View+Dismiss.swift */,
 				6D6FCCB42860068300E8387D /* Bundle+Widget.swift */,
+				6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -414,7 +427,6 @@
 			isa = PBXGroup;
 			children = (
 				6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */,
-				6D5C0AF52858FC95006B8A3C /* HeaderPickerView.swift */,
 				6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */,
 				6D5C0AF12858E301006B8A3C /* NewMetricView.swift */,
 			);
@@ -454,6 +466,7 @@
 			packageProductDependencies = (
 				6D2C22F128571A2800506A7C /* SwiftyJSON */,
 				6D5C0ADE2857446F006B8A3C /* Rswift */,
+				6D6FCCB82861A68100E8387D /* SwiftSoup */,
 			);
 			productName = AnyMetrics;
 			productReference = 6D2C22C3285719F500506A7C /* AnyMetrics.app */;
@@ -511,6 +524,7 @@
 			packageProductDependencies = (
 				6D6FCC94285F8AA900E8387D /* SwiftyJSON */,
 				6D6FCC96285F8AA900E8387D /* Rswift */,
+				6D6FCCBD2861B0B500E8387D /* SwiftSoup */,
 			);
 			productName = WidgetExtension;
 			productReference = 6D545CC2285F84410013D4F6 /* WidgetExtension.appex */;
@@ -575,6 +589,7 @@
 			packageReferences = (
 				6D2C22F028571A2800506A7C /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				6D5C0ADD2857446F006B8A3C /* XCRemoteSwiftPackageReference "R.swift" */,
+				6D6FCCB72861A68100E8387D /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = 6D2C22C4285719F500506A7C /* Products */;
 			projectDirPath = "";
@@ -673,6 +688,7 @@
 				6DDB0768285C623400F09619 /* View+Dismiss.swift in Sources */,
 				6D2C230E285721A300506A7C /* Array+Ex.swift in Sources */,
 				6D545CCD285F84420013D4F6 /* Widget.intentdefinition in Sources */,
+				6D6FCCC02861BD0300E8387D /* Document+Ex.swift in Sources */,
 				6D2C230A2857213000506A7C /* Data+Ex.swift in Sources */,
 				6DE65E49285DD63500F3EF05 /* MetricStore.swift in Sources */,
 				6D5C0AE42857BF2E006B8A3C /* GalleryView.swift in Sources */,
@@ -680,12 +696,13 @@
 				6D2C22C9285719F500506A7C /* MainView.swift in Sources */,
 				6D2C22C7285719F500506A7C /* AnyMetricsApp.swift in Sources */,
 				6D2C23202857257200506A7C /* AppConfig.swift in Sources */,
+				6D6FCCBB2861A72A00E8387D /* MetricValueParser.swift in Sources */,
 				6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */,
 				6D6FCCB52860068300E8387D /* Bundle+Widget.swift in Sources */,
 				6D5C0AF22858E301006B8A3C /* NewMetricView.swift in Sources */,
 				6D2C2310285722DC00506A7C /* R+Ex.swift in Sources */,
 				6DE65E57285DDB9100F3EF05 /* MetricContentView.swift in Sources */,
-				6D5C0AF62858FC95006B8A3C /* HeaderPickerView.swift in Sources */,
+				6D5C0AF62858FC95006B8A3C /* SearchPickerView.swift in Sources */,
 				6D5C0AF42858E400006B8A3C /* HttpHeaders.swift in Sources */,
 				6D2C2322285725FB00506A7C /* Metric+Codable.swift in Sources */,
 				6D5C0AE1285744F8006B8A3C /* Font+Ex.swift in Sources */,
@@ -715,10 +732,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D6FCCBC2861B0A400E8387D /* MetricValueParser.swift in Sources */,
 				6D6FCCA3285FA4B100E8387D /* AppConfig.swift in Sources */,
 				6D6FCCA2285F910A00E8387D /* Metric+Codable.swift in Sources */,
 				6D6FCCB6286006E100E8387D /* Bundle+Widget.swift in Sources */,
 				6D6FCCA6285FA4D000E8387D /* Formatter.swift in Sources */,
+				6D6FCCC12861C0AC00E8387D /* Document+Ex.swift in Sources */,
 				6D6FCCA0285F90E500E8387D /* Fetcher.swift in Sources */,
 				6D6FCCAA285FA96700E8387D /* MetricContentView.swift in Sources */,
 				6D6FCCAF285FAACB00E8387D /* R+Ex.swift in Sources */,
@@ -1229,6 +1248,14 @@
 				kind = branch;
 			};
 		};
+		6D6FCCB72861A68100E8387D /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1251,6 +1278,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6D5C0ADD2857446F006B8A3C /* XCRemoteSwiftPackageReference "R.swift" */;
 			productName = Rswift;
+		};
+		6D6FCCB82861A68100E8387D /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D6FCCB72861A68100E8387D /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
+		};
+		6D6FCCBD2861B0B500E8387D /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D6FCCB72861A68100E8387D /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

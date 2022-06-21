@@ -8,7 +8,7 @@
 import Foundation
 import SwiftyJSON
 
-extension JSON {
+extension JSON: ValueParser {
     func parseValue(by rules: String, formatter: MetricFormatter? = nil) -> String? {
         let listRules = Array((rules).split(separator: "."))
         var result = self
@@ -19,12 +19,19 @@ extension JSON {
                 result = result[String(listRules[i])]
             }
         }
-        if let formatter = formatter, let result = result.string {
-            return formatter.formatValue(result)
+
+        var stringValue: String?
+        if let value = result.double {
+            stringValue = String(describing: value)
+        } else if let value = result.int {
+            stringValue = String(describing: value)
+        } else if let value = result.bool {
+            stringValue = String(describing: value)
+        } else  if let value = result.string {
+            stringValue = value
+        } else if let formatter = formatter, let value = stringValue {
+            return formatter.formatValue(value)
         }
-        if let value = result.string {
-            return value
-        }
-        return nil
+        return stringValue
     }
 }

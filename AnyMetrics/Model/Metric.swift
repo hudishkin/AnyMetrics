@@ -36,7 +36,8 @@ struct RequestData: Hashable {
 
 enum TypeMetric: String, Codable, CaseIterable {
     case json,
-         checker
+         checker,
+         web
 }
 
 struct Metric: Hashable {

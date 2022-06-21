@@ -12,15 +12,19 @@ import Intents
 
 struct Provider: IntentTimelineProvider {
 
+    let store = MetricStore()
+
     func placeholder(in context: Context) -> AMEntry {
-        AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Mocks.metricJson)
+        AMEntry(
+            date: Date(),
+            configuration: ConfigurationIntent(),
+            metric: store.metrics.values.first ?? Mocks.metricJson)
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
 
-
         var metric: Metric?
-        if let _metric = MetricStore().metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
+        if let _metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
             metric = _metric
         }else {
             metric = Mocks.metricJson
@@ -33,7 +37,7 @@ struct Provider: IntentTimelineProvider {
 
     func getTimeline(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         var entries: [AMEntry] = []
-        let store = MetricStore()
+
         if let id = configuration.dataSourceType?.identifier, let metric = store.metrics[id] {
 
             Fetcher.updateMetric(metric: metric) { newMetric in
@@ -65,7 +69,7 @@ struct WidgetEntryView : View {
         ZStack {
             Color("WidgetBackground")
             MetricContentView(metric: entry.metric)
-                .frame(width: 158, height: 158, alignment: .center)
+                .frame(width: 156, height: 156, alignment: .center)
         }
 
 
@@ -77,11 +81,15 @@ struct AMWidget: Widget {
     let kind: String = "Widget"
 
     var body: some WidgetConfiguration {
-        IntentConfiguration(kind: kind, intent: ConfigurationIntent.self, provider: Provider()) { entry in
-            WidgetEntryView(entry: entry)
-        }
-        .configurationDisplayName("AnyMetrics Widgets")
-        .description("Add widget to home screen with your metric")
+        IntentConfiguration(
+            kind: kind,
+            intent: ConfigurationIntent.self,
+            provider: Provider()) { entry in
+                WidgetEntryView(entry: entry)
+            }
+            .configurationDisplayName("Widgets")
+            .description("Add widget to home screen with your metric")
+            .supportedFamilies([.systemSmall])
     }
 }
 

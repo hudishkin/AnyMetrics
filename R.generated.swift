@@ -88,7 +88,7 @@ struct R: Rswift.Validatable {
     try intern.validate()
   }
 
-  /// This `R.color` struct is generated, and contains static references to 10 colors.
+  /// This `R.color` struct is generated, and contains static references to 11 colors.
   struct color {
     /// Color `addMetricTint`.
     static let addMetricTint = Rswift.ColorResource(bundle: R.hostingBundle, name: "addMetricTint")
@@ -102,6 +102,8 @@ struct R: Rswift.Validatable {
     static let metricDefault = Rswift.ColorResource(bundle: R.hostingBundle, name: "metricDefault")
     /// Color `metricGood`.
     static let metricGood = Rswift.ColorResource(bundle: R.hostingBundle, name: "metricGood")
+    /// Color `metricParamBackground`.
+    static let metricParamBackground = Rswift.ColorResource(bundle: R.hostingBundle, name: "metricParamBackground")
     /// Color `metricStrockColor`.
     static let metricStrockColor = Rswift.ColorResource(bundle: R.hostingBundle, name: "metricStrockColor")
     /// Color `metricText`.
@@ -162,6 +164,15 @@ struct R: Rswift.Validatable {
     @available(iOS 11.0, *)
     static func metricGood(compatibleWith traitCollection: UIKit.UITraitCollection? = nil) -> UIKit.UIColor? {
       return UIKit.UIColor(resource: R.color.metricGood, compatibleWith: traitCollection)
+    }
+    #endif
+
+    #if os(iOS) || os(tvOS)
+    /// `UIColor(named: "metricParamBackground", bundle: ..., traitCollection: ...)`
+    @available(tvOS 11.0, *)
+    @available(iOS 11.0, *)
+    static func metricParamBackground(compatibleWith traitCollection: UIKit.UITraitCollection? = nil) -> UIKit.UIColor? {
+      return UIKit.UIColor(resource: R.color.metricParamBackground, compatibleWith: traitCollection)
     }
     #endif
 
@@ -246,6 +257,14 @@ struct R: Rswift.Validatable {
     @available(watchOSApplicationExtension 4.0, *)
     static func metricGood(_: Void = ()) -> UIKit.UIColor? {
       return UIKit.UIColor(named: R.color.metricGood.name)
+    }
+    #endif
+
+    #if os(watchOS)
+    /// `UIColor(named: "metricParamBackground", bundle: ..., traitCollection: ...)`
+    @available(watchOSApplicationExtension 4.0, *)
+    static func metricParamBackground(_: Void = ()) -> UIKit.UIColor? {
+      return UIKit.UIColor(named: R.color.metricParamBackground.name)
     }
     #endif
 
@@ -341,7 +360,7 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 48 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 52 localization keys.
     struct localizable {
       /// en translation: Add
       ///
@@ -391,6 +410,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let metricAddCustom = Rswift.StringResource(key: "metric.add.custom", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Currency
+      ///
+      /// Locales: en, ru
+      static let addmetricFormatTypeCurrency = Rswift.StringResource(key: "addmetric.format-type-currency", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Description
       ///
       /// Locales: en, ru
@@ -435,7 +458,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let httpheadersEnterValue = Rswift.StringResource(key: "httpheaders.enter-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: How use rule?
+      /// en translation: How use «Parsing rule»?
       ///
       /// Locales: en, ru
       static let addmetricFaqRule = Rswift.StringResource(key: "addmetric.faq-rule", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -475,6 +498,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let commonOptional = Rswift.StringResource(key: "common.optional", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Parse HTML
+      ///
+      /// Locales: en, ru
+      static let addmetricTypeMetricWeb = Rswift.StringResource(key: "addmetric.type-metric-web", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Parsing rule
       ///
       /// Locales: en, ru
@@ -487,26 +514,34 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricTitleParamExample = Rswift.StringResource(key: "addmetric.title-param-example", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Raw data
+      ///
+      /// Locales: en, ru
+      static let addmetricFormatTypeNone = Rswift.StringResource(key: "addmetric.format-type-none", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Refresh metric
       ///
-      /// Locales: en
-      static let metricActionsUpdateValue = Rswift.StringResource(key: "metric.actions.update-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en"], comment: nil)
+      /// Locales: en, ru
+      static let metricActionsUpdateValue = Rswift.StringResource(key: "metric.actions.update-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Remove
       ///
-      /// Locales: en
-      static let metricActionsDelete = Rswift.StringResource(key: "metric.actions.delete", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en"], comment: nil)
+      /// Locales: en, ru
+      static let metricActionsDelete = Rswift.StringResource(key: "metric.actions.delete", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Select HTTP Header
       ///
       /// Locales: en, ru
       static let httpheadersSelectTitle = Rswift.StringResource(key: "httpheaders.select.title", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Select action
       ///
-      /// Locales: en
-      static let metricActionsTitle = Rswift.StringResource(key: "metric.actions.title", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en"], comment: nil)
+      /// Locales: en, ru
+      static let metricActionsTitle = Rswift.StringResource(key: "metric.actions.title", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Select from HTTP-header list
       ///
       /// Locales: en, ru
       static let httpheadersSelectFromList = Rswift.StringResource(key: "httpheaders.select-from-list", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Select from examples
+      ///
+      /// Locales: en, ru
+      static let httpheadersSelectValuesFromList = Rswift.StringResource(key: "httpheaders.select-values-from-list", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Select type
       ///
       /// Locales: en, ru
@@ -716,6 +751,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("metric.add.custom", bundle: bundle, comment: "")
       }
 
+      /// en translation: Currency
+      ///
+      /// Locales: en, ru
+      static func addmetricFormatTypeCurrency(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.format-type-currency", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.format-type-currency"
+        }
+
+        return NSLocalizedString("addmetric.format-type-currency", bundle: bundle, comment: "")
+      }
+
       /// en translation: Description
       ///
       /// Locales: en, ru
@@ -881,7 +931,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("httpheaders.enter-value", bundle: bundle, comment: "")
       }
 
-      /// en translation: How use rule?
+      /// en translation: How use «Parsing rule»?
       ///
       /// Locales: en, ru
       static func addmetricFaqRule(preferredLanguages: [String]? = nil) -> String {
@@ -1033,6 +1083,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("common.optional", bundle: bundle, comment: "")
       }
 
+      /// en translation: Parse HTML
+      ///
+      /// Locales: en, ru
+      static func addmetricTypeMetricWeb(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.type-metric-web", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.type-metric-web"
+        }
+
+        return NSLocalizedString("addmetric.type-metric-web", bundle: bundle, comment: "")
+      }
+
       /// en translation: Parsing rule
       ///
       /// Locales: en, ru
@@ -1078,9 +1143,24 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.title-param-example", bundle: bundle, comment: "")
       }
 
+      /// en translation: Raw data
+      ///
+      /// Locales: en, ru
+      static func addmetricFormatTypeNone(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.format-type-none", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.format-type-none"
+        }
+
+        return NSLocalizedString("addmetric.format-type-none", bundle: bundle, comment: "")
+      }
+
       /// en translation: Refresh metric
       ///
-      /// Locales: en
+      /// Locales: en, ru
       static func metricActionsUpdateValue(preferredLanguages: [String]? = nil) -> String {
         guard let preferredLanguages = preferredLanguages else {
           return NSLocalizedString("metric.actions.update-value", bundle: hostingBundle, comment: "")
@@ -1095,7 +1175,7 @@ struct R: Rswift.Validatable {
 
       /// en translation: Remove
       ///
-      /// Locales: en
+      /// Locales: en, ru
       static func metricActionsDelete(preferredLanguages: [String]? = nil) -> String {
         guard let preferredLanguages = preferredLanguages else {
           return NSLocalizedString("metric.actions.delete", bundle: hostingBundle, comment: "")
@@ -1125,7 +1205,7 @@ struct R: Rswift.Validatable {
 
       /// en translation: Select action
       ///
-      /// Locales: en
+      /// Locales: en, ru
       static func metricActionsTitle(preferredLanguages: [String]? = nil) -> String {
         guard let preferredLanguages = preferredLanguages else {
           return NSLocalizedString("metric.actions.title", bundle: hostingBundle, comment: "")
@@ -1151,6 +1231,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("httpheaders.select-from-list", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Select from examples
+      ///
+      /// Locales: en, ru
+      static func httpheadersSelectValuesFromList(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("httpheaders.select-values-from-list", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "httpheaders.select-values-from-list"
+        }
+
+        return NSLocalizedString("httpheaders.select-values-from-list", bundle: bundle, comment: "")
       }
 
       /// en translation: Select type

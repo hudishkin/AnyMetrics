@@ -9,7 +9,7 @@
 import SwiftUI
 import Combine
 import SwiftyJSON
-
+import SwiftSoup
 
 let DEFAULT_LENGTH_VALUE = 7
 let MAX_LENGTH_SYMBOL = 4
@@ -37,7 +37,7 @@ class NewMetricViewModel: ObservableObject {
     @Published var loading: Bool = false
     @Published var loadingRequest: Bool = false
     @Published var jsonFileURL: String = "https://dl.dropbox.com/s/ovpdy4hx96lqc5u/testJson.json?dl=0"
-    @Published var requestUrl: String = "https://api.coincap.io/v2/assets/tron"
+    @Published var requestUrl: String = "https://status.figma.com/" //"https://api.covidtracking.com/v1/us/current.json"
     @Published var httpMethodType: HTTPMethodType = .GET
     @Published var typeMetric: TypeMetric = .json
     @Published var timeout: Double = DEFAULT_TIMEOUT
@@ -54,21 +54,20 @@ class NewMetricViewModel: ObservableObject {
                     self.symbol = oldValue
                 }
             }
-
         }
     }
 
     @Published var httpHeaders: [String: String] = [:]
     // @Published var canAddMetric: Bool = false
-    @Published var responseJSON: String = ""
+    @Published var response: String = ""
 
     @Published var author: String = ""
     @Published var description: String = ""
     @Published var website: String = ""
     @Published var formatType: MetricFormatterType = .none
     @Published var maxLengthValue: Int = DEFAULT_LENGTH_VALUE
-
-    private var jsonObject: JSON?
+    private var parserDocument: ValueParser?
+    
     private var websiteURL: URL? {
         return URL(string: website)
     }
@@ -109,23 +108,35 @@ class NewMetricViewModel: ObservableObject {
         request.httpMethod = self.httpMethodType.rawValue
         request.timeoutInterval = timeout
         URLSession.shared.dataTaskPublisher(for: request)
+            .map({ result -> (ValueParser?, String) in
+                if self.typeMetric == .json {
+                    let obj = try? JSON(data: result.data)
+                    return (obj, result.data.prettyJSONString ?? "")
+
+                }
+                if self.typeMetric == .web {
+                    let htmlDocument = try? SwiftSoup.parse(String(data: result.data, encoding: .utf8) ?? "")
+                    return (htmlDocument, "HTML content")
+                }
+                return (nil, "")
+            })
+
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
+
                 switch completion {
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
                     self.hasRequestError = true
                     self.showRequestResult = false
                 case .finished:
-                    break
-                }
-            }, receiveValue: { data, error in
-                if self.typeMetric == .json {
-                    self.jsonObject = try? JSON(data: data)
-                    self.responseJSON = data.prettyJSONString ?? ""
+                    self.hasRequestError = false
                     self.showRequestResult = true
                 }
 
+            }, receiveValue: { parser, response in
+                self.response = response
+                self.parserDocument = parser
                 self.loadingRequest = false
             })
             .store(in: &disposables)
@@ -137,15 +148,13 @@ class NewMetricViewModel: ObservableObject {
             format: self.formatType,
             length: length ?? maxLengthValue)
 
-        if let value = jsonObject?.parseValue(by: rules, formatter: formatter) {
+        if let value = parserDocument?.parseValue(by: rules, formatter: formatter) {
             self.parseValue = value
             self.hasParseRuleError = false
-        }else {
+        } else {
             self.hasParseRuleError = true
         }
     }
-
-
 
     func getMetric() -> Metric? {
         if canAddMetric {
@@ -232,4 +241,8 @@ extension TypeMetric {
 
 extension AddMetricType {
     var localizedString: String { NSLocalizedString("addmetric.add-type-\(self.rawValue.lowercased())", comment: "") }
+}
+
+extension MetricFormatterType {
+    var localizedName: String { NSLocalizedString("addmetric.format-type-\(self.rawValue.lowercased())", comment: "") }
 }

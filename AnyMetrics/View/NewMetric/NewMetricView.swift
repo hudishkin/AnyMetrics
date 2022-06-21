@@ -104,27 +104,6 @@ struct NewMetricView: View {
                         }
                     }
                 }
-
-//                if viewModel.showImportResult {
-//                    Section(header: Text("title-result")) {
-//                        HStack(alignment: .center, spacing: 0) {
-//                            Text("field-author").foregroundColor(Color.gray)
-//                            Spacer()
-//                            Text("\(viewModel.importData.author ?? "")")
-//
-//                        }
-//                        HStack(alignment: .center, spacing: 0) {
-//                            Text("field-version").foregroundColor(Color.gray)
-//                            Spacer()
-//                            Text("\(viewModel.importData.version)")
-//
-//                        }
-//                        if let metric = viewModel.importData.payload {
-//                            MetricJsonView(index: 1, viewModel: MetricItemViewModel(metric: metric))
-//                        }
-//                    }
-//
-//                }
             }
             if viewModel.type == .manual || viewModel.showImportResult {
                 // MARK: Manual
@@ -173,7 +152,6 @@ struct NewMetricView: View {
                     HStack(alignment: .center) {
                         Button {
                             self.showAddHeader = true
-
                         } label: {
                             HStack {
                                 R.image.plus.image
@@ -224,11 +202,23 @@ struct NewMetricView: View {
                             EmptyView()
                         }
                     }
-                    if viewModel.typeMetric == .json {
+                    if viewModel.typeMetric == .checker {
+                        HStack(alignment: .center) {
+                            Circle()
+                                .frame(width: 10, height: 10, alignment: .leading)
+                                .foregroundColor(self.viewModel.hasRequestError ? R.color.metricGood.color : R.color.metricBad.color)
+                            Text(checkerText())
+                            Spacer()
+                            if viewModel.loadingRequest {
+                                ProgressView()
+                            } else {
+                                EmptyView()
+                            }
+                        }
+                    } else {
                         if viewModel.showRequestResult {
                             HStack(alignment: .center, spacing: 0) {
-                                MetricResponseView(text: self.$viewModel.responseJSON)
-
+                                MetricResponseView(text: self.$viewModel.response)
                             }
                             HStack(alignment: .center, spacing: 0) {
                                 TextField(
@@ -262,21 +252,7 @@ struct NewMetricView: View {
                                }
                             }
                         }
-                    } else {
-                        HStack(alignment: .center) {
-                            Circle()
-                                .frame(width: 10, height: 10, alignment: .leading)
-                                .foregroundColor(self.viewModel.hasRequestError ? R.color.metricGood.color : R.color.metricBad.color)
-                            Text(checkerText())
-                            Spacer()
-                            if viewModel.loadingRequest {
-                                ProgressView()
-                            } else {
-                                EmptyView()
-                            }
-                        }
                     }
-
                 } header: {
                     Text(R.string.localizable.addmetricValueTitle())
                 } footer: {

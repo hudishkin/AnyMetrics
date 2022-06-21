@@ -8,7 +8,7 @@
 import Foundation
 
 
-public let HttpHeaders = ["A-IM",
+public let HTTP_HEADERS = ["A-IM",
                           "Accept",
                           "Accept-Application",
                           "Accept-Charset",
@@ -1193,3 +1193,12 @@ public let HttpHeaders = ["A-IM",
                           "Server-Timing",
                           "Service-Worker-Allowed",
                           "SourceMap"]
+
+
+let HTTP_HEADER_EXAMPLE: [String:[String]] = [
+    "User-Agent": [
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/43.4",
+        "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 "
+    ]
+]

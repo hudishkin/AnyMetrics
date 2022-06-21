@@ -7,7 +7,6 @@
 
 import Combine
 import Foundation
-import SwiftyJSON
 
 let DEFAULT_TIMEOUT: Double = 30
 let MAX_VALUE_LENGTH = 5
@@ -18,8 +17,7 @@ enum FetcherError: Error {
 }
 
 enum FetcherResult {
-    case value(String)
-    case check(Bool)
+    case result(MetricValueParser.ValueParseResult)
     case error(Error)
     case none
 }
@@ -41,18 +39,13 @@ enum Fetcher {
                 }
                 if let response = response as? HTTPURLResponse {
                     if (200 ..< 300).contains(response.statusCode) {
-                        if metric.type == .json {
-                            let result = self.getValueFromJSON(data, rules: metric.parseRules, formatter: metric.formatter)
-                            completion(.value(result))
-                        }
-                        if metric.type == .checker {
-                            completion(.check(true))
-                        }
+                        let result = MetricValueParser.parse(data: data , for: metric)
+                        completion(.result(result))
                         return
                     }
                 }
                 if metric.type == .checker {
-                    completion(.check(false))
+                    completion(.result(.check(false)))
                     return
                 }
                 completion(FetcherResult.none)
@@ -67,11 +60,14 @@ enum Fetcher {
         var newMetric = metric
         Self.fetch(for: metric) { result in
             switch result {
-            case .check(let success):
-                newMetric.hasError = !success
-                newMetric.lastValue = ""
-            case .value(let value):
-                newMetric.lastValue = value
+            case .result(let value):
+                switch value {
+                case .check(let success):
+                    newMetric.hasError = !success
+                    newMetric.lastValue = ""
+                case .value(let valueString):
+                    newMetric.lastValue = valueString
+                }
             case .error(_):
                 newMetric.hasError = true
             case .none:
@@ -87,17 +83,5 @@ enum Fetcher {
                 promise(Result.success(result))
             }
         }
-    }
-
-    static private func getValueFromJSON(
-        _ data: Data?,
-        rules: String?,
-        formatter: MetricFormatter?) -> String {
-            
-        guard let data = data else { return "" }
-        if let json = try? JSON(data: data), let rules = rules {
-            return json.parseValue(by: rules, formatter: formatter) ?? ""
-        }
-        return String(data: data, encoding: .utf8)!
     }
 }

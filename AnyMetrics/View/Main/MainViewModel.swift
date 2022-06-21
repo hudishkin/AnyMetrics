@@ -21,50 +21,51 @@ final class MainViewModel: MetricStore, ObservableObject {
     private var tokens = Set<AnyCancellable>()
 
     func updateMetrics() {
-        var result = [String:Metric]()
+        var updatedMetrics = [String:Metric]()
         let group = DispatchGroup()
         for (_, metric) in metrics {
             group.enter()
             var m = metric
-            Fetcher.fetch(for: m) { value in
-                switch value {
-                case .value(let value):
-                    m.lastValue = value
-                case .check(let success):
-                    m.lastValue = ""
-                    m.hasError = !success
-                default:
+            Fetcher.fetch(for: m) { result in
+                switch result {
+                case .result(let value):
+                    switch value {
+                    case .value(let valueString):
+                        m.lastValue = valueString
+                    case .check(let success):
+                        m.lastValue = ""
+                        m.hasError = !success
+                    }
+                case .error, .none:
                     m.hasError = true
                 }
                 m.updated = Date()
-
-                result[m.id.uuidString] = m
+                updatedMetrics[m.id.uuidString] = m
                 group.leave()
             }
         }
         group.notify(queue: .main) {
-            self.metrics = result
+            self.metrics = updatedMetrics
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
 
     func updateMetric(id: UUID) {
         guard var metric = metrics[id.uuidString] else { return }
-        Fetcher.fetch(for: metric) { value in
-            switch value {
-            case .value(let value):
-                if !value.isEmpty {
-                    metric.lastValue = value
-                    metric.hasError = false
-                } else {
-                    metric.hasError = true
+        Fetcher.fetch(for: metric) { result in
+            switch result {
+            case .result(let value):
+                switch value {
+                case .value(let valueString):
+                    metric.lastValue = valueString
+                case .check(let success):
+                    metric.lastValue = ""
+                    metric.hasError = !success
                 }
-            case .check(let success):
-                metric.lastValue = ""
-                metric.hasError = !success
-            default:
+            case .error, .none:
                 metric.hasError = true
             }
+
             metric.updated = Date()
             DispatchQueue.main.async {
                 self.metrics[id.uuidString] = metric

@@ -1,5 +1,5 @@
 //
-//  HeaderPickerView.swift
+//  SearchPickerView.swift
 //  AnyMetrics
 //
 //  Created by Simon Hudishkin on 14.06.2022.
@@ -8,23 +8,25 @@
 import SwiftUI
 
 fileprivate enum Constants {
-    static let font = Font.system(size: 17, weight: .semibold, design: .default)
+    static let font = Font.system(size: 16, weight: .semibold, design: .default)
+    static let itemInset = EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0)
 }
 
 /// Call in NavigationView for searchable
 ///
-struct HeaderPickerView: View {
+struct SearchPickerView: View {
 
-    var action: (String) -> Void
+    let items: [String]
+    let action: (String) -> Void
 
     @State var searchText: String = ""
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
 
     var searchResults: [String] {
         if searchText.isEmpty {
-            return HttpHeaders
+            return items
         } else {
-            return HttpHeaders.filter { $0.contains(searchText) }
+            return items.filter { $0.contains(searchText) }
         }
     }
 
@@ -38,6 +40,7 @@ struct HeaderPickerView: View {
                     Text(item)
                         .font(Constants.font)
                         .foregroundColor(R.color.baseText.color)
+                        .padding(Constants.itemInset)
                 }
             }
         }
@@ -52,10 +55,10 @@ struct HeaderPickerView: View {
 
 
 #if DEBUG
-struct HeaderPickerView_Previews: PreviewProvider {
+struct SearchPickerView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            HeaderPickerView(action: { _ in
+            SearchPickerView(items: HTTP_HEADERS, action: { _ in
             })
             .preferredColorScheme(.light)
         }

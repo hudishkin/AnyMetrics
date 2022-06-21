@@ -35,7 +35,7 @@ struct AddHeaderView: View {
                 } footer: {
                     HStack {
                         NavigationLink {
-                            HeaderPickerView { selectHeader in
+                            SearchPickerView(items: HTTP_HEADERS) { selectHeader in
                                 self.headerName = selectHeader
                             }
                         } label: {
@@ -53,7 +53,24 @@ struct AddHeaderView: View {
                     }
                 } footer: {
                     VStack {
-                        HStack {
+
+                        VStack {
+                            if let examples = HTTP_HEADER_EXAMPLE[headerName] {
+                                HStack {
+                                    NavigationLink {
+                                        SearchPickerView(items: examples) { selectedValue in
+                                            self.headerValue = selectedValue
+                                        }
+                                    } label: {
+                                        Text(R.string.localizable.httpheadersSelectValuesFromList())
+                                            .foregroundColor(R.color.baseText.color)
+                                        Constants.imageArrow
+                                            .foregroundColor(R.color.baseText.color)
+                                        Spacer()
+                                    }
+
+                                }.padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                            }
                             Text(R.string.localizable.httpheadersValueInformation())
                             Spacer()
                         }

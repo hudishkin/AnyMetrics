@@ -25,6 +25,7 @@
 "httpheaders.add.title" = "Add Header";
 "httpheaders.add.button" = "Add";
 "httpheaders.select-from-list" = "Select from HTTP-header list";
+"httpheaders.select-values-from-list" = "Select from examples";
 "httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
 
 // MARK: - Add Metric
@@ -44,7 +45,7 @@
 "addmetric.http-headers" = "HTTP headers";
 "addmetric.make-request" = "Make request";
 "addmetric.parse-rule" = "Parsing rule";
-"addmetric.faq-rule" = "How use rule?";
+"addmetric.faq-rule" = "How use «Parsing rule»?";
 "addmetric.metric-value-format" = "Format";
 "addmetric.value-title" = "Settings value";
 "addmetric.value-display" = "Value: %@";
@@ -56,7 +57,10 @@
 "addmetric.maxlength" = "Length - %@";
 "addmetric.no-limit-length" = "Without limit";
 "addmetric.type-metric-json" = "JSON";
+"addmetric.type-metric-web" = "Parse HTML";
 "addmetric.type-metric-checker" = "Check status";
 "addmetric.add-type-fromjson" = "JSON";
 "addmetric.add-type-manual" = "Manual";
+"addmetric.format-type-none" = "Raw data";
+"addmetric.format-type-currency" = "Currency";
 

@@ -131,7 +131,3 @@ extension MetricStyle: Codable {
         try? container.encodeIfPresent(self.imageURL, forKey: .imageURL)
     }
 }
-
-extension MetricFormatterType {
-    var localizedName: String { NSLocalizedString("format-type-\(self.rawValue.lowercased())", comment: "") }
-}

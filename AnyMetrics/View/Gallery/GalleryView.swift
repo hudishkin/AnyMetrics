@@ -14,13 +14,14 @@ fileprivate enum Constants {
     static let addButtonCorner: CGFloat = 20
     static let itemTitleFont = Font.system(size: 17, weight: .semibold, design: .default)
     static let itemDefaultFont = Font.system(size: 12, weight: .regular, design: .default)
+    static let itemDefaultBoldFont = Font.system(size: 12, weight: .semibold, design: .default)
 
     static let itemButtonOffset = CGSize(width: -10, height: 10)
     static let itemButtonSize: CGFloat = 48
     static let itemAddButtonCorner: CGFloat = Self.itemButtonSize / 2
     static let itemButtonLine: CGFloat = 1
     static let descriptionInset = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 52)
-    static let itemContentSpacing: CGFloat = 5
+    static let itemContentSpacing: CGFloat = 4
     static let itemContentPadding: CGFloat = 14
     static let itemCorner: CGFloat = 18
     static let contentInset = EdgeInsets(top: 4, leading: 12, bottom: 0, trailing: 12)
@@ -43,14 +44,18 @@ struct GalleryItemView: View {
     var body: some View {
         ZStack(alignment: .topTrailing ) {
             VStack(alignment: .leading, spacing: Constants.itemContentSpacing) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(metric.title)
-                        .font(Constants.itemTitleFont)
-                    Text(metric.paramName)
-                        .font(Constants.itemDefaultFont)
-                        .foregroundColor(R.color.secondaryText.color)
+                HStack {
+                    VStack(alignment: .leading, spacing: Constants.itemContentSpacing) {
+                        Text(metric.title)
+                            .font(Constants.itemTitleFont)
+                        Text(metric.paramName)
+                            .font(Constants.itemDefaultBoldFont)
+                            .foregroundColor(R.color.secondaryText.color)
+
+                    }
                     Spacer()
                 }
+
                 if let description = metric.description, !description.isEmpty {
                     Text(description)
                         .lineLimit(nil)
