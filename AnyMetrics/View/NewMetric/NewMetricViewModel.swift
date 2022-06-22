@@ -12,32 +12,24 @@ import SwiftyJSON
 import SwiftSoup
 
 let DEFAULT_LENGTH_VALUE = 7
-let MAX_LENGTH_SYMBOL = 4
-
-
 
 enum HTTPMethodType: String, Equatable, CaseIterable {
     case POST, GET, HEAD, DELETE, PUT
 }
 
-enum AddMetricType: String, Equatable, CaseIterable {
-    case manual, fromJSON
-}
+final class NewMetricViewModel: ObservableObject {
 
-class NewMetricViewModel: ObservableObject {
+    // MARK: - Published Properties
 
-    @Published private(set) var showImportResult: Bool
+    @Published private(set) var canMakeRequest: Bool = false
     @Published private(set) var showRequestResult: Bool = false
-    @Published private(set) var hasImportError: Bool = false
     @Published private(set) var hasRequestError: Bool = false
     @Published private(set) var hasParseRuleError: Bool = false
     @Published private(set) var errorMessage: String = ""
 
-    @Published var type: AddMetricType = .manual
     @Published var loading: Bool = false
     @Published var loadingRequest: Bool = false
-    @Published var jsonFileURL: String = "https://dl.dropbox.com/s/ovpdy4hx96lqc5u/testJson.json?dl=0"
-    @Published var requestUrl: String = "https://status.figma.com/" //"https://api.covidtracking.com/v1/us/current.json"
+    @Published var requestUrl: String = ""
     @Published var httpMethodType: HTTPMethodType = .GET
     @Published var typeMetric: TypeMetric = .json
     @Published var timeout: Double = DEFAULT_TIMEOUT
@@ -46,41 +38,30 @@ class NewMetricViewModel: ObservableObject {
     @Published var paramName: String = ""
     @Published var parseRules: String = ""
     @Published var parseValue: String = ""
-
-    @Published var symbol: String = "" {
-        didSet {
-            DispatchQueue.main.async {
-                if self.symbol.count > MAX_LENGTH_SYMBOL && oldValue.count <= MAX_LENGTH_SYMBOL {
-                    self.symbol = oldValue
-                }
-            }
-        }
-    }
-
     @Published var httpHeaders: [String: String] = [:]
-    // @Published var canAddMetric: Bool = false
     @Published var response: String = ""
-
     @Published var author: String = ""
     @Published var description: String = ""
     @Published var website: String = ""
     @Published var formatType: MetricFormatterType = .none
     @Published var maxLengthValue: Int = DEFAULT_LENGTH_VALUE
+
+    // MARK: - Private Properties
+
     private var parserDocument: ValueParser?
+    private var disposables = Set<AnyCancellable>()
     
     private var websiteURL: URL? {
         return URL(string: website)
     }
+
+    // MARK: - Properties
 
     var parseValueByLength: String {
         if maxLengthValue == 0 {
             return parseValue
         }
         return String(parseValue.prefix(maxLengthValue))
-    }
-
-    var jsonFileURLisValid: Bool {
-        return jsonFileURL.isValidURL
     }
 
     var canAddMetric: Bool {
@@ -90,40 +71,35 @@ class NewMetricViewModel: ObservableObject {
         return true
     }
 
-    private var disposables = Set<AnyCancellable>()
-    private var parser: ImportMetricParser
+    // MARK: - Init
 
-    init(showImportResult: Bool = false, parser: ImportMetricParser = JsonMetricParser()) {
-        self.parser = parser
-        self.showImportResult = showImportResult
+    init() {
+        debugPrint("Init VM")
     }
+
+    // MARK: - Public Methods
 
     func makeRequest() {
         self.loadingRequest = true
 
-        var request = URLRequest(url: URL(string: self.requestUrl)!)
-        for (k,v) in self.httpHeaders {
-            request.setValue(v, forHTTPHeaderField: k)
+        Fetcher.fetch(
+            for: URL(string: self.requestUrl)!,
+            method: self.httpMethodType.rawValue,
+            headers: self.httpHeaders,
+            timeout: timeout)
+        .map { data -> (ValueParser?, String) in
+            if self.typeMetric == .json {
+                let obj = try? JSON(data: data)
+                return (obj, data.prettyJSONString ?? "")
+            }
+            if self.typeMetric == .web {
+                let htmlDocument = try? SwiftSoup.parse(String(data: data, encoding: .utf8) ?? "")
+                return (htmlDocument, "HTML content")
+            }
+            return (nil, "")
         }
-        request.httpMethod = self.httpMethodType.rawValue
-        request.timeoutInterval = timeout
-        URLSession.shared.dataTaskPublisher(for: request)
-            .map({ result -> (ValueParser?, String) in
-                if self.typeMetric == .json {
-                    let obj = try? JSON(data: result.data)
-                    return (obj, result.data.prettyJSONString ?? "")
-
-                }
-                if self.typeMetric == .web {
-                    let htmlDocument = try? SwiftSoup.parse(String(data: result.data, encoding: .utf8) ?? "")
-                    return (htmlDocument, "HTML content")
-                }
-                return (nil, "")
-            })
-
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
-
+        .receive(on: DispatchQueue.main)
+        .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
@@ -181,55 +157,6 @@ class NewMetricViewModel: ObservableObject {
         }
         return nil
     }
-
-    func importJSON() {
-        loading = true
-        URLSession.shared.dataTaskPublisher(for: URL(string: self.jsonFileURL)!)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.hasImportError = true
-                case .finished:
-                    break
-                }
-            }, receiveValue: { data, error in
-                if let data = try? self.parser.parse(data: data) {
-                    self.errorMessage = ""
-                    self.httpHeaders = data.payload?.request?.headers ?? [:]
-                    self.timeout = data.payload?.request?.timeout ?? DEFAULT_TIMEOUT
-                    self.requestUrl = data.payload?.request?.url.absoluteString ?? ""
-                    self.formatType = data.payload?.formatter?.format ?? .none
-                    if self.formatType == .none {
-                        self.maxLengthValue = data.payload?.formatter?.length ?? DEFAULT_LENGTH_VALUE
-                    }else {
-                        self.maxLengthValue = 0
-                    }
-
-                    self.author = data.payload?.author ?? ""
-                    self.title = data.payload?.title ?? ""
-                    self.paramName = data.payload?.paramName ?? ""
-                    self.description = data.payload?.description ?? ""
-                    self.website = data.payload?.website?.absoluteString ?? ""
-                    self.httpMethodType = .GET
-                    if let _method = data.payload?.request?.method, let method = HTTPMethodType(rawValue: _method) {
-                        self.httpMethodType = method
-                    }
-                    self.typeMetric = data.payload?.type ?? .json
-
-                    self.hasImportError = false
-//                    self.importData = data
-                    self.showImportResult = true
-                }else {
-//                    self.importData = .empty
-                    self.showImportResult = false
-                }
-
-                self.loading = false
-            })
-            .store(in: &disposables)
-    }
 }
 
 
@@ -237,10 +164,6 @@ extension TypeMetric {
     var localizedString: String {
         NSLocalizedString("addmetric.type-metric-\(self.rawValue.lowercased())", comment: "")
     }
-}
-
-extension AddMetricType {
-    var localizedString: String { NSLocalizedString("addmetric.add-type-\(self.rawValue.lowercased())", comment: "") }
 }
 
 extension MetricFormatterType {

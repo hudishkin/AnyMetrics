@@ -78,8 +78,9 @@ struct MainView: View {
 
             // MARK: - Add Button
             Button {
-                self.showAddMenu = true
                 ImpactHelper.impactButton()
+                self.showAddMenu.toggle()
+
             } label: {
                 R.image.plus.image
                     .resizable()
@@ -106,8 +107,8 @@ struct MainView: View {
         }
         .sheet(isPresented: $showAddMenu) {
             GalleryView(allowDismissed: $allowDismissed)
-                .interactiveDismiss(canDismissSheet: $allowDismissed)
-                .environmentObject(viewModel)
+            .interactiveDismiss(canDismissSheet: $allowDismissed)
+            .environmentObject(viewModel)
         }
         .onAppear {
             viewModel.updateMetrics()

@@ -25,34 +25,66 @@ enum FetcherResult {
 enum Fetcher {
 
     static func fetch(for metric: Metric, completion: @escaping (FetcherResult)-> Void) {
-        if let requestData = metric.request {
-            var request = URLRequest(url: requestData.url)
-            for (k,v) in requestData.headers {
-                request.setValue(v, forHTTPHeaderField: k)
-            }
-            request.httpMethod = requestData.method
-            request.timeoutInterval = metric.request?.timeout ?? DEFAULT_TIMEOUT
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let requestData = metric.request else { return completion(.none) }
+
+        fetch(
+            for: requestData.url,
+            method: requestData.method,
+            headers: requestData.headers,
+            timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT) { (data, error) in
                 if let error = error {
-                    completion(.error(error))
-                    return
-                }
-                if let response = response as? HTTPURLResponse {
-                    if (200 ..< 300).contains(response.statusCode) {
-                        let result = MetricValueParser.parse(data: data , for: metric)
-                        completion(.result(result))
-                        return
+                    if metric.type == .checker {
+                        completion(.result(.check(false)))
+                    } else {
+                        completion(.error(error))
                     }
-                }
-                if metric.type == .checker {
-                    completion(.result(.check(false)))
                     return
                 }
-                completion(FetcherResult.none)
+
+                let result = MetricValueParser.parse(
+                    rules: metric.parseRules,
+                    data: data,
+                    metricType: metric.type,
+                    formatter: metric.formatter ?? .default)
+
+                completion(.result(result))
             }
-            task.resume()
-        } else {
-            completion(.none)
+    }
+
+    static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double, completion: @escaping (Data?, Error?)-> Void) {
+        var request = URLRequest(url: url)
+        for (k,v) in headers {
+            request.setValue(v, forHTTPHeaderField: k)
+        }
+        request.httpMethod = method
+        request.timeoutInterval = timeout
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(nil, error)
+                return
+            }
+            if let response = response as? HTTPURLResponse {
+                if (200 ..< 300).contains(response.statusCode) {
+                    return completion(data, nil)
+                }
+            }
+            completion(nil, FetcherError.error)
+        }
+        task.resume()
+    }
+    
+    static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double) -> Future<Data,Error> {
+        return Future { promise in
+            fetch(for: url, method: method, headers: headers, timeout: timeout) { data, error in
+                if let error = error {
+                    return promise(.failure(error))
+                }
+                if let data = data {
+                    return promise(.success(data))
+                }
+                promise(.failure(FetcherError.error))
+
+            }
         }
     }
 

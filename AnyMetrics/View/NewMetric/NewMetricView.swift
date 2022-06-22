@@ -26,7 +26,8 @@ fileprivate enum Constants {
     static let buttonTextColor = R.color.baseText.color
     static let createNewIcon: CGFloat = 16
     static let requestImage = R.image.request.image
-    static let imageArrow = Image(systemName: "arrow.right")
+    static let imageFAQ = Image(systemName: "questionmark.circle.fill")
+    static let faqSize: CGFloat = 20
 }
 
 // MARK: - MetricResponseView
@@ -58,143 +59,110 @@ struct MetricResponseView: View {
 
 struct NewMetricView: View {
     @Binding var allowDismissed: Bool
-
-    @ObservedObject var viewModel = NewMetricViewModel()
+    @StateObject var viewModel = NewMetricViewModel()
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var mainViewModel: MainViewModel
     @State var showAddHeader: Bool = false
 
     var body: some View {
         Form {
-            Section { EmptyView() } header: {
+            Section {
+                TextField(
+                    R.string.localizable.addmetricPlaceholderJsonUrl(),
+                    text: $viewModel.requestUrl)
+                .disabled(viewModel.loading)
+                Picker(
+                    R.string.localizable.addmetricHttpMethod(),
+                    selection: $viewModel.httpMethodType) {
+                        ForEach(HTTPMethodType.allCases, id: \.self) { item in
+                            Text(item.rawValue).tag(item)
+                        }
+                    }
+                    .pickerStyle(.automatic)
+
                 Picker(
                     R.string.localizable.addmetricSelectType(),
-                    selection: $viewModel.type) {
-                        ForEach(AddMetricType.allCases, id: \.self) { item in
+                    selection: $viewModel.typeMetric) {
+                        ForEach(TypeMetric.allCases, id: \.self) { item in
                             Text(item.localizedString).tag(item)
                         }
                     }
-                    .onChange(of: viewModel.type, perform: { newValue in
-                        debugPrint(newValue)
-                    })
-                    .pickerStyle(.segmented)
-                    .padding(Constants.pickerInset)
+                    .pickerStyle(.automatic)
             }
-
-            if viewModel.type == .fromJSON {
-                // MARK: JSON Import
-                Section {
-                    TextField(
-                        R.string.localizable.addmetricPlaceholderJsonUrl(),
-                        text: $viewModel.jsonFileURL)
-                    .disabled(viewModel.loading)
-
+            Section {
+                ForEach(viewModel.httpHeaders.sorted(by: >), id: \.key) { item in
                     HStack(alignment: .center, spacing: Constants.zero) {
-                        Button(
-                            R.string.localizable.addmetricLoadFile()
-                        ) {
-                            viewModel.importJSON()
-                        }
-                        .disabled(!viewModel.jsonFileURLisValid)
+                        Button {
+                            viewModel.httpHeaders[item.key] = nil
+                        } label: {
+                            Image(systemName: Constants.minusImageName)
+                        }.padding(Constants.httpHeadersInset)
+
+                        Text(item.key)
+                        R.color.secondaryText.color.foregroundColor(R.color.secondaryText.color)
                         Spacer()
-                        if viewModel.loading {
-                            ProgressView()
-                        } else {
-                            EmptyView()
-                        }
+                        Text(item.value)
+
                     }
                 }
+                HStack(alignment: .center) {
+                    Button {
+                        self.showAddHeader = true
+                    } label: {
+                        HStack {
+                            R.image.plus.image
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundColor(Constants.buttonTextColor)
+                                .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                            Text(R.string.localizable.addmetricAddHeader())
+                                .font(Constants.mainButtonFont)
+                                .foregroundColor(Constants.buttonTextColor)
+                        }
+                    }
+                    .sheet(isPresented: $showAddHeader) {
+                        self.showAddHeader = false
+                    } content: {
+                        AddHeaderView(action: { headerName, headerValue in
+                            viewModel.httpHeaders[headerName] = headerValue
+                        })
+                    }
+
+
+                }
+            } header: {
+                Text(R.string.localizable.addmetricHttpHeaders())
             }
-            if viewModel.type == .manual || viewModel.showImportResult {
-                // MARK: Manual
-                Section {
-
-                    TextField(
-                        R.string.localizable.addmetricPlaceholderJsonUrl(),
-                        text: $viewModel.requestUrl)
-                    .disabled(viewModel.loading)
-
-                    Picker(
-                        R.string.localizable.addmetricHttpMethod(),
-                        selection: $viewModel.httpMethodType) {
-                            ForEach(HTTPMethodType.allCases, id: \.self) { item in
-                                Text(item.rawValue).tag(item)
-                            }
-                        }
-                        .pickerStyle(.automatic)
-
-                    Picker(
-                        R.string.localizable.addmetricSelectType(),
-                        selection: $viewModel.typeMetric) {
-                            ForEach(TypeMetric.allCases, id: \.self) { item in
-                                Text(item.localizedString).tag(item)
-                            }
-                        }
-                        .pickerStyle(.automatic)
-                }
-
-                Section {
-                    ForEach(viewModel.httpHeaders.sorted(by: >), id: \.key) { item in
-                        HStack(alignment: .center, spacing: Constants.zero) {
-                            Button {
-                                viewModel.httpHeaders[item.key] = nil
-                            } label: {
-                                Image(systemName: Constants.minusImageName)
-                            }.padding(Constants.httpHeadersInset)
-
-                            Text(item.key)
-                            R.color.secondaryText.color.foregroundColor(R.color.secondaryText.color)
-                            Spacer()
-                            Text(item.value)
-
+            Section {
+                HStack(alignment: .center) {
+                    Button {
+                        self.viewModel.makeRequest()
+                    } label: {
+                        HStack {
+                            Constants.requestImage
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundColor(Constants.buttonTextColor)
+                                .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                                .aspectRatio(contentMode: .fit)
+                            Text(R.string.localizable.addmetricMakeRequest())
+                                .font(Constants.mainButtonFont)
+                                .foregroundColor(Constants.buttonTextColor)
                         }
                     }
-                    HStack(alignment: .center) {
-                        Button {
-                            self.showAddHeader = true
-                        } label: {
-                            HStack {
-                                R.image.plus.image
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundColor(Constants.buttonTextColor)
-                                    .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                                Text(R.string.localizable.addmetricAddHeader())
-                                    .font(Constants.mainButtonFont)
-                                    .foregroundColor(Constants.buttonTextColor)
-                            }
-                        }
-                        .sheet(isPresented: $showAddHeader) {
-                            self.showAddHeader = false
-                        } content: {
-                            AddHeaderView(action: { headerName, headerValue in
-                                viewModel.httpHeaders[headerName] = headerValue
-                            })
-                        }
-
-
+                    Spacer()
+                    if viewModel.loadingRequest {
+                        ProgressView()
+                    } else {
+                        EmptyView()
                     }
-                } header: {
-                    Text(R.string.localizable.addmetricHttpHeaders())
                 }
-
-                Section {
+                if viewModel.typeMetric == .checker {
                     HStack(alignment: .center) {
-                        Button {
-                            self.viewModel.makeRequest()
-                        } label: {
-                            HStack {
-                                Constants.requestImage
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundColor(Constants.buttonTextColor)
-                                    .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                                    .aspectRatio(contentMode: .fit)
-                                Text(R.string.localizable.addmetricMakeRequest())
-                                    .font(Constants.mainButtonFont)
-                                    .foregroundColor(Constants.buttonTextColor)
-                            }
-                        }
+                        Circle()
+                            .frame(width: 10, height: 10, alignment: .leading)
+                            .foregroundColor(self.viewModel.hasRequestError ? R.color.metricGood.color : R.color.metricBad.color)
+                        Text(checkerText())
                         Spacer()
                         if viewModel.loadingRequest {
                             ProgressView()
@@ -202,146 +170,134 @@ struct NewMetricView: View {
                             EmptyView()
                         }
                     }
-                    if viewModel.typeMetric == .checker {
-                        HStack(alignment: .center) {
-                            Circle()
-                                .frame(width: 10, height: 10, alignment: .leading)
-                                .foregroundColor(self.viewModel.hasRequestError ? R.color.metricGood.color : R.color.metricBad.color)
-                            Text(checkerText())
-                            Spacer()
-                            if viewModel.loadingRequest {
-                                ProgressView()
-                            } else {
-                                EmptyView()
+                } else {
+                    if viewModel.showRequestResult {
+                        HStack(alignment: .center, spacing: 0) {
+                            MetricResponseView(text: self.$viewModel.response)
+                        }
+                        HStack(alignment: .center, spacing: 0) {
+                            TextField(
+                                R.string.localizable.addmetricParseRule(),
+                                text: self.$viewModel.parseRules)
+                            .onChange(of: self.viewModel.parseRules) { newValue in
+                                self.viewModel.updateValue(rule: newValue)
+                            }
+                            .disableAutocorrection(true)
+
+                            Link(destination: AppConfig.Urls.rules) {
+                                Constants.imageFAQ
+                                    .resizable()
+                                    .frame(width: Constants.faqSize, height: Constants.faqSize, alignment: .center)
+                                    .foregroundColor(R.color.baseText.color)
+
                             }
                         }
-                    } else {
-                        if viewModel.showRequestResult {
-                            HStack(alignment: .center, spacing: 0) {
-                                MetricResponseView(text: self.$viewModel.response)
-                            }
-                            HStack(alignment: .center, spacing: 0) {
-                                TextField(
-                                    R.string.localizable.addmetricParseRule(),
-                                    text: self.$viewModel.parseRules)
-                                .onChange(of: self.viewModel.parseRules) { newValue in
-                                    self.viewModel.updateValue(rule: newValue)
-                                }
-                                .disableAutocorrection(true)
-                            }
 
-                            Picker(R.string.localizable.addmetricMetricValueFormat(), selection: $viewModel.formatType) {
-                                ForEach(MetricFormatterType.allCases, id: \.self) { item in
-                                    Text(item.localizedName).tag(item)
-                                }
+                        Picker(R.string.localizable.addmetricMetricValueFormat(), selection: $viewModel.formatType) {
+                            ForEach(MetricFormatterType.allCases, id: \.self) { item in
+                                Text(item.localizedName).tag(item)
                             }
-                            .pickerStyle(.automatic)
-                            .onChange(of: self.viewModel.formatType) { newValue in
-                                self.viewModel.updateValue()
-                            }
+                        }
+                        .pickerStyle(.automatic)
+                        .onChange(of: self.viewModel.formatType) { newValue in
+                            self.viewModel.updateValue()
+                        }
 
-                            if viewModel.formatType == .none {
-                                HStack(alignment: .center, spacing: Constants.zero) {
-                                    Stepper(
-                                        lengthText(),
-                                        value: self.$viewModel.maxLengthValue,
-                                        in: Constants.lengthValueRange)
-                                    .onChange(of: self.viewModel.maxLengthValue) { newValue in
-                                       self.viewModel.updateValue(length: newValue)
-                                   }
-                               }
+                        if viewModel.formatType == .none {
+                            HStack(alignment: .center, spacing: Constants.zero) {
+                                Stepper(
+                                    lengthText(),
+                                    value: self.$viewModel.maxLengthValue,
+                                    in: Constants.lengthValueRange)
+                                .onChange(of: self.viewModel.maxLengthValue) { newValue in
+                                    self.viewModel.updateValue(length: newValue)
+                                }
                             }
                         }
                     }
-                } header: {
-                    Text(R.string.localizable.addmetricValueTitle())
-                } footer: {
-                    HStack {
-                        if viewModel.hasParseRuleError {
-                            Text(R.string.localizable.addmetricErrorInvalidRule()).foregroundColor(.red)
-                        }else {
-                            if !viewModel.parseValue.isEmpty {
-                                Text(R.string.localizable.addmetricValueDisplay(viewModel.parseValueByLength))
-                            }
+                }
+            } header: {
+                Text(R.string.localizable.addmetricValueTitle())
+            } footer: {
+                HStack {
+                    if viewModel.hasParseRuleError {
+                        Text(R.string.localizable.addmetricErrorInvalidRule()).foregroundColor(.red)
+                    }else {
+                        if !viewModel.parseValue.isEmpty {
+                            Text(R.string.localizable.addmetricValueDisplay(viewModel.parseValueByLength))
+                        }
 
-                        }
-                        Spacer()
-                        Link(destination: AppConfig.Urls.rules) {
-                            Text(R.string.localizable.addmetricFaqRule())
-                                .foregroundColor(R.color.baseText.color)
-                            Constants.imageArrow
-                                .foregroundColor(R.color.baseText.color)
-                        }
                     }
-
                 }
 
-                Section {
-                    HStack {
-                        Text(R.string.localizable.addmetricMetricTitle())
-                        TextField(
-                            R.string.localizable.addmetricMetricTitleExample(),
-                            text: $viewModel.title)
-                        .multilineTextAlignment(.trailing)
-                    }
-                    HStack {
-                        Text(R.string.localizable.addmetricTitleParamMetric())
-                        TextField(
-                            R.string.localizable.addmetricTitleParamExample(),
-                            text: $viewModel.paramName)
-                        .multilineTextAlignment(.trailing)
-                    }
-                    HStack {
-                        Text(R.string.localizable.addmetricDetailAuthor())
-                        TextField(
-                            R.string.localizable.commonOptional(),
-                            text: $viewModel.author)
-                        .multilineTextAlignment(.trailing)
-                    }
-
-                    HStack {
-                        Text(R.string.localizable.addmetricDetailSite())
-                        TextField(
-                            R.string.localizable.commonOptional(),
-                            text: $viewModel.website)
-                        .multilineTextAlignment(.trailing)
-                    }
-                } header: {
-                    Text(R.string.localizable.addmetricDetails())
-                }
             }
-
-            // MARK: Add button
 
             Section {
-                EmptyView()
-            } footer: {
-                HStack(alignment: .center, spacing: Constants.zero, content: {
-                    Button(action: {
-                        guard let metric = viewModel.getMetric() else { return }
-                        mainViewModel.addMetric(metric: metric)
-                        presentationMode.wrappedValue.dismiss()
-                    }, label: {
-                        Spacer()
-                        Text(R.string.localizable.addmetricAdd())
-                            .font(Constants.mainButtonFont).padding()
-                        Spacer()
-                    })
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(Constants.buttonTextColor)
-                        .background(Constants.buttonBackground)
-                        .cornerRadius(Constants.mainButtonCorner)
-                        .disabled(!self.viewModel.canAddMetric)
-                        .opacity(opacityButton())
-                }).padding(Constants.mainButtonPadding)
+                HStack {
+                    Text(R.string.localizable.addmetricMetricTitle())
+                    TextField(
+                        R.string.localizable.addmetricMetricTitleExample(),
+                        text: $viewModel.title)
+                    .multilineTextAlignment(.trailing)
+                }
+                HStack {
+                    Text(R.string.localizable.addmetricTitleParamMetric())
+                    TextField(
+                        R.string.localizable.addmetricTitleParamExample(),
+                        text: $viewModel.paramName)
+                    .multilineTextAlignment(.trailing)
+                }
+                HStack {
+                    Text(R.string.localizable.addmetricDetailAuthor())
+                    TextField(
+                        R.string.localizable.commonOptional(),
+                        text: $viewModel.author)
+                    .multilineTextAlignment(.trailing)
+                }
+
+                HStack {
+                    Text(R.string.localizable.addmetricDetailSite())
+                    TextField(
+                        R.string.localizable.commonOptional(),
+                        text: $viewModel.website)
+                    .multilineTextAlignment(.trailing)
+                }
+            } header: {
+                Text(R.string.localizable.addmetricDetails())
             }
         }
+
+        // MARK: Add button
+
+        Section {
+            EmptyView()
+        } footer: {
+            HStack(alignment: .center, spacing: Constants.zero, content: {
+                Button(action: {
+                    guard let metric = viewModel.getMetric() else { return }
+                    mainViewModel.addMetric(metric: metric)
+                    presentationMode.wrappedValue.dismiss()
+                }, label: {
+                    Spacer()
+                    Text(R.string.localizable.addmetricAdd())
+                        .font(Constants.mainButtonFont).padding()
+                    Spacer()
+                })
+                .frame(maxWidth: .infinity)
+                .foregroundColor(Constants.buttonTextColor)
+                .background(Constants.buttonBackground)
+                .cornerRadius(Constants.mainButtonCorner)
+                .disabled(!self.viewModel.canAddMetric)
+                .opacity(opacityButton())
+            }).padding(Constants.mainButtonPadding)
+        }
+
         .navigationTitle(R.string.localizable.addmetricNewTitle())
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            allowDismissed = false
+             allowDismissed = false
         }.onDisappear{
-            allowDismissed = true
+             allowDismissed = true
         }
 
     }
@@ -378,12 +334,6 @@ struct MainEdit_Previews: PreviewProvider {
                 .environmentObject(MainViewModel())
                 .preferredColorScheme(.dark)
         }
-
-
-//        AddMetricHeaderView { name, value in
-//
-//        }.preferredColorScheme(.dark)
-
     }
 }
 #endif

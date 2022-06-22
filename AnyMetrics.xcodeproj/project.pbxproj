@@ -82,6 +82,7 @@
 		6D6FCCBE2861B0B500E8387D /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 6D6FCCBD2861B0B500E8387D /* SwiftSoup */; };
 		6D6FCCC02861BD0300E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
 		6D6FCCC12861C0AC00E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
+		6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */; };
 		6DDB0768285C623400F09619 /* View+Dismiss.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB0767285C623400F09619 /* View+Dismiss.swift */; };
 		6DE65E49285DD63500F3EF05 /* MetricStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E48285DD63500F3EF05 /* MetricStore.swift */; };
 		6DE65E57285DDB9100F3EF05 /* MetricContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E56285DDB9100F3EF05 /* MetricContentView.swift */; };
@@ -184,6 +185,7 @@
 		6D6FCCB42860068300E8387D /* Bundle+Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Widget.swift"; sourceTree = "<group>"; };
 		6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricValueParser.swift; sourceTree = "<group>"; };
 		6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Document+Ex.swift"; sourceTree = "<group>"; };
+		6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryViewModel.swift; sourceTree = "<group>"; };
 		6DDB0767285C623400F09619 /* View+Dismiss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Dismiss.swift"; sourceTree = "<group>"; };
 		6DE65E1E285DCEE900F3EF05 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		6DE65E20285DCEE900F3EF05 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -401,6 +403,7 @@
 			isa = PBXGroup;
 			children = (
 				6D5C0AE32857BF2D006B8A3C /* GalleryView.swift */,
+				6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */,
 			);
 			path = Gallery;
 			sourceTree = "<group>";
@@ -698,6 +701,7 @@
 				6D2C23202857257200506A7C /* AppConfig.swift in Sources */,
 				6D6FCCBB2861A72A00E8387D /* MetricValueParser.swift in Sources */,
 				6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */,
+				6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */,
 				6D6FCCB52860068300E8387D /* Bundle+Widget.swift in Sources */,
 				6D5C0AF22858E301006B8A3C /* NewMetricView.swift in Sources */,
 				6D2C2310285722DC00506A7C /* R+Ex.swift in Sources */,

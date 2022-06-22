@@ -114,11 +114,12 @@ struct GalleryItemView: View {
 
 struct GalleryView: View {
 
+    @StateObject var viewModel = GalleryViewModel()
     @Binding var allowDismissed: Bool
-    @EnvironmentObject var viewModel: MainViewModel
     @State var searchText: String = ""
     @State var showAddMenu: Bool = false
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @EnvironmentObject var mainViewModel: MainViewModel
 
     let columns = [
         GridItem(.flexible())
@@ -129,6 +130,7 @@ struct GalleryView: View {
             List {
                 NavigationLink(isActive: $showAddMenu) {
                     NewMetricView(allowDismissed: $allowDismissed)
+                        .environmentObject(mainViewModel)
                 } label: {
                     HStack {
                         R.image.plus.image
@@ -148,10 +150,10 @@ struct GalleryView: View {
                                     metric: metric,
                                     addMetric: { m in
                                         ImpactHelper.success()
-                                        viewModel.addMetric(metric: m)
+                                        mainViewModel.addMetric(metric: m)
                                     }, removeMetric: { uuid in
-                                        viewModel.removeMetric(id: uuid)
-                                    }, alreadyAdded: viewModel.metrics[metric.id.uuidString] != nil)
+                                        mainViewModel.removeMetric(id: uuid)
+                                    }, alreadyAdded: mainViewModel.metrics[metric.id.uuidString] != nil)
                                 .buttonStyle(PlainButtonStyle())
                                 .listRowSeparator(.hidden)
                             }
@@ -179,7 +181,9 @@ struct GalleryView: View {
 #if DEBUG
 struct Previews_GalleryView_Previews: PreviewProvider {
     static var previews: some View {
-        GalleryView(allowDismissed: .constant(true)).preferredColorScheme(.light).environmentObject(MainViewModel())
+        GalleryView(allowDismissed: .constant(true))
+        .preferredColorScheme(.light)
+        .environmentObject(MainViewModel())
     }
 }
 #endif

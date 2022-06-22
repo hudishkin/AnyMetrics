@@ -9,15 +9,8 @@ import SwiftUI
 import WidgetKit
 import Combine
 
-
-
-
-
 final class MainViewModel: MetricStore, ObservableObject {
 
-    @Published var galleryItems: [GalleryItem] = []
-
-    private var allGallery: [GalleryItem] = []
     private var tokens = Set<AnyCancellable>()
 
     func updateMetrics() {
@@ -93,48 +86,6 @@ final class MainViewModel: MetricStore, ObservableObject {
     func removeAll() -> Self {
         self.metrics = [:]
         return self
-    }
-
-    func load() {
-        GalleryService.load()
-            .receive(on: DispatchQueue.main)
-            .sink { _ in  } receiveValue: { metrics in
-                self.allGallery = metrics
-                self.galleryItems = metrics
-            }.store(in: &tokens)
-    }
-
-    func search(text: String) {
-        guard !text.isEmpty else {
-            self.galleryItems = allGallery
-            return
-        }
-
-        DispatchQueue.global(qos: .utility).async {
-            var result: [GalleryItem] = []
-            let searchText = text.lowercased()
-            for value in self.allGallery {
-                if value.name.lowercased().contains(searchText) || value.tags.lowercased().contains(searchText) {
-                    result.append(value)
-                }else {
-                    var metrics: [Metric] = []
-                    for metric in value.metrics {
-                        if metric.title.lowercased().contains(searchText) {
-                            metrics.append(metric)
-                        }
-                    }
-                    if !metrics.isEmpty {
-                        result.append(GalleryItem(name: value.name, tags: value.tags, metrics: metrics))
-                    }
-
-                }
-            }
-            DispatchQueue.main.async {
-                self.galleryItems = result
-            }
-        }
-
-
     }
 }
 

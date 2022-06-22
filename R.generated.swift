@@ -426,7 +426,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricEmptyResponse = Rswift.StringResource(key: "addmetric.empty-response", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Enter URL to JSON file
+      /// en translation: Enter URL
       ///
       /// Locales: en, ru
       static let addmetricPlaceholderJsonUrl = Rswift.StringResource(key: "addmetric.placeholder-json-url", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -811,7 +811,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.empty-response", bundle: bundle, comment: "")
       }
 
-      /// en translation: Enter URL to JSON file
+      /// en translation: Enter URL
       ///
       /// Locales: en, ru
       static func addmetricPlaceholderJsonUrl(preferredLanguages: [String]? = nil) -> String {

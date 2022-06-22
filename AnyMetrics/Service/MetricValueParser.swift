@@ -20,14 +20,14 @@ enum MetricValueParser {
         case check(Bool)
     }
 
-    static func parse(data: Data?, for metric: Metric) -> ValueParseResult {
-        switch metric.type {
+    static func parse(rules: String?, data: Data?, metricType: TypeMetric, formatter: MetricValueFormatter) -> ValueParseResult {
+        switch metricType {
         case .checker:
             return .check(true)
         case .json:
-            return .value(parseJSON(data, rules: metric.parseRules, formatter: metric.formatter))
+            return .value(parseJSON(data, rules: rules, formatter: formatter))
         case .web:
-            return .value(parseHTML(data, rules: metric.parseRules ?? "", formatter: metric.formatter))
+            return .value(parseHTML(data, rules: rules ?? "", formatter: formatter))
         }
     }
 

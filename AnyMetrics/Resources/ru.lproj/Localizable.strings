@@ -34,7 +34,7 @@
 "addmetric.empty-response" = "Пустой запрос";
 "addmetric.select-type" = "Выбрать тип";
 "addmetric.load-file" = "Load JSON file";
-"addmetric.placeholder-json-url" = "Enter URL to JSON file";
+"addmetric.placeholder-json-url" = "Enter URL";
 "addmetric.metric-title" = "Заголовк";
 "addmetric.metric-title-example" = "Пример: Bitcoin";
 "addmetric.title-param-metric" = "Описание";

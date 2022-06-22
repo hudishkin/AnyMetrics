@@ -34,7 +34,7 @@
 "addmetric.empty-response" = "Empty response";
 "addmetric.select-type" = "Select type";
 "addmetric.load-file" = "Load JSON file";
-"addmetric.placeholder-json-url" = "Enter URL to JSON file";
+"addmetric.placeholder-json-url" = "Enter URL";
 "addmetric.metric-title" = "Title";
 "addmetric.metric-title-example" = "Bitcoin";
 "addmetric.title-param-metric" = "Description";
