@@ -19,6 +19,8 @@ fileprivate enum Constants {
     static let httpHeadersInset = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 8)
     static let lengthValueRange = 0...Int.max
     static let mainButtonFont = Font.system(size: 17, weight: .semibold, design: .default)
+
+    static let smallFont = Font.system(size: 12, weight: .regular, design: .default)
     static let mainButtonPadding: CGFloat = -16
     static let mainButtonCorner: CGFloat = 40
     static let mainButtonHeight: CGFloat = 52
@@ -28,6 +30,15 @@ fileprivate enum Constants {
     static let requestImage = R.image.request.image
     static let imageFAQ = Image(systemName: "questionmark.circle.fill")
     static let faqSize: CGFloat = 20
+    static let opcityEnable: CGFloat = 1.0
+    static let opcityDisable: CGFloat = 0.4
+    static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
+    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.7)
+    static let lengthLabelCorner: CGFloat = 20
+    static let infinityChar = "∞"
+    static let circleCheckerSize: CGFloat = 12
+    static let checkerGoodBackground = Color.green
+    static let checkerBadBackground = Color.red
 }
 
 // MARK: - MetricResponseView
@@ -71,6 +82,7 @@ struct NewMetricView: View {
                     R.string.localizable.addmetricPlaceholderJsonUrl(),
                     text: $viewModel.requestUrl)
                 .disabled(viewModel.loading)
+                .disableAutocorrection(true)
                 Picker(
                     R.string.localizable.addmetricHttpMethod(),
                     selection: $viewModel.httpMethodType) {
@@ -96,12 +108,14 @@ struct NewMetricView: View {
                             viewModel.httpHeaders[item.key] = nil
                         } label: {
                             Image(systemName: Constants.minusImageName)
+                                .foregroundColor(R.color.baseText.color)
                         }.padding(Constants.httpHeadersInset)
 
                         Text(item.key)
-                        R.color.secondaryText.color.foregroundColor(R.color.secondaryText.color)
+
                         Spacer()
                         Text(item.value)
+                            .foregroundColor(R.color.secondaryText.color)
 
                     }
                 }
@@ -150,6 +164,8 @@ struct NewMetricView: View {
                                 .foregroundColor(Constants.buttonTextColor)
                         }
                     }
+                    .disabled(!viewModel.canMakeRequest)
+                    .opacity(opacityRequestButton())
                     Spacer()
                     if viewModel.loadingRequest {
                         ProgressView()
@@ -158,24 +174,35 @@ struct NewMetricView: View {
                     }
                 }
                 if viewModel.typeMetric == .checker {
-                    HStack(alignment: .center) {
-                        Circle()
-                            .frame(width: 10, height: 10, alignment: .leading)
-                            .foregroundColor(self.viewModel.hasRequestError ? R.color.metricGood.color : R.color.metricBad.color)
-                        Text(checkerText())
-                        Spacer()
-                        if viewModel.loadingRequest {
-                            ProgressView()
-                        } else {
-                            EmptyView()
+
+                    // MARK: - Checker
+                    if viewModel.showRequestResult {
+                        HStack(alignment: .center) {
+                            Circle()
+                                .fill(self.viewModel.hasRequestError ? Constants.checkerBadBackground : Constants.checkerGoodBackground)
+                                .frame(
+                                    width: Constants.circleCheckerSize,
+                                    height: Constants.circleCheckerSize,
+                                    alignment: .leading)
+
+                            Text(checkerText())
+                            Spacer()
+                            if viewModel.loadingRequest {
+                                ProgressView()
+                            } else {
+                                EmptyView()
+                            }
                         }
                     }
+
                 } else {
+
+                    // MARK: - Value Settings
                     if viewModel.showRequestResult {
-                        HStack(alignment: .center, spacing: 0) {
+                        HStack(alignment: .center, spacing: Constants.zero) {
                             MetricResponseView(text: self.$viewModel.response)
                         }
-                        HStack(alignment: .center, spacing: 0) {
+                        HStack(alignment: .center, spacing: Constants.zero) {
                             TextField(
                                 R.string.localizable.addmetricParseRule(),
                                 text: self.$viewModel.parseRules)
@@ -183,35 +210,45 @@ struct NewMetricView: View {
                                 self.viewModel.updateValue(rule: newValue)
                             }
                             .disableAutocorrection(true)
-
                             Link(destination: AppConfig.Urls.rules) {
                                 Constants.imageFAQ
                                     .resizable()
-                                    .frame(width: Constants.faqSize, height: Constants.faqSize, alignment: .center)
+                                    .frame(
+                                        width: Constants.faqSize,
+                                        height: Constants.faqSize,
+                                        alignment: .center)
                                     .foregroundColor(R.color.baseText.color)
 
                             }
                         }
-
-                        Picker(R.string.localizable.addmetricMetricValueFormat(), selection: $viewModel.formatType) {
+                        Picker(
+                            R.string.localizable.addmetricMetricValueFormat(),
+                            selection: $viewModel.formatType) {
                             ForEach(MetricFormatterType.allCases, id: \.self) { item in
                                 Text(item.localizedName).tag(item)
                             }
                         }
                         .pickerStyle(.automatic)
-                        .onChange(of: self.viewModel.formatType) { newValue in
+                        .onChange(of: self.viewModel.formatType) { _ in
                             self.viewModel.updateValue()
                         }
 
-                        if viewModel.formatType == .none {
-                            HStack(alignment: .center, spacing: Constants.zero) {
-                                Stepper(
-                                    lengthText(),
-                                    value: self.$viewModel.maxLengthValue,
-                                    in: Constants.lengthValueRange)
-                                .onChange(of: self.viewModel.maxLengthValue) { newValue in
-                                    self.viewModel.updateValue(length: newValue)
+                        HStack(alignment: .center, spacing: Constants.zero) {
+                            Stepper(value: self.$viewModel.maxLengthValue, in: Constants.lengthValueRange) {
+                                HStack {
+                                    Text(R.string.localizable.addmetricMaxlength())
+                                    Spacer()
+                                    Text(maxLength())
+                                        .font(Constants.smallFont)
+                                        .padding(Constants.lengthLabelInset)
+                                        .foregroundColor(R.color.baseText.color)
+                                        .background(Constants.lengthLabelBackground)
+                                        .cornerRadius(Constants.lengthLabelCorner)
                                 }
+
+                            }
+                            .onChange(of: self.viewModel.maxLengthValue) { newValue in
+                                self.viewModel.updateValue(length: newValue)
                             }
                         }
                     }
@@ -219,19 +256,17 @@ struct NewMetricView: View {
             } header: {
                 Text(R.string.localizable.addmetricValueTitle())
             } footer: {
+
+                // MARK: - Metric Parse Result
                 HStack {
                     if viewModel.hasParseRuleError {
                         Text(R.string.localizable.addmetricErrorInvalidRule()).foregroundColor(.red)
-                    }else {
-                        if !viewModel.parseValue.isEmpty {
+                    } else if !viewModel.parseValue.isEmpty {
                             Text(R.string.localizable.addmetricValueDisplay(viewModel.parseValueByLength))
-                        }
-
                     }
                 }
-
             }
-
+            // MARK: - Details
             Section {
                 HStack {
                     Text(R.string.localizable.addmetricMetricTitle())
@@ -265,67 +300,69 @@ struct NewMetricView: View {
             } header: {
                 Text(R.string.localizable.addmetricDetails())
             }
+
+            // MARK: - Add button
+            Section {
+                EmptyView()
+            } footer: {
+                HStack(alignment: .center, spacing: Constants.zero, content: {
+                    Button(action: {
+                        guard let metric = viewModel.getMetric() else { return }
+                        mainViewModel.addMetric(metric: metric)
+                        presentationMode.wrappedValue.dismiss()
+                    }, label: {
+                        Spacer()
+                        Text(R.string.localizable.addmetricAdd())
+                            .font(Constants.mainButtonFont).padding()
+                        Spacer()
+                    })
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(Constants.buttonTextColor)
+                    .background(Constants.buttonBackground)
+                    .cornerRadius(Constants.mainButtonCorner)
+                    .disabled(!self.viewModel.canAddMetric)
+                    .opacity(opacityButton())
+                }).padding(Constants.mainButtonPadding)
+            }
+
+            .navigationTitle(R.string.localizable.addmetricNewTitle())
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                 allowDismissed = false
+            }.onDisappear{
+                 allowDismissed = true
+            }
         }
-
-        // MARK: Add button
-
-        Section {
-            EmptyView()
-        } footer: {
-            HStack(alignment: .center, spacing: Constants.zero, content: {
-                Button(action: {
-                    guard let metric = viewModel.getMetric() else { return }
-                    mainViewModel.addMetric(metric: metric)
-                    presentationMode.wrappedValue.dismiss()
-                }, label: {
-                    Spacer()
-                    Text(R.string.localizable.addmetricAdd())
-                        .font(Constants.mainButtonFont).padding()
-                    Spacer()
-                })
-                .frame(maxWidth: .infinity)
-                .foregroundColor(Constants.buttonTextColor)
-                .background(Constants.buttonBackground)
-                .cornerRadius(Constants.mainButtonCorner)
-                .disabled(!self.viewModel.canAddMetric)
-                .opacity(opacityButton())
-            }).padding(Constants.mainButtonPadding)
-        }
-
-        .navigationTitle(R.string.localizable.addmetricNewTitle())
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-             allowDismissed = false
-        }.onDisappear{
-             allowDismissed = true
-        }
-
     }
 
     func checkerText() -> String {
         if self.viewModel.hasRequestError {
-            return "value-lifeless".localizedCapitalized
+            return R.string.localizable.metricValueBad()
         }else {
-            return "value-alive".localizedCapitalized
+            return R.string.localizable.metricValueGood()
         }
     }
 
     func opacityButton() -> CGFloat {
-        self.viewModel.canAddMetric ? 1.0 : 0.3
+        self.viewModel.canAddMetric ? Constants.opcityEnable : Constants.opcityDisable
     }
 
-    func lengthText() -> String {
+    func opacityRequestButton() -> CGFloat {
+        self.viewModel.canMakeRequest ? Constants.opcityEnable : Constants.opcityDisable
+    }
+
+    func maxLength() -> String {
         if viewModel.maxLengthValue == 0 {
-            return R.string.localizable.addmetricNoLimitLength()
+            return Constants.infinityChar
         }else {
-            return R.string.localizable.addmetricMaxlength("\(viewModel.maxLengthValue)")
+            return String(viewModel.maxLengthValue)
         }
     }
 }
 
 
 #if DEBUG
-let placeholderValueMetric = Metric(id: UUID(), title: "SERVICE", paramName: "Value type", lastValue: "T", request: nil, type: .json, parseRules: nil, created: Date(), updated: nil)
+let placeholderValueMetric = Metric(id: UUID(), title: "SERVICE", paramName: "Value type", value: "T", request: nil, type: .json, parseRules: nil, created: Date(), updated: nil)
 
 struct MainEdit_Previews: PreviewProvider {
     static var previews: some View {

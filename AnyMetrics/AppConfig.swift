@@ -17,4 +17,12 @@ enum AppConfig {
 
         static let gallery = URL(string: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/list.json")!
     }
+
+    static let isiOSAppOnMac: Bool = {
+        var isiOSAppOnMac = false
+        if #available(iOS 14.0, *) {
+            isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
+        }
+        return isiOSAppOnMac
+    }()
 }

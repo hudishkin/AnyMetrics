@@ -14,6 +14,8 @@ fileprivate enum Constants {
     static let buttonInset = EdgeInsets(top: 20, leading: -20, bottom: 0, trailing: -20)
     static let formInset = EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0)
     static let buttonCorner: CGFloat = 50
+    static let opacityDisable: CGFloat = 0.4
+    static let opacityEnable: CGFloat = 1.0
 }
 
 struct AddHeaderView: View {
@@ -69,7 +71,7 @@ struct AddHeaderView: View {
                                         Spacer()
                                     }
 
-                                }.padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                                }// .padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
                             }
                             Text(R.string.localizable.httpheadersValueInformation())
                             Spacer()
@@ -91,6 +93,7 @@ struct AddHeaderView: View {
                                 .background(R.color.baseText.color)
                                 .cornerRadius(Constants.buttonCorner)
                                 .disabled(headerName.isEmpty || headerValue.isEmpty)
+                                .opacity(opacityButton())
                         })
                         .padding(Constants.buttonInset)
                     }
@@ -102,6 +105,10 @@ struct AddHeaderView: View {
             .navigationBarTitleDisplayMode(.inline)
             .listStyle(PlainListStyle())
         }
+    }
+
+    func opacityButton() -> CGFloat {
+        return (headerName.isEmpty || headerValue.isEmpty) ? Constants.opacityDisable : Constants.opacityEnable
     }
 }
 

@@ -24,33 +24,6 @@ enum FetcherResult {
 
 enum Fetcher {
 
-    static func fetch(for metric: Metric, completion: @escaping (FetcherResult)-> Void) {
-        guard let requestData = metric.request else { return completion(.none) }
-
-        fetch(
-            for: requestData.url,
-            method: requestData.method,
-            headers: requestData.headers,
-            timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT) { (data, error) in
-                if let error = error {
-                    if metric.type == .checker {
-                        completion(.result(.check(false)))
-                    } else {
-                        completion(.error(error))
-                    }
-                    return
-                }
-
-                let result = MetricValueParser.parse(
-                    rules: metric.parseRules,
-                    data: data,
-                    metricType: metric.type,
-                    formatter: metric.formatter ?? .default)
-
-                completion(.result(result))
-            }
-    }
-
     static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double, completion: @escaping (Data?, Error?)-> Void) {
         var request = URLRequest(url: url)
         for (k,v) in headers {
@@ -71,6 +44,32 @@ enum Fetcher {
             completion(nil, FetcherError.error)
         }
         task.resume()
+    }
+
+    static func fetch(for metric: Metric, completion: @escaping (FetcherResult)-> Void) {
+        guard let requestData = metric.request else { return completion(.none) }
+
+        fetch(
+            for: requestData.url,
+            method: requestData.method,
+            headers: requestData.headers,
+            timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT) { (data, error) in
+                if let error = error {
+                    if metric.type == .checker {
+                        completion(.result(.check(false)))
+                    } else {
+                        completion(.error(error))
+                    }
+                    return
+                }
+
+                let result = MetricValueParser.parse(
+                    rules: metric.parseRules,
+                    data: data,
+                    metricType: metric.type, formatter: metric.formatter)
+
+                completion(.result(result))
+            }
     }
     
     static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double) -> Future<Data,Error> {
@@ -96,9 +95,9 @@ enum Fetcher {
                 switch value {
                 case .check(let success):
                     newMetric.hasError = !success
-                    newMetric.lastValue = ""
+                    newMetric.value = ""
                 case .value(let valueString):
-                    newMetric.lastValue = valueString
+                    newMetric.value = valueString
                 }
             case .error(_):
                 newMetric.hasError = true

@@ -14,8 +14,11 @@ extension JSON: ValueParser {
         var result = self
         for i in 0..<listRules.count {
             if listRules[i].first?.isNumber ?? false {
-                result = result[Int(listRules[i])!]
-            }else {
+                guard let index = Int(listRules[i]) else {
+                    continue
+                }
+                result = result[index]
+            } else {
                 result = result[String(listRules[i])]
             }
         }
@@ -29,9 +32,14 @@ extension JSON: ValueParser {
             stringValue = String(describing: value)
         } else  if let value = result.string {
             stringValue = value
-        } else if let formatter = formatter, let value = stringValue {
+        }
+        if let formatter = formatter, let value = stringValue {
             return formatter.formatValue(value)
         }
         return stringValue
+    }
+
+    func rawData() -> String? {
+        return self.rawString(.utf8, options: .prettyPrinted)
     }
 }

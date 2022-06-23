@@ -360,7 +360,7 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 52 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 51 localization keys.
     struct localizable {
       /// en translation: Add
       ///
@@ -474,7 +474,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricTypeMetricJson = Rswift.StringResource(key: "addmetric.type-metric-json", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Length - %@
+      /// en translation: Length
       ///
       /// Locales: en, ru
       static let addmetricMaxlength = Rswift.StringResource(key: "addmetric.maxlength", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -518,7 +518,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricFormatTypeNone = Rswift.StringResource(key: "addmetric.format-type-none", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Refresh metric
+      /// en translation: Refresh value
       ///
       /// Locales: en, ru
       static let metricActionsUpdateValue = Rswift.StringResource(key: "metric.actions.update-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -566,10 +566,6 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricValueDisplay = Rswift.StringResource(key: "addmetric.value-display", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Without limit
-      ///
-      /// Locales: en, ru
-      static let addmetricNoLimitLength = Rswift.StringResource(key: "addmetric.no-limit-length", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
 
       /// en translation: Add
       ///
@@ -991,21 +987,19 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.type-metric-json", bundle: bundle, comment: "")
       }
 
-      /// en translation: Length - %@
+      /// en translation: Length
       ///
       /// Locales: en, ru
-      static func addmetricMaxlength(_ value1: String, preferredLanguages: [String]? = nil) -> String {
+      static func addmetricMaxlength(preferredLanguages: [String]? = nil) -> String {
         guard let preferredLanguages = preferredLanguages else {
-          let format = NSLocalizedString("addmetric.maxlength", bundle: hostingBundle, comment: "")
-          return String(format: format, locale: applicationLocale, value1)
+          return NSLocalizedString("addmetric.maxlength", bundle: hostingBundle, comment: "")
         }
 
-        guard let (locale, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
           return "addmetric.maxlength"
         }
 
-        let format = NSLocalizedString("addmetric.maxlength", bundle: bundle, comment: "")
-        return String(format: format, locale: locale, value1)
+        return NSLocalizedString("addmetric.maxlength", bundle: bundle, comment: "")
       }
 
       /// en translation: Load JSON file
@@ -1158,7 +1152,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.format-type-none", bundle: bundle, comment: "")
       }
 
-      /// en translation: Refresh metric
+      /// en translation: Refresh value
       ///
       /// Locales: en, ru
       static func metricActionsUpdateValue(preferredLanguages: [String]? = nil) -> String {
@@ -1338,21 +1332,6 @@ struct R: Rswift.Validatable {
 
         let format = NSLocalizedString("addmetric.value-display", bundle: bundle, comment: "")
         return String(format: format, locale: locale, value1)
-      }
-
-      /// en translation: Without limit
-      ///
-      /// Locales: en, ru
-      static func addmetricNoLimitLength(preferredLanguages: [String]? = nil) -> String {
-        guard let preferredLanguages = preferredLanguages else {
-          return NSLocalizedString("addmetric.no-limit-length", bundle: hostingBundle, comment: "")
-        }
-
-        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
-          return "addmetric.no-limit-length"
-        }
-
-        return NSLocalizedString("addmetric.no-limit-length", bundle: bundle, comment: "")
       }
 
       fileprivate init() {}

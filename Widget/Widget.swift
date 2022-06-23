@@ -12,19 +12,17 @@ import Intents
 
 struct Provider: IntentTimelineProvider {
 
-    let store = MetricStore()
-
     func placeholder(in context: Context) -> AMEntry {
         AMEntry(
             date: Date(),
             configuration: ConfigurationIntent(),
-            metric: store.metrics.values.first ?? Mocks.metricJson)
+            metric: MetricStore().metrics.values.first ?? Mocks.metricJson)
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
 
         var metric: Metric?
-        if let _metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
+        if let _metric = MetricStore().metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
             metric = _metric
         }else {
             metric = Mocks.metricJson
@@ -38,10 +36,11 @@ struct Provider: IntentTimelineProvider {
     func getTimeline(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         var entries: [AMEntry] = []
 
+        let store = MetricStore()
         if let id = configuration.dataSourceType?.identifier, let metric = store.metrics[id] {
 
             Fetcher.updateMetric(metric: metric) { newMetric in
-                store.metrics[id] = newMetric
+                store.addMetric(metric: newMetric)
                 let currentDate = Date()
                 entries.append(AMEntry(date: currentDate, configuration: configuration, metric: metric))
                 let timeline = Timeline(entries: entries, policy: .atEnd)

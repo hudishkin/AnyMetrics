@@ -16,9 +16,7 @@ final class GalleryViewModel: ObservableObject {
     private var allGallery: [GalleryItem] = []
     private var tokens = Set<AnyCancellable>()
 
-    init() {
-        debugPrint(#function)
-    }
+    init() { }
 
     func load() {
         GalleryService.load()

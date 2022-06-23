@@ -14,7 +14,7 @@ fileprivate enum Constants {
     static let cornerParam: CGFloat = { Bundle.isInWidget() ? 12 : 20 }()
     static let fontValue: Font = {
         Font.system(
-            size: Bundle.isInWidget() ? 21 : 24,
+            size: Bundle.isInWidget() ? 28 : 34,
             weight: .heavy,
             design: .default)
     }()
@@ -22,15 +22,16 @@ fileprivate enum Constants {
     static func fontValue(size: CGFloat) -> Font {
         Font.system(
             size: size,
-            weight: .light,
+            weight: (size < 25 ? .regular : .light),
             design: .default)
     }
     static let fontTitle: Font = {
         Font.system(size: Bundle.isInWidget() ? 17 : 19, weight: .bold, design: .default)
     }()
     static let fontParam: Font = {
-        Font.system(size: Bundle.isInWidget() ? 12 : 15, weight: .bold, design: .default)
+        Font.system(size: Bundle.isInWidget() ? 12 : 14, weight: .regular, design: .default)
     }()
+    static let paramsInset = EdgeInsets(top: 0, leading: 15, bottom: 0, trailing: 15)
     static let valueFrameHeight: CGFloat = {
         Bundle.isInWidget() ? 29 : 42
     }()
@@ -40,6 +41,32 @@ fileprivate enum Constants {
     static let titleBackground = R.color.metricParamBackground.color
     static let secondaryText = R.color.secondaryText.color
     static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
+
+    static let defaultCircleGradient: LinearGradient = {
+        let colors = [
+            Color(red: 0.961, green: 0.835, blue: 0.808),
+            Color(red: 0.98, green: 0.89, blue: 0.714),
+            Color(red: 0.911, green: 0.992, blue: 0.847),
+            Color(red: 0.886, green: 0.949, blue: 0.973)
+        ]
+        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
+    }()
+
+    static let goodCircleGradient: LinearGradient = {
+        let colors = [
+            Color(red: 0.873, green: 0.962, blue: 0.802),
+            Color(red: 0.709, green: 0.871, blue: 0.577)
+        ]
+        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
+    }()
+
+    static let badCircleGradient: LinearGradient = {
+        let colors = [
+            Color(red: 1, green: 0.908, blue: 0.887),
+            Color(red: 0.917, green: 0.716, blue: 0.672)
+        ]
+        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
+    }()
 }
 
 struct MetricContentView: View {
@@ -49,7 +76,7 @@ struct MetricContentView: View {
     var body: some View {
         ZStack(alignment: .center, content: {
             Circle()
-                .fill(circleColor())
+                .fill(circleGradient())
             VStack(alignment: .center, spacing: Constants.spacing) {
 
                 Text(metric.title)
@@ -58,8 +85,11 @@ struct MetricContentView: View {
                 MetricValue()
                 Text(metric.paramName)
                     .font(Constants.fontParam)
-                    .foregroundColor(Constants.secondaryText)
+                    .lineLimit(0)
                     .multilineTextAlignment(.center)
+                    .foregroundColor(Constants.textColor)
+                    .multilineTextAlignment(.center)
+                    .padding(Constants.paramsInset)
             }
         })
     }
@@ -75,41 +105,41 @@ struct MetricContentView: View {
                 .foregroundColor(Constants.textColor)
                 .padding(Constants.valuePaddingInset)
         } else {
-            let value = metric.formattedValue
-            Text(value)
+            Text(metric.value)
                 .multilineTextAlignment(.center)
                 .lineLimit(0)
                 .frame(height: Constants.valueFrameHeight, alignment: .center)
-                .font(dynamicFont(for: value))
+                .font(dynamicFont())
                 .foregroundColor(Constants.textColor)
                 .padding(Constants.valuePaddingInset)
         }
     }
 
-    private func circleColor() -> Color {
-        if metric.type == .json {
-            return R.color.metricDefault.color
+    private func circleGradient() -> LinearGradient {
+        if metric.type != .checker {
+            return Constants.defaultCircleGradient
         }
         if metric.hasError {
-            return R.color.metricBad.color
+            return Constants.badCircleGradient
         }
-        return R.color.metricGood.color
+        return Constants.goodCircleGradient
     }
 
-    private func dynamicFont(for value: String) -> Font {
-        if value.count < 4 {
-            return Constants.fontValue(size: 46)
-        }
-        if value.count < 6 {
+
+    private func dynamicFont() -> Font {
+        if metric.value.count < 4 {
             return Constants.fontValue(size: 42)
         }
-        if value.count < 10 {
+        if metric.value.count < 6 {
+            return Constants.fontValue(size: 40)
+        }
+        if metric.value.count < 10 {
             if Bundle.isInWidget() {
                 return Constants.fontValue(size: 34)
             }
             return Constants.fontValue(size: 38)
         }
-        if value.count < 15 {
+        if metric.value.count < 15 {
             return Constants.fontValue(size: 24)
         }
         return Constants.fontValue(size: 19)
@@ -120,6 +150,14 @@ struct MetricContentView: View {
 struct MetricContentView_Previews: PreviewProvider {
     static var previews: some View {
         MetricContentView(metric: Mocks.metricJson)
+            .previewLayout(.sizeThatFits)
+            .frame(width: 200, height: 200, alignment: .center)
+
+        MetricContentView(metric: Mocks.metricCheckWithError)
+            .previewLayout(.sizeThatFits)
+            .frame(width: 200, height: 200, alignment: .center)
+
+        MetricContentView(metric: Mocks.metricCheck)
             .previewLayout(.sizeThatFits)
             .frame(width: 200, height: 200, alignment: .center)
     }

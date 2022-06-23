@@ -9,11 +9,9 @@ import Intents
 
 class IntentHandler: INExtension, ConfigurationIntentHandling {
 
-    let store = MetricStore()
-    
     func provideDataSourceTypeOptionsCollection(for intent: ConfigurationIntent, with completion: @escaping (INObjectCollection<DataSourceType>?, Error?) -> Void) {
 
-        let items = store.metrics.values.map { DataSourceType(identifier: $0.id.uuidString, display: $0.title) }
+        let items = MetricStore().metrics.values.map { DataSourceType(identifier: $0.id.uuidString, display: $0.title) }
         completion(INObjectCollection(items: items), nil)
 
     }

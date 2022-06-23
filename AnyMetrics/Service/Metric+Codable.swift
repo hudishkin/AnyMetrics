@@ -13,7 +13,7 @@ extension Metric: Codable {
         case id,
              title,
              paramName,
-             lastValue,
+             value,
              request,
              type,
              parseRules,
@@ -32,7 +32,7 @@ extension Metric: Codable {
         id = (try? container.decodeIfPresent(UUID.self, forKey: CodingKeys.id)) ?? UUID()
         title = try container.decode(String.self, forKey: CodingKeys.title)
         paramName = try container.decode(String.self, forKey: CodingKeys.paramName)
-        lastValue = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.lastValue)) ?? ""
+        value = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.value)) ?? ""
         request = try container.decode(RequestData.self, forKey: CodingKeys.request)
         type = try container.decode(TypeMetric.self, forKey: CodingKeys.type)
         parseRules = try? container.decodeIfPresent(String.self, forKey: CodingKeys.parseRules)
@@ -52,7 +52,7 @@ extension Metric: Codable {
         try container.encode(title, forKey: .title)
 //        try container.encode(style, forKey: .style)
         try container.encode(paramName, forKey: .paramName)
-        try container.encode(lastValue, forKey: .lastValue)
+        try container.encode(value, forKey: .value)
         try container.encode(request, forKey: .request)
         try container.encode(type, forKey: .type)
         try? container.encodeIfPresent(parseRules, forKey: .parseRules)

@@ -14,7 +14,7 @@
 "metric.add" = "Добавить";
 "metric.add.title" = "Добавить метрику";
 "metric.add.custom" = "Создать метрику";
-"metric.actions.update-value" = "Обновить";
+"metric.actions.update-value" = "Обновить значение";
 "metric.actions.delete" = "Удалить";
 "metric.actions.title" = "Выберите действие";
 "metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
@@ -54,8 +54,7 @@
 "addmetric.detail.author" = "Авор";
 "addmetric.detail.site" = "Сайт";
 "addmetric.add" = "Добавить";
-"addmetric.maxlength" = "Длина - %@";
-"addmetric.no-limit-length" = "Без ограничений";
+"addmetric.maxlength" = "Длина";
 "addmetric.type-metric-json" = "JSON";
 "addmetric.type-metric-web" = "Парсить HTML";
 "addmetric.type-metric-checker" = "Check status";

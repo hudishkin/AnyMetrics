@@ -24,9 +24,9 @@ final class MainViewModel: MetricStore, ObservableObject {
                 case .result(let value):
                     switch value {
                     case .value(let valueString):
-                        m.lastValue = valueString
+                        m.value = valueString
                     case .check(let success):
-                        m.lastValue = ""
+                        m.value = ""
                         m.hasError = !success
                     }
                 case .error, .none:
@@ -50,9 +50,9 @@ final class MainViewModel: MetricStore, ObservableObject {
             case .result(let value):
                 switch value {
                 case .value(let valueString):
-                    metric.lastValue = valueString
+                    metric.value = valueString
                 case .check(let success):
-                    metric.lastValue = ""
+                    metric.value = ""
                     metric.hasError = !success
                 }
             case .error, .none:
@@ -61,31 +61,11 @@ final class MainViewModel: MetricStore, ObservableObject {
 
             metric.updated = Date()
             DispatchQueue.main.async {
-                self.metrics[id.uuidString] = metric
-
+                self.addMetric(metric: metric)
+                WidgetCenter.shared.reloadAllTimelines()
             }
         }
     }
 
-
-    func addMetric(metric: Metric) {
-        metrics[metric.id.uuidString] = metric
-        updateMetric(id: metric.id)
-    }
-
-    func addMetrics(metrics: [Metric]) {
-        for m in metrics {
-            self.metrics[m.id.uuidString] = m
-        }
-    }
-
-    func removeMetric(id: UUID) {
-        self.metrics[id.uuidString] = nil
-    }
-
-    func removeAll() -> Self {
-        self.metrics = [:]
-        return self
-    }
 }
 

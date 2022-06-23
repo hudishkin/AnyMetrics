@@ -16,4 +16,8 @@ extension Document: ValueParser {
         }
         return stringValue
     }
+
+    func rawData() -> String? {
+        return try? self.outerHtml()
+    }
 }

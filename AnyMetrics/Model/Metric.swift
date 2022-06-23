@@ -43,9 +43,8 @@ enum TypeMetric: String, Codable, CaseIterable {
 struct Metric: Hashable {
     let id: UUID
     var title: String
-//    var style: MetricStyle?
     var paramName: String
-    var lastValue: String = ""
+    var value: String = ""
     var formatter: MetricValueFormatter?
     var indicateError: Bool = false
     var hasError: Bool = false
@@ -61,11 +60,7 @@ struct Metric: Hashable {
     var website: URL?
 
     var hasValue: Bool {
-        return !lastValue.isEmpty
-    }
-
-    var formattedValue: String {
-        formatter?.formatValue(self.lastValue) ?? lastValue
+        return !value.isEmpty
     }
 }
 

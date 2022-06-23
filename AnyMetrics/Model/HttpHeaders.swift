@@ -1200,5 +1200,14 @@ let HTTP_HEADER_EXAMPLE: [String:[String]] = [
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
         "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/43.4",
         "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 "
+    ],
+    "Accept": [
+        "application/json", "text/html", "text/json", "text/plain", "application/javascript"
+    ],
+    "Accept-Language": [
+        "*", "en-US,en;q=0.5", "ru-RU, ru;q=0.9, en-US;q=0.8, en;q=0.7, fr;q=0.6", "text/html", "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5"
+    ],
+    "Content-Type": [
+        "application/json", "text/html", "text/json", "text/plain", "application/javascript"
     ]
 ]

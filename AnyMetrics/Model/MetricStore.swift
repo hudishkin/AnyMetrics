@@ -32,6 +32,22 @@ extension Metrics: RawRepresentable  {
 }
 
 class MetricStore {
-    @AppStorage(AppConfig.metricsKey, store: UserDefaults(suiteName: AppConfig.group))
-    var metrics = Metrics()
+    @AppStorage(AppConfig.metricsKey, store: UserDefaults(suiteName: AppConfig.group)) var metrics = Metrics()
+
+    func addMetric(metric: Metric) {
+        var _metrics = self.metrics
+        _metrics[metric.id.uuidString] = metric
+        self.metrics = _metrics
+    }
+
+    func removeMetric(id: UUID) {
+        var _metrics = self.metrics
+        _metrics[id.uuidString] = nil
+        self.metrics = _metrics
+    }
+
+    func removeAll() -> Self {
+        self.metrics = [:]
+        return self
+    }
 }

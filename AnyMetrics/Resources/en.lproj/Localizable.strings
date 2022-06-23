@@ -14,7 +14,7 @@
 "metric.add" = "Add";
 "metric.add.title" = "Add Metric";
 "metric.add.custom" = "Create custom metric";
-"metric.actions.update-value" = "Refresh metric";
+"metric.actions.update-value" = "Refresh value";
 "metric.actions.delete" = "Remove";
 "metric.actions.title" = "Select action";
 "metric.placeholder" = "Press + and add your first metric";
@@ -54,8 +54,7 @@
 "addmetric.detail.author" = "Author";
 "addmetric.detail.site" = "Site";
 "addmetric.add" = "Add metric";
-"addmetric.maxlength" = "Length - %@";
-"addmetric.no-limit-length" = "Without limit";
+"addmetric.maxlength" = "Length";
 "addmetric.type-metric-json" = "JSON";
 "addmetric.type-metric-web" = "Parse HTML";
 "addmetric.type-metric-checker" = "Check status";

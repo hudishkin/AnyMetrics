@@ -29,11 +29,15 @@ final class NewMetricViewModel: ObservableObject {
 
     @Published var loading: Bool = false
     @Published var loadingRequest: Bool = false
-    @Published var requestUrl: String = ""
+
+    @Published var requestUrl: String = "" {
+        didSet {
+            canMakeRequest = URL(string: requestUrl) != nil
+        }
+    }
     @Published var httpMethodType: HTTPMethodType = .GET
     @Published var typeMetric: TypeMetric = .json
     @Published var timeout: Double = DEFAULT_TIMEOUT
-
     @Published var title: String = ""
     @Published var paramName: String = ""
     @Published var parseRules: String = ""
@@ -73,45 +77,48 @@ final class NewMetricViewModel: ObservableObject {
 
     // MARK: - Init
 
-    init() {
-        debugPrint("Init VM")
-    }
+    init() { }
 
     // MARK: - Public Methods
 
     func makeRequest() {
+        guard let url = URL(string: self.requestUrl) else { return }
         self.loadingRequest = true
 
         Fetcher.fetch(
-            for: URL(string: self.requestUrl)!,
+            for: url,
             method: self.httpMethodType.rawValue,
             headers: self.httpHeaders,
             timeout: timeout)
-        .map { data -> (ValueParser?, String) in
+
+        .map { data -> ValueParser? in
             if self.typeMetric == .json {
-                let obj = try? JSON(data: data)
-                return (obj, data.prettyJSONString ?? "")
+                let json = try? JSON(data: data)
+                return (json)
             }
             if self.typeMetric == .web {
                 let htmlDocument = try? SwiftSoup.parse(String(data: data, encoding: .utf8) ?? "")
-                return (htmlDocument, "HTML content")
+                return (htmlDocument)
             }
-            return (nil, "")
+            return (nil)
         }
         .receive(on: DispatchQueue.main)
+
         .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
+                    self.loadingRequest = false
                     self.errorMessage = error.localizedDescription
                     self.hasRequestError = true
-                    self.showRequestResult = false
+                    self.showRequestResult = self.typeMetric == .checker
+
                 case .finished:
                     self.hasRequestError = false
                     self.showRequestResult = true
                 }
 
-            }, receiveValue: { parser, response in
-                self.response = response
+            }, receiveValue: { parser in
+                self.response = parser?.rawData() ?? ""
                 self.parserDocument = parser
                 self.loadingRequest = false
             })
@@ -138,7 +145,7 @@ final class NewMetricViewModel: ObservableObject {
                 id: UUID(),
                 title: title,
                 paramName: self.paramName,
-                lastValue: parseValueByLength,
+                value: parseValue,
                 formatter: .default,
                 indicateError: false,
                 hasError: false,

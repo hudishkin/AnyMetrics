@@ -17,7 +17,7 @@ fileprivate enum Constants {
     static let itemDefaultBoldFont = Font.system(size: 12, weight: .semibold, design: .default)
 
     static let itemButtonOffset = CGSize(width: -10, height: 10)
-    static let itemButtonSize: CGFloat = 48
+    static let itemButtonSize: CGFloat = 46
     static let itemAddButtonCorner: CGFloat = Self.itemButtonSize / 2
     static let itemButtonLine: CGFloat = 1
     static let descriptionInset = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 52)

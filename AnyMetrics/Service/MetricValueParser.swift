@@ -11,6 +11,7 @@ import SwiftSoup
 
 protocol ValueParser {
     func parseValue(by rules: String, formatter: MetricFormatter?) -> String?
+    func rawData() -> String?
 }
 
 enum MetricValueParser {
@@ -20,7 +21,7 @@ enum MetricValueParser {
         case check(Bool)
     }
 
-    static func parse(rules: String?, data: Data?, metricType: TypeMetric, formatter: MetricValueFormatter) -> ValueParseResult {
+    static func parse(rules: String?, data: Data?, metricType: TypeMetric, formatter: MetricFormatter?) -> ValueParseResult {
         switch metricType {
         case .checker:
             return .check(true)
