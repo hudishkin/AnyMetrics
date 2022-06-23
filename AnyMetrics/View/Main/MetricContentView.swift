@@ -33,7 +33,7 @@ fileprivate enum Constants {
     }()
     static let paramsInset = EdgeInsets(top: 0, leading: 15, bottom: 0, trailing: 15)
     static let valueFrameHeight: CGFloat = {
-        Bundle.isInWidget() ? 29 : 42
+        Bundle.isInWidget() ? 29 : 40
     }()
     static let spacing: CGFloat = 20
     static let textColor = R.color.metricText.color
@@ -135,7 +135,7 @@ struct MetricContentView: View {
         }
         if metric.value.count < 10 {
             if Bundle.isInWidget() {
-                return Constants.fontValue(size: 34)
+                return Constants.fontValue(size: 30)
             }
             return Constants.fontValue(size: 38)
         }

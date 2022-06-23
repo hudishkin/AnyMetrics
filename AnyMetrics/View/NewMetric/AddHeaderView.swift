@@ -57,26 +57,24 @@ struct AddHeaderView: View {
                     VStack {
 
                         VStack {
-                            if let examples = HTTP_HEADER_EXAMPLE[headerName] {
-                                HStack {
-                                    NavigationLink {
-                                        SearchPickerView(items: examples) { selectedValue in
-                                            self.headerValue = selectedValue
-                                        }
-                                    } label: {
-                                        Text(R.string.localizable.httpheadersSelectValuesFromList())
-                                            .foregroundColor(R.color.baseText.color)
-                                        Constants.imageArrow
-                                            .foregroundColor(R.color.baseText.color)
-                                        Spacer()
+                            if let examples = HTTP_HEADER_EXAMPLE[self.headerName] {
+                                NavigationLink {
+                                    SearchPickerView(items: examples) { selectedValue in
+                                        self.headerValue = selectedValue
                                     }
-
-                                }// .padding(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
+                                } label: {
+                                    Text(R.string.localizable.httpheadersSelectValuesFromList())
+                                        .foregroundColor(R.color.baseText.color)
+                                    Constants.imageArrow
+                                        .foregroundColor(R.color.baseText.color)
+                                    Spacer()
+                                }
+                                Divider()
                             }
-                            Text(R.string.localizable.httpheadersValueInformation())
-                            Spacer()
-                        }
 
+                            Text(R.string.localizable.httpheadersValueInformation())
+                                .frame(maxHeight: .infinity)
+                        }
                         HStack(alignment: .center, spacing: Constants.spacing, content: {
                             Button(action: {
                                 action(headerName, headerValue)
