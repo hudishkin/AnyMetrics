@@ -13,7 +13,7 @@ enum AppConfig {
     static let metricsKey = "app.metrics"
 
     enum Urls {
-        static let rules = URL(string: "http://ya.ru")!
+        static let rules = URL(string: "https://github.com/hudishkin/AnyMetrics")!
 
         static let gallery = URL(string: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/list.json")!
     }
