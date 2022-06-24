@@ -31,9 +31,13 @@ fileprivate enum Constants {
     static let fontParam: Font = {
         Font.system(size: Bundle.isInWidget() ? 12 : 14, weight: .regular, design: .default)
     }()
-    static let paramsInset = EdgeInsets(top: 0, leading: 15, bottom: 0, trailing: 15)
+    static let paramsInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
     static let valueFrameHeight: CGFloat = {
         Bundle.isInWidget() ? 29 : 40
+    }()
+
+    static let labelOffset: CGFloat = {
+        Bundle.isInWidget() ? 48 : 54
     }()
     static let spacing: CGFloat = 20
     static let textColor = R.color.metricText.color
@@ -67,6 +71,8 @@ fileprivate enum Constants {
         ]
         return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
     }()
+
+    static let paramLines: Int = 2
 }
 
 struct MetricContentView: View {
@@ -77,20 +83,18 @@ struct MetricContentView: View {
         ZStack(alignment: .center, content: {
             Circle()
                 .fill(circleGradient())
-            VStack(alignment: .center, spacing: Constants.spacing) {
-
-                Text(metric.title)
-                    .foregroundColor(Constants.textColor)
-                    .font(Constants.fontTitle)
-                MetricValue()
-                Text(metric.paramName)
-                    .font(Constants.fontParam)
-                    .lineLimit(0)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Constants.textColor)
-                    .multilineTextAlignment(.center)
-                    .padding(Constants.paramsInset)
-            }
+            Text(metric.title)
+                .foregroundColor(Constants.textColor)
+                .font(Constants.fontTitle)
+                .offset(y: -Constants.labelOffset)
+            MetricValue()
+            Text(metric.paramName)
+                .font(Constants.fontParam)
+                .lineLimit(Constants.paramLines)
+                .multilineTextAlignment(.center)
+                .foregroundColor(Constants.textColor)
+                .padding(Constants.paramsInset)
+                .offset(y: Constants.labelOffset)
         })
     }
 
@@ -107,7 +111,7 @@ struct MetricContentView: View {
         } else {
             Text(metric.value)
                 .multilineTextAlignment(.center)
-                .lineLimit(0)
+                .lineLimit(Constants.paramLines)
                 .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(dynamicFont())
                 .foregroundColor(Constants.textColor)

@@ -11,9 +11,9 @@
 	<key>INIntentDefinitionSystemVersion</key>
 	<string>21F79</string>
 	<key>INIntentDefinitionToolsBuildVersion</key>
-	<string>13E500a</string>
+	<string>13F100</string>
 	<key>INIntentDefinitionToolsVersion</key>
-	<string>13.3.1</string>
+	<string>13.4.1</string>
 	<key>INIntents</key>
 	<array>
 		<dict>
@@ -35,7 +35,7 @@
 					<key>INIntentParameterConfigurable</key>
 					<true/>
 					<key>INIntentParameterDisplayName</key>
-					<string>Widget Type</string>
+					<string>Metric Type</string>
 					<key>INIntentParameterDisplayNameID</key>
 					<string>iQV3wG</string>
 					<key>INIntentParameterDisplayPriority</key>

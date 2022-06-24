@@ -151,6 +151,7 @@ struct GalleryView: View {
                                     addMetric: { m in
                                         ImpactHelper.success()
                                         mainViewModel.addMetric(metric: m)
+                                        mainViewModel.updateMetric(id: m.id)
                                     }, removeMetric: { uuid in
                                         mainViewModel.removeMetric(id: uuid)
                                     }, alreadyAdded: mainViewModel.metrics[metric.id.uuidString] != nil)
