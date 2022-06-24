@@ -138,8 +138,7 @@
 
 /* Begin PBXFileReference section */
 		6D255F7C28659140009E065B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; name = Base; path = Base.lproj/Widget.intentdefinition; sourceTree = "<group>"; };
-		6D255F7F28659143009E065B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Widget.strings; sourceTree = "<group>"; };
-		6D255F8128659143009E065B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Widget.strings; sourceTree = "<group>"; };
+		6D255F822865AE1C009E065B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Widget.strings; sourceTree = "<group>"; };
 		6D2C22C3285719F500506A7C /* AnyMetrics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnyMetrics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D2C22C6285719F500506A7C /* AnyMetricsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyMetricsApp.swift; sourceTree = "<group>"; };
 		6D2C22C8285719F500506A7C /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -831,8 +830,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				6D255F7C28659140009E065B /* Base */,
-				6D255F7F28659143009E065B /* en */,
-				6D255F8128659143009E065B /* ru */,
+				6D255F822865AE1C009E065B /* ru */,
 			);
 			name = Widget.intentdefinition;
 			sourceTree = "<group>";
@@ -972,7 +970,7 @@
 				CODE_SIGN_ENTITLEMENTS = AnyMetrics/AnyMetrics.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "\"AnyMetrics/Preview Content\"";
 				DEVELOPMENT_TEAM = Q424U5CAPS;
@@ -1009,7 +1007,7 @@
 				CODE_SIGN_ENTITLEMENTS = AnyMetrics/AnyMetrics.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"AnyMetrics/Preview Content\"";
 				DEVELOPMENT_TEAM = Q424U5CAPS;
 				ENABLE_PREVIEWS = YES;
