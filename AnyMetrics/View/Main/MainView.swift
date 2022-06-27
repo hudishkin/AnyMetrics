@@ -58,6 +58,7 @@ struct MainView: View {
     @State var showAddMenu = false
     @State var allowDismissed = true
     @State var showActionMenu = false
+    @State var showInfoView = false
 
     let columns = Constants.collumns
 
@@ -66,7 +67,7 @@ struct MainView: View {
             ZStack(alignment: .top) {
                 // MARK: - Header
                 Button {
-                    debugPrint("Header")
+                    showInfoView = true
                 } label: {
                     Text(R.string.localizable.appName())
                         .font(Constants.fontTitle)
@@ -77,6 +78,9 @@ struct MainView: View {
                 }
                 .padding(Constants.padding)
                 .zIndex(Constants.zIndexTitle)
+                .sheet(isPresented: $showInfoView) {
+                    InfoView()
+                }
 
                 // MARK: - Content
                 ScrollView {

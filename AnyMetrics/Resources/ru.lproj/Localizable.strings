@@ -62,3 +62,11 @@
 "addmetric.add-type-manual" = "Ручная";
 "addmetric.format-type-none" = "Сырые данные";
 "addmetric.format-type-currency" = "Валюта";
+
+// MARK: - Info View
+
+"info.title" = "О приложении";
+"info.message" = "ЭниМетрик - это open source проект, разработанный для решения собственной проблемы и выложен на GitHub. \n\nЧто бы добавить в галерею свою метрику нужно отправить PullRequest в репозиторий галереи.";
+"info.github-app-repo" = "Код приложения";
+"info.github-gallery-repo" = "Репозиторий галереи";
+
