@@ -69,4 +69,5 @@
 "info.message" = "AnyMetrics is open source project. Developed to solve own problem and published on GitHub.\n\nIf want to add metric to gallery send PullRequest to gallery repository.";
 "info.github-app-repo" = "Application code";
 "info.github-gallery-repo" = "Gallery repository";
+"info.version" = "Version: %@";
 

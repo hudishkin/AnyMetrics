@@ -14,7 +14,7 @@ final class MainViewModel: MetricStore, ObservableObject {
     private var tokens = Set<AnyCancellable>()
 
     func updateMetrics() {
-        var updatedMetrics = [String:Metric]()
+        var updatedMetrics = [String: Metric]()
         let group = DispatchGroup()
         for (_, metric) in metrics {
             group.enter()

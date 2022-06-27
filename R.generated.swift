@@ -383,7 +383,7 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 55 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 56 localization keys.
     struct localizable {
       /// en translation: About
       ///
@@ -605,6 +605,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricValueDisplay = Rswift.StringResource(key: "addmetric.value-display", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Version: %@
+      ///
+      /// Locales: en, ru
+      static let infoVersion = Rswift.StringResource(key: "info.version", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
 
       /// en translation: About
       ///
@@ -1430,6 +1434,23 @@ struct R: Rswift.Validatable {
         }
 
         let format = NSLocalizedString("addmetric.value-display", bundle: bundle, comment: "")
+        return String(format: format, locale: locale, value1)
+      }
+
+      /// en translation: Version: %@
+      ///
+      /// Locales: en, ru
+      static func infoVersion(_ value1: String, preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          let format = NSLocalizedString("info.version", bundle: hostingBundle, comment: "")
+          return String(format: format, locale: applicationLocale, value1)
+        }
+
+        guard let (locale, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.version"
+        }
+
+        let format = NSLocalizedString("info.version", bundle: bundle, comment: "")
         return String(format: format, locale: locale, value1)
       }
 

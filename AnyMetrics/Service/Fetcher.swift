@@ -63,12 +63,17 @@ enum Fetcher {
                     return
                 }
 
-                let result = MetricValueParser.parse(
-                    rules: metric.parseRules,
-                    data: data,
-                    metricType: metric.type, formatter: metric.formatter)
+                do {
+                    let result = try MetricValueParser.parse(
+                        rules: metric.parseRules,
+                        data: data,
+                        metricType: metric.type, formatter: metric.formatter)
+                    completion(.result(result))
 
-                completion(.result(result))
+                } catch {
+                    completion(.error(error))
+                }
+
             }
     }
     

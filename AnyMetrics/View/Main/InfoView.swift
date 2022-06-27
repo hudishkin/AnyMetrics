@@ -18,11 +18,14 @@ fileprivate enum Constants {
     static let titleColor = R.color.baseText.color
     static let linkColor = R.color.baseText.color
     static let fontTitle: Font = {
-        Font.system(size: 34, weight: .black, design: .default)
+        Font.system(size: 34, weight: .bold, design: .default)
     }()
 
     static let fontBody: Font = {
         Font.system(size: 18, weight: .semibold, design: .default)
+    }()
+    static let fontSmall: Font = {
+        Font.system(size: 14, weight: .semibold, design: .default)
     }()
     static let fontLink: Font = {
         Font.system(size: 22, weight: .semibold, design: .default)
@@ -72,6 +75,10 @@ struct InfoView: View {
                     }
                 }
                 Spacer()
+
+                Text(R.string.localizable.infoVersion(Bundle.version()))
+                    .foregroundColor(R.color.secondaryText.color)
+                    .font(Constants.fontBody)
             }
             .frame(
                 minWidth: 0,
