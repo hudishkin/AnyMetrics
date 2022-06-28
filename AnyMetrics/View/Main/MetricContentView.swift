@@ -47,6 +47,8 @@ fileprivate enum Constants {
     static let secondaryText = R.color.secondaryText.color
     static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
 
+    static let titlePaddingInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
+
     static let defaultCircleGradient: LinearGradient = {
         let colors = [
             Color(red: 0.961, green: 0.835, blue: 0.808),
@@ -88,6 +90,8 @@ struct MetricContentView: View {
                 .foregroundColor(Constants.textColor)
                 .font(Constants.fontTitle)
                 .offset(y: -Constants.labelOffset)
+                .lineLimit(Constants.paramLines)
+                .padding(Constants.titlePaddingInset)
             MetricValue()
             Text(metric.paramName)
                 .font(Constants.fontParam)

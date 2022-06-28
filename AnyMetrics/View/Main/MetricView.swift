@@ -26,6 +26,7 @@ struct MetricView: View {
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
+    var editMetric: ((Metric) -> Void)?
 
     var body: some View {
         Button {
@@ -37,6 +38,9 @@ struct MetricView: View {
             ActionSheet(title: Text(R.string.localizable.metricActionsTitle()), message: nil, buttons: [
                 .default(Text(R.string.localizable.metricActionsUpdateValue())) {
                     refreshMetric?(metric.id)
+                },
+                .default(Text(R.string.localizable.metricActionsEdit())) {
+                    editMetric?(metric)
                 },
                 .destructive(Text(R.string.localizable.metricActionsDelete())) {
                     deletehMetric?(metric.id)

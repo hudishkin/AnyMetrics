@@ -8,6 +8,8 @@
 
 "appName" = "AnyMetrics";
 "common.optional" = "Optional";
+"common.close" = "Close";
+"common.save" = "Save";
 
 "metric.value.good" = "Good";
 "metric.value.bad" = "Bad";
@@ -16,6 +18,7 @@
 "metric.add.custom" = "Create custom metric";
 "metric.actions.update-value" = "Refresh value";
 "metric.actions.delete" = "Remove";
+"metric.actions.edit" = "Edit";
 "metric.actions.title" = "Select action";
 "metric.placeholder" = "Press + and add your first metric";
 

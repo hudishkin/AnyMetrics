@@ -87,6 +87,8 @@ struct MainView: View {
                                 viewModel.updateMetric(id: uuid)
                             }, deletehMetric: { uuid in
                                 viewModel.removeMetric(id: uuid)
+                            }, editMetric: { metric in
+                                showSheet(activeSheet: .editMetric(metric))
                             })
                                 .frame(width: Constants.size,
                                        height: Constants.size)
@@ -136,6 +138,10 @@ struct MainView: View {
                     .environmentObject(viewModel)
             case .info:
                 InfoView()
+            case .editMetric(let metric):
+                EditMetricView(viewModel: MetricViewModel(metric: metric))
+                    .interactiveDismiss(canDismissSheet: .constant(false))
+                    .environmentObject(viewModel)
             case .none:
                 EmptyView()
             }

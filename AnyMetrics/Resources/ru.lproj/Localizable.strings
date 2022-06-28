@@ -7,7 +7,9 @@
 */
 
 "appName" = "ЭниМетрикс";
-"common.optional" = "Optional";
+"common.optional" = "Не обяз.";
+"common.close" = "Закрыть";
+"common.save" = "Сохранить";
 
 "metric.value.good" = "Хорошо";
 "metric.value.bad" = "Не хорошо";
@@ -16,6 +18,7 @@
 "metric.add.custom" = "Создать метрику";
 "metric.actions.update-value" = "Обновить значение";
 "metric.actions.delete" = "Удалить";
+"metric.actions.edit" = "Редактировать";
 "metric.actions.title" = "Выберите действие";
 "metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
 

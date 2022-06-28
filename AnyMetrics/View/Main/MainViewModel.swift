@@ -12,7 +12,7 @@ import Combine
 final class MainViewModel: MetricStore, ObservableObject {
 
     enum ActiveSheet {
-        case addMetrics, info
+        case addMetrics, info, editMetric(Metric)
     }
 
     public var activeSheet: ActiveSheet?

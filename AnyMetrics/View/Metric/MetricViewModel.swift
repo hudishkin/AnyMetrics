@@ -1,5 +1,5 @@
 //
-//  NewMetricViewModel.swift
+//  MetricViewModel.swift
 //  AnyMetrics
 //
 //  Created by Simon Hudishkin on 14.06.2022.
@@ -11,13 +11,13 @@ import Combine
 import SwiftyJSON
 import SwiftSoup
 
-let DEFAULT_LENGTH_VALUE = 7
+let DEFAULT_LENGTH_VALUE = 0
 
 enum HTTPMethodType: String, Equatable, CaseIterable {
     case POST, GET, HEAD, DELETE, PUT
 }
 
-final class NewMetricViewModel: ObservableObject {
+final class MetricViewModel: ObservableObject {
 
     // MARK: - Published Properties
 
@@ -54,6 +54,7 @@ final class NewMetricViewModel: ObservableObject {
 
     private var parserDocument: ValueParser?
     private var disposables = Set<AnyCancellable>()
+    private var metric: Metric?
     
     private var websiteURL: URL? {
         return URL(string: website)
@@ -78,6 +79,23 @@ final class NewMetricViewModel: ObservableObject {
     // MARK: - Init
 
     init() { }
+
+    init(metric: Metric) {
+        self.metric = metric
+        requestUrl =  metric.request?.url.absoluteString ?? ""
+        httpMethodType = .init(rawValue: metric.request?.method ?? "") ?? .GET
+        typeMetric = metric.type
+        title = metric.title
+        paramName = metric.paramName
+        description = metric.description ?? ""
+        author = metric.author ?? ""
+        maxLengthValue = metric.formatter?.length ?? DEFAULT_LENGTH_VALUE
+        website = metric.website?.absoluteString ?? ""
+        httpHeaders = metric.request?.headers ?? [:]
+        parseRules = metric.parseRules ?? ""
+        formatType = metric.formatter?.format ?? .none
+        showRequestResult = true
+    }
 
     // MARK: - Public Methods
 
@@ -142,11 +160,11 @@ final class NewMetricViewModel: ObservableObject {
     func getMetric() -> Metric? {
         if canAddMetric {
             return Metric(
-                id: UUID(),
+                id: metric?.id ?? UUID(),
                 title: title,
                 paramName: self.paramName,
                 value: parseValue,
-                formatter: .default,
+                formatter: .init(format: formatType, length: maxLengthValue),
                 indicateError: false,
                 hasError: false,
                 request: RequestData(

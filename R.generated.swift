@@ -383,7 +383,7 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 56 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 59 localization keys.
     struct localizable {
       /// en translation: About
       ///
@@ -441,6 +441,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricTypeMetricChecker = Rswift.StringResource(key: "addmetric.type-metric-checker", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Close
+      ///
+      /// Locales: en, ru
+      static let commonClose = Rswift.StringResource(key: "common.close", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Create custom metric
       ///
       /// Locales: en, ru
@@ -457,6 +461,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricDetails = Rswift.StringResource(key: "addmetric.details", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Edit
+      ///
+      /// Locales: en, ru
+      static let metricActionsEdit = Rswift.StringResource(key: "metric.actions.edit", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Empty response
       ///
       /// Locales: en, ru
@@ -565,6 +573,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let metricActionsDelete = Rswift.StringResource(key: "metric.actions.delete", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Save
+      ///
+      /// Locales: en, ru
+      static let commonSave = Rswift.StringResource(key: "common.save", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Select HTTP Header
       ///
       /// Locales: en, ru
@@ -820,6 +832,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.type-metric-checker", bundle: bundle, comment: "")
       }
 
+      /// en translation: Close
+      ///
+      /// Locales: en, ru
+      static func commonClose(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("common.close", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "common.close"
+        }
+
+        return NSLocalizedString("common.close", bundle: bundle, comment: "")
+      }
+
       /// en translation: Create custom metric
       ///
       /// Locales: en, ru
@@ -878,6 +905,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("addmetric.details", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Edit
+      ///
+      /// Locales: en, ru
+      static func metricActionsEdit(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("metric.actions.edit", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "metric.actions.edit"
+        }
+
+        return NSLocalizedString("metric.actions.edit", bundle: bundle, comment: "")
       }
 
       /// en translation: Empty response
@@ -1283,6 +1325,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("metric.actions.delete", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Save
+      ///
+      /// Locales: en, ru
+      static func commonSave(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("common.save", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "common.save"
+        }
+
+        return NSLocalizedString("common.save", bundle: bundle, comment: "")
       }
 
       /// en translation: Select HTTP Header
