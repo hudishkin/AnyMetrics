@@ -55,10 +55,9 @@ fileprivate enum Constants {
 struct MainView: View {
 
     @ObservedObject var viewModel: MainViewModel
-    @State var showAddMenu = false
+    @State var showSheet = false
     @State var allowDismissed = true
     @State var showActionMenu = false
-    @State var showInfoView = false
 
     let columns = Constants.collumns
 
@@ -67,7 +66,7 @@ struct MainView: View {
             ZStack(alignment: .top) {
                 // MARK: - Header
                 Button {
-                    showInfoView = true
+                    showSheet(activeSheet: .info)
                 } label: {
                     Text(R.string.localizable.appName())
                         .font(Constants.fontTitle)
@@ -78,9 +77,6 @@ struct MainView: View {
                 }
                 .padding(Constants.padding)
                 .zIndex(Constants.zIndexTitle)
-                .sheet(isPresented: $showInfoView) {
-                    InfoView()
-                }
 
                 // MARK: - Content
                 ScrollView {
@@ -105,7 +101,7 @@ struct MainView: View {
             // MARK: - Add Button
             Button {
                 ImpactHelper.impactButton()
-                self.showAddMenu.toggle()
+                showSheet(activeSheet: .addMetrics)
 
             } label: {
                 R.image.plus.image
@@ -132,15 +128,27 @@ struct MainView: View {
 
             }
         }
-        .sheet(isPresented: $showAddMenu) {
-            GalleryView(allowDismissed: $allowDismissed)
-            .interactiveDismiss(canDismissSheet: $allowDismissed)
-            .environmentObject(viewModel)
+        .sheet(isPresented: $showSheet) {
+            switch self.viewModel.activeSheet {
+            case .addMetrics:
+                GalleryView(allowDismissed: $allowDismissed)
+                    .interactiveDismiss(canDismissSheet: $allowDismissed)
+                    .environmentObject(viewModel)
+            case .info:
+                InfoView()
+            case .none:
+                EmptyView()
+            }
         }
         .onAppear {
             viewModel.updateMetrics()
         }
 
+    }
+
+    func showSheet(activeSheet: MainViewModel.ActiveSheet) {
+        self.viewModel.activeSheet = activeSheet
+        self.showSheet.toggle()
     }
 }
 
@@ -149,7 +157,7 @@ struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         let vm = MainViewModel()
         vm.metrics = Metrics(
-            dictionaryLiteral: (UUID().uuidString,
+            dictionaryLiteral: (UUID(),
                                 Metric(id: UUID(), title: "Api Service", paramName: "USD", type: .json))
         )
         return MainView(viewModel: vm)

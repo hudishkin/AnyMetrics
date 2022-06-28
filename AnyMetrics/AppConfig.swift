@@ -17,7 +17,7 @@ enum AppConfig {
         static let galleryRepository = URL(string: "https://github.com/hudishkin/AnyMetricsGallery")!
         static let rules = URL(string: "https://github.com/hudishkin/AnyMetrics")!
 
-        static let gallery = URL(string: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/list.json")!
+        static let gallery = URL(string: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/list.min.json")!
     }
 
     static let isiOSAppOnMac: Bool = {

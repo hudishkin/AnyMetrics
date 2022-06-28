@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-typealias Metrics = [String: Metric]
+typealias Metrics = [UUID: Metric]
 
 
 extension Metrics: RawRepresentable  {
@@ -36,13 +36,13 @@ class MetricStore {
 
     func addMetric(metric: Metric) {
         var _metrics = self.metrics
-        _metrics[metric.id.uuidString] = metric
+        _metrics[metric.id] = metric
         self.metrics = _metrics
     }
 
     func removeMetric(id: UUID) {
         var _metrics = self.metrics
-        _metrics[id.uuidString] = nil
+        _metrics[id] = nil
         self.metrics = _metrics
     }
 

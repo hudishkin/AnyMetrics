@@ -37,7 +37,10 @@ struct Provider: IntentTimelineProvider {
         var entries: [AMEntry] = []
 
         let store = MetricStore()
-        if let id = configuration.dataSourceType?.identifier, let metric = store.metrics[id] {
+        if
+            let id = configuration.dataSourceType?.identifier,
+                let uuid = UUID(uuidString: id),
+                let metric = store.metrics[uuid] {
 
             Fetcher.updateMetric(metric: metric) { newMetric in
                 store.addMetric(metric: newMetric)

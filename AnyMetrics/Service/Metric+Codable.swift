@@ -40,10 +40,10 @@ extension Metric: Codable {
         updated = try? container.decodeIfPresent(Date.self, forKey: CodingKeys.updated)
         indicateError = (try? container.decodeIfPresent(Bool.self, forKey: CodingKeys.indicateError)) ?? false
 //        style = (try? container.decodeIfPresent(MetricStyle.self, forKey: CodingKeys.style))
-        formatter = (try? container.decodeIfPresent(MetricValueFormatter.self, forKey: CodingKeys.formatter)) ?? .default
-        author = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.author))
-        description = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.description))
-        website = (try? container.decodeIfPresent(URL.self, forKey: CodingKeys.website))
+        formatter = (try container.decodeIfPresent(MetricValueFormatter?.self, forKey: CodingKeys.formatter)) ?? .default
+        author = try container.decodeIfPresent(String.self, forKey: CodingKeys.author)
+        description = try container.decodeIfPresent(String.self, forKey: CodingKeys.description)
+        website = try container.decodeIfPresent(URL.self, forKey: CodingKeys.website)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -52,7 +52,7 @@ extension Metric: Codable {
         try container.encode(title, forKey: .title)
 //        try container.encode(style, forKey: .style)
         try container.encode(paramName, forKey: .paramName)
-        try container.encode(value, forKey: .value)
+        try? container.encode(value, forKey: .value)
         try container.encode(request, forKey: .request)
         try container.encode(type, forKey: .type)
         try? container.encodeIfPresent(parseRules, forKey: .parseRules)

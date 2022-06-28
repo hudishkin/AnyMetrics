@@ -21,10 +21,18 @@ final class GalleryViewModel: ObservableObject {
     func load() {
         GalleryService.load()
             .receive(on: DispatchQueue.main)
-            .sink { _ in  } receiveValue: { metrics in
+            .sink { result in
+                switch result {
+                case .failure(let error):
+                    debugPrint(error.localizedDescription)
+                case .finished:
+                    break
+                }
+            } receiveValue: { metrics in
                 self.allGallery = metrics
                 self.galleryItems = metrics
-            }.store(in: &tokens)
+            }
+            .store(in: &tokens)
     }
 
     func search(text: String) {
