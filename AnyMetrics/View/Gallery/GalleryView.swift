@@ -145,19 +145,19 @@ struct GalleryView: View {
                 .buttonStyle(PlainButtonStyle())
                 ForEach(viewModel.galleryItems, id: \.self) { group in
                     Section {
-                            ForEach(group.metrics, id:\.self) { metric in
-                                GalleryItemView(
-                                    metric: metric,
-                                    addMetric: { m in
-                                        ImpactHelper.success()
-                                        mainViewModel.addMetric(metric: m)
-                                        mainViewModel.updateMetric(id: m.id)
-                                    }, removeMetric: { uuid in
-                                        mainViewModel.removeMetric(id: uuid)
-                                    }, alreadyAdded: mainViewModel.metrics[metric.id.uuidString] != nil)
-                                .buttonStyle(PlainButtonStyle())
-                                .listRowSeparator(.hidden)
-                            }
+                        ForEach(group.metrics, id: \.self) { metric in
+                            GalleryItemView(
+                                metric: metric,
+                                addMetric: { m in
+                                    ImpactHelper.success()
+                                    mainViewModel.addMetric(metric: m)
+                                    mainViewModel.updateMetric(id: m.id)
+                                }, removeMetric: { uuid in
+                                    mainViewModel.removeMetric(id: uuid)
+                                }, alreadyAdded: mainViewModel.metrics[metric.id] != nil)
+                            .buttonStyle(PlainButtonStyle())
+                            .listRowSeparator(.hidden)
+                        }
                     } header: {
                         Text(group.name).font(Constants.sectionFont)
                     }

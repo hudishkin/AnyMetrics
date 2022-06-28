@@ -11,10 +11,15 @@ import Combine
 
 final class MainViewModel: MetricStore, ObservableObject {
 
+    enum ActiveSheet {
+        case addMetrics, info
+    }
+
+    public var activeSheet: ActiveSheet?
     private var tokens = Set<AnyCancellable>()
 
     func updateMetrics() {
-        var updatedMetrics = [String:Metric]()
+        var updatedMetrics = [UUID: Metric]()
         let group = DispatchGroup()
         for (_, metric) in metrics {
             group.enter()
@@ -33,7 +38,7 @@ final class MainViewModel: MetricStore, ObservableObject {
                     m.hasError = true
                 }
                 m.updated = Date()
-                updatedMetrics[m.id.uuidString] = m
+                updatedMetrics[m.id] = m
                 group.leave()
             }
         }
@@ -44,7 +49,7 @@ final class MainViewModel: MetricStore, ObservableObject {
     }
 
     func updateMetric(id: UUID) {
-        guard var metric = metrics[id.uuidString] else { return }
+        guard var metric = metrics[id] else { return }
         Fetcher.fetch(for: metric) { result in
             switch result {
             case .result(let value):

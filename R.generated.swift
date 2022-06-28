@@ -328,14 +328,23 @@ struct R: Rswift.Validatable {
     fileprivate init() {}
   }
 
-  /// This `R.image` struct is generated, and contains static references to 3 images.
+  /// This `R.image` struct is generated, and contains static references to 4 images.
   struct image {
+    /// Image `appIconInfo`.
+    static let appIconInfo = Rswift.ImageResource(bundle: R.hostingBundle, name: "appIconInfo")
     /// Image `minus`.
     static let minus = Rswift.ImageResource(bundle: R.hostingBundle, name: "minus")
     /// Image `plus`.
     static let plus = Rswift.ImageResource(bundle: R.hostingBundle, name: "plus")
     /// Image `request`.
     static let request = Rswift.ImageResource(bundle: R.hostingBundle, name: "request")
+
+    #if os(iOS) || os(tvOS)
+    /// `UIImage(named: "appIconInfo", bundle: ..., traitCollection: ...)`
+    static func appIconInfo(compatibleWith traitCollection: UIKit.UITraitCollection? = nil) -> UIKit.UIImage? {
+      return UIKit.UIImage(resource: R.image.appIconInfo, compatibleWith: traitCollection)
+    }
+    #endif
 
     #if os(iOS) || os(tvOS)
     /// `UIImage(named: "minus", bundle: ..., traitCollection: ...)`
@@ -374,8 +383,12 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 51 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 56 localization keys.
     struct localizable {
+      /// en translation: About
+      ///
+      /// Locales: en, ru
+      static let infoTitle = Rswift.StringResource(key: "info.title", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Add
       ///
       /// Locales: en, ru
@@ -404,6 +417,14 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let appName = Rswift.StringResource(key: "appName", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: AnyMetrics is open source project. Developed to solve own problem and published on GitHub.  If want to add metric to gallery send PullRequest to gallery repository.
+      ///
+      /// Locales: en, ru
+      static let infoMessage = Rswift.StringResource(key: "info.message", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Application code
+      ///
+      /// Locales: en, ru
+      static let infoGithubAppRepo = Rswift.StringResource(key: "info.github-app-repo", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Author
       ///
       /// Locales: en, ru
@@ -452,6 +473,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricMetricValueFormat = Rswift.StringResource(key: "addmetric.metric-value-format", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Gallery repository
+      ///
+      /// Locales: en, ru
+      static let infoGithubGalleryRepo = Rswift.StringResource(key: "info.github-gallery-repo", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Good
       ///
       /// Locales: en, ru
@@ -580,6 +605,25 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricValueDisplay = Rswift.StringResource(key: "addmetric.value-display", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Version: %@
+      ///
+      /// Locales: en, ru
+      static let infoVersion = Rswift.StringResource(key: "info.version", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+
+      /// en translation: About
+      ///
+      /// Locales: en, ru
+      static func infoTitle(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("info.title", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.title"
+        }
+
+        return NSLocalizedString("info.title", bundle: bundle, comment: "")
+      }
 
       /// en translation: Add
       ///
@@ -684,6 +728,36 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("appName", bundle: bundle, comment: "")
+      }
+
+      /// en translation: AnyMetrics is open source project. Developed to solve own problem and published on GitHub.  If want to add metric to gallery send PullRequest to gallery repository.
+      ///
+      /// Locales: en, ru
+      static func infoMessage(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("info.message", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.message"
+        }
+
+        return NSLocalizedString("info.message", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Application code
+      ///
+      /// Locales: en, ru
+      static func infoGithubAppRepo(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("info.github-app-repo", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.github-app-repo"
+        }
+
+        return NSLocalizedString("info.github-app-repo", bundle: bundle, comment: "")
       }
 
       /// en translation: Author
@@ -864,6 +938,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("addmetric.metric-value-format", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Gallery repository
+      ///
+      /// Locales: en, ru
+      static func infoGithubGalleryRepo(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("info.github-gallery-repo", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.github-gallery-repo"
+        }
+
+        return NSLocalizedString("info.github-gallery-repo", bundle: bundle, comment: "")
       }
 
       /// en translation: Good
@@ -1345,6 +1434,23 @@ struct R: Rswift.Validatable {
         }
 
         let format = NSLocalizedString("addmetric.value-display", bundle: bundle, comment: "")
+        return String(format: format, locale: locale, value1)
+      }
+
+      /// en translation: Version: %@
+      ///
+      /// Locales: en, ru
+      static func infoVersion(_ value1: String, preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          let format = NSLocalizedString("info.version", bundle: hostingBundle, comment: "")
+          return String(format: format, locale: applicationLocale, value1)
+        }
+
+        guard let (locale, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "info.version"
+        }
+
+        let format = NSLocalizedString("info.version", bundle: bundle, comment: "")
         return String(format: format, locale: locale, value1)
       }
 

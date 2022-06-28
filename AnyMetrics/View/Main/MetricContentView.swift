@@ -41,6 +41,7 @@ fileprivate enum Constants {
     }()
     static let spacing: CGFloat = 20
     static let textColor = R.color.metricText.color
+    static let textErrorColor = R.color.red.color
     static let strokeColor = R.color.metricText.color
     static let titleBackground = R.color.metricParamBackground.color
     static let secondaryText = R.color.secondaryText.color
@@ -114,7 +115,7 @@ struct MetricContentView: View {
                 .lineLimit(Constants.paramLines)
                 .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(dynamicFont())
-                .foregroundColor(Constants.textColor)
+                .foregroundColor(metric.hasError ? Constants.textErrorColor : Constants.textColor)
                 .padding(Constants.valuePaddingInset)
         }
     }
@@ -153,6 +154,10 @@ struct MetricContentView: View {
 #if DEBUG
 struct MetricContentView_Previews: PreviewProvider {
     static var previews: some View {
+
+        MetricContentView(metric: Mocks.metricJsonWithError)
+            .previewLayout(.sizeThatFits)
+            .frame(width: 200, height: 200, alignment: .center)
         MetricContentView(metric: Mocks.metricJson)
             .previewLayout(.sizeThatFits)
             .frame(width: 200, height: 200, alignment: .center)
