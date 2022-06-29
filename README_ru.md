@@ -28,4 +28,4 @@
 
 ______
 
-[![AppStore](appstore.svg)](https://apps.apple.com/us/app/anymetrics/id1609900961)
+[![AppStore](appstore.png)](https://apps.apple.com/us/app/anymetrics/id1609900961)
