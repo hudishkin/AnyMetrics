@@ -34,7 +34,7 @@ fileprivate enum Constants {
     static let opcityEnable: CGFloat = 1.0
     static let opcityDisable: CGFloat = 0.4
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
-    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.7)
+    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
     static let infinityChar = "∞"
     static let circleCheckerSize: CGFloat = 12
@@ -367,7 +367,7 @@ struct MetricFormView_Previews: PreviewProvider {
             MetricFormView(mainButtonTitle: "Add", viewModel: MetricViewModel(), action: { _ in
 
             })
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(.light)
         }
     }
 }

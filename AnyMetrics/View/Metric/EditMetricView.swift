@@ -9,6 +9,7 @@ import SwiftUI
 
 
 struct EditMetricView: View {
+
     @StateObject var viewModel: MetricViewModel
     @EnvironmentObject var mainViewModel: MainViewModel
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
@@ -17,9 +18,11 @@ struct EditMetricView: View {
         NavigationView {
             MetricFormView(
                 mainButtonTitle: R.string.localizable.commonSave(),
-                viewModel: viewModel, action: { metric in
-                mainViewModel.addMetric(metric: metric)
-                presentationMode.wrappedValue.dismiss()
+                viewModel: viewModel,
+                action: { metric in
+                    mainViewModel.addMetric(metric: metric)
+                    mainViewModel.updateMetric(id: metric.id)
+                    presentationMode.wrappedValue.dismiss()
             })
             .navigationTitle(R.string.localizable.metricActionsEdit())
             .navigationBarTitleDisplayMode(.inline)
@@ -30,9 +33,7 @@ struct EditMetricView: View {
             }
 
         }
-
     }
-
 }
 
 

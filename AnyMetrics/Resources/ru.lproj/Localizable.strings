@@ -17,9 +17,11 @@
 "metric.add.title" = "Добавить метрику";
 "metric.add.custom" = "Создать метрику";
 "metric.actions.update-value" = "Обновить значение";
-"metric.actions.delete" = "Удалить";
+"metric.actions.delete" = "Удалить метрику";
 "metric.actions.edit" = "Редактировать";
-"metric.actions.title" = "Выберите действие";
+"metric.actions.title" = "Что хотите сделать с метрикой «%@»?";
+"metric.actions.sure" = "Вы уверены?";
+"metric.actions.confirmDelete" = "Да, удалить";
 "metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
 
 "httpheaders.select.title" = "Select HTTP Header";
@@ -73,4 +75,4 @@
 "info.github-app-repo" = "Код приложения";
 "info.github-gallery-repo" = "Репозиторий галереи";
 "info.version" = "Версия: %@";
-
+"info.rate" = "Отценить приложение";

@@ -23,6 +23,7 @@ struct MetricView: View {
     @State var scale = Constants.animationScaleBegin
     @State var opacity = Constants.animationOpacityBegin
     @State var showActionMenu = false
+    @State var showConfirmationDelete = false
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
@@ -35,18 +36,27 @@ struct MetricView: View {
             MetricContentView(metric: metric)
         }
         .actionSheet(isPresented: $showActionMenu, content: { [metric] in
-            ActionSheet(title: Text(R.string.localizable.metricActionsTitle()), message: nil, buttons: [
-                .default(Text(R.string.localizable.metricActionsUpdateValue())) {
-                    refreshMetric?(metric.id)
-                },
-                .default(Text(R.string.localizable.metricActionsEdit())) {
-                    editMetric?(metric)
-                },
-                .destructive(Text(R.string.localizable.metricActionsDelete())) {
-                    deletehMetric?(metric.id)
-                },
-                .cancel()
-            ])
+            ActionSheet(
+                title: Text(R.string.localizable.metricActionsTitle(metric.title)),
+                message: nil,
+                buttons:
+                    [
+                        .default(
+                            Text(R.string.localizable.metricActionsUpdateValue())) {
+                            refreshMetric?(metric.id)
+                        },
+                        .default(
+                            Text(R.string.localizable.metricActionsEdit())) {
+                            editMetric?(metric)
+                        },
+                        .destructive(
+                            Text(R.string.localizable.metricActionsDelete())) {
+                                showConfirmationDelete = true
+
+                        },
+                        .cancel()
+                    ]
+            )
         })
         .scaleEffect(scale)
         .opacity(opacity)
@@ -57,7 +67,13 @@ struct MetricView: View {
                     opacity = Constants.animationOpacityEnd
                 }
             }
-        }
+        }.confirmationDialog(
+            R.string.localizable.metricActionsSure(),
+            isPresented: $showConfirmationDelete) {
+                Button(R.string.localizable.metricActionsConfirmDelete(), role: .destructive) {
+                    deletehMetric?(metric.id)
+                }
+            }
     }
 
     private func getAnimationTimeInterval() -> DispatchTime {

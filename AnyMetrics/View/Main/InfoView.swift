@@ -14,6 +14,7 @@ fileprivate enum Constants {
     static let spacing2: CGFloat = 24
     static let iconCorner: CGFloat = 30
     static let imageArrow = Image(systemName: "arrow.right")
+    static let imageStar = Image(systemName: "star")
     static let textColor = R.color.baseText.color
     static let titleColor = R.color.baseText.color
     static let linkColor = R.color.baseText.color
@@ -74,11 +75,29 @@ struct InfoView: View {
                             .foregroundColor(Constants.linkColor)
                     }
                 }
-                Spacer()
 
-                Text(R.string.localizable.infoVersion(Bundle.version()))
-                    .foregroundColor(R.color.secondaryText.color)
-                    .font(Constants.fontBody)
+                Spacer(minLength: Constants.spacing2 + Constants.spacing2)
+
+                VStack(alignment: .leading) {
+                    Button {
+                        ReviewHandler.requestReview()
+                    } label: {
+                        Text(R.string.localizable.infoRate())
+                            .font(Constants.fontLink)
+                            .foregroundColor(Constants.linkColor)
+                        Constants.imageStar
+                            .resizable()
+                            .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
+                            .foregroundColor(Constants.linkColor)
+                    }
+
+
+
+                    Text(R.string.localizable.infoVersion(Bundle.version()))
+                        .foregroundColor(R.color.secondaryText.color)
+                        .font(Constants.fontBody)
+                }
+
             }
             .frame(
                 minWidth: 0,

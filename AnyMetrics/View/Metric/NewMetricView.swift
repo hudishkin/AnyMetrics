@@ -19,6 +19,7 @@ struct NewMetricView: View {
             viewModel: viewModel,
             action: { metric in
                 mainViewModel.addMetric(metric: metric)
+                mainViewModel.updateMetric(id: metric.id)
                 presentationMode.wrappedValue.dismiss()
         })
         .navigationTitle(R.string.localizable.addmetricNewTitle())

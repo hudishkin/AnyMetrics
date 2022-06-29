@@ -87,6 +87,7 @@
 		6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */; };
 		6DCACA36286B7FD500CC6894 /* MetricFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA35286B7FD500CC6894 /* MetricFormView.swift */; };
 		6DCACA38286B827100CC6894 /* EditMetricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA37286B827100CC6894 /* EditMetricView.swift */; };
+		6DCACA3A286BE68C00CC6894 /* ReviewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */; };
 		6DDB0768285C623400F09619 /* View+Dismiss.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB0767285C623400F09619 /* View+Dismiss.swift */; };
 		6DDB3A8228684CBA0052A704 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB3A8128684CBA0052A704 /* InfoView.swift */; };
 		6DE65E49285DD63500F3EF05 /* MetricStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E48285DD63500F3EF05 /* MetricStore.swift */; };
@@ -195,6 +196,7 @@
 		6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryViewModel.swift; sourceTree = "<group>"; };
 		6DCACA35286B7FD500CC6894 /* MetricFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormView.swift; sourceTree = "<group>"; };
 		6DCACA37286B827100CC6894 /* EditMetricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMetricView.swift; sourceTree = "<group>"; };
+		6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewHandler.swift; sourceTree = "<group>"; };
 		6DDB0767285C623400F09619 /* View+Dismiss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Dismiss.swift"; sourceTree = "<group>"; };
 		6DDB3A8128684CBA0052A704 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		6DE65E1E285DCEE900F3EF05 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -435,6 +437,7 @@
 			isa = PBXGroup;
 			children = (
 				6D6FCCAC285FA9AF00E8387D /* ImpactHelper.swift */,
+				6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -753,6 +756,7 @@
 				6D2C2322285725FB00506A7C /* Metric+Codable.swift in Sources */,
 				6D5C0AE1285744F8006B8A3C /* Font+Ex.swift in Sources */,
 				6D2C231E2857253700506A7C /* MainViewModel.swift in Sources */,
+				6DCACA3A286BE68C00CC6894 /* ReviewHandler.swift in Sources */,
 				6D5C0AF8285900E2006B8A3C /* AddHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
