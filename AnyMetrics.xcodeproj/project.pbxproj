@@ -48,7 +48,7 @@
 		6D5C0AF42858E400006B8A3C /* HttpHeaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF32858E400006B8A3C /* HttpHeaders.swift */; };
 		6D5C0AF62858FC95006B8A3C /* SearchPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */; };
 		6D5C0AF8285900E2006B8A3C /* AddHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */; };
-		6D5C0AFA28591175006B8A3C /* NewMetricViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */; };
+		6D5C0AFA28591175006B8A3C /* MetricViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AF928591175006B8A3C /* MetricViewModel.swift */; };
 		6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */; };
 		6D5C0AFE285912C7006B8A3C /* ImportMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFD285912C7006B8A3C /* ImportMetric.swift */; };
 		6D5C0B002859136D006B8A3C /* ImportMetricParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFF2859136D006B8A3C /* ImportMetricParser.swift */; };
@@ -85,6 +85,9 @@
 		6D6FCCC02861BD0300E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
 		6D6FCCC12861C0AC00E8387D /* Document+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */; };
 		6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */; };
+		6DCACA36286B7FD500CC6894 /* MetricFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA35286B7FD500CC6894 /* MetricFormView.swift */; };
+		6DCACA38286B827100CC6894 /* EditMetricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA37286B827100CC6894 /* EditMetricView.swift */; };
+		6DCACA3A286BE68C00CC6894 /* ReviewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */; };
 		6DDB0768285C623400F09619 /* View+Dismiss.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB0767285C623400F09619 /* View+Dismiss.swift */; };
 		6DDB3A8228684CBA0052A704 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDB3A8128684CBA0052A704 /* InfoView.swift */; };
 		6DE65E49285DD63500F3EF05 /* MetricStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE65E48285DD63500F3EF05 /* MetricStore.swift */; };
@@ -178,7 +181,7 @@
 		6D5C0AF32858E400006B8A3C /* HttpHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HttpHeaders.swift; sourceTree = "<group>"; };
 		6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchPickerView.swift; sourceTree = "<group>"; };
 		6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHeaderView.swift; sourceTree = "<group>"; };
-		6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMetricViewModel.swift; sourceTree = "<group>"; };
+		6D5C0AF928591175006B8A3C /* MetricViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricViewModel.swift; sourceTree = "<group>"; };
 		6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportMetric+Codable.swift"; sourceTree = "<group>"; };
 		6D5C0AFD285912C7006B8A3C /* ImportMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMetric.swift; sourceTree = "<group>"; };
 		6D5C0AFF2859136D006B8A3C /* ImportMetricParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMetricParser.swift; sourceTree = "<group>"; };
@@ -191,6 +194,9 @@
 		6D6FCCBA2861A72A00E8387D /* MetricValueParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricValueParser.swift; sourceTree = "<group>"; };
 		6D6FCCBF2861BD0300E8387D /* Document+Ex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Document+Ex.swift"; sourceTree = "<group>"; };
 		6DACA39E28624AAE003FD011 /* GalleryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryViewModel.swift; sourceTree = "<group>"; };
+		6DCACA35286B7FD500CC6894 /* MetricFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricFormView.swift; sourceTree = "<group>"; };
+		6DCACA37286B827100CC6894 /* EditMetricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditMetricView.swift; sourceTree = "<group>"; };
+		6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewHandler.swift; sourceTree = "<group>"; };
 		6DDB0767285C623400F09619 /* View+Dismiss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Dismiss.swift"; sourceTree = "<group>"; };
 		6DDB3A8128684CBA0052A704 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		6DE65E1E285DCEE900F3EF05 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -326,7 +332,7 @@
 			isa = PBXGroup;
 			children = (
 				6D5C0AF52858FC95006B8A3C /* SearchPickerView.swift */,
-				6DDB0766285C579500F09619 /* NewMetric */,
+				6DDB0766285C579500F09619 /* Metric */,
 				6D5C0AE22857BF15006B8A3C /* Gallery */,
 				6D2C231C2857252700506A7C /* Main */,
 			);
@@ -431,18 +437,21 @@
 			isa = PBXGroup;
 			children = (
 				6D6FCCAC285FA9AF00E8387D /* ImpactHelper.swift */,
+				6DCACA39286BE68C00CC6894 /* ReviewHandler.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		6DDB0766285C579500F09619 /* NewMetric */ = {
+		6DDB0766285C579500F09619 /* Metric */ = {
 			isa = PBXGroup;
 			children = (
 				6D5C0AF7285900E2006B8A3C /* AddHeaderView.swift */,
-				6D5C0AF928591175006B8A3C /* NewMetricViewModel.swift */,
+				6D5C0AF928591175006B8A3C /* MetricViewModel.swift */,
 				6D5C0AF12858E301006B8A3C /* NewMetricView.swift */,
+				6DCACA35286B7FD500CC6894 /* MetricFormView.swift */,
+				6DCACA37286B827100CC6894 /* EditMetricView.swift */,
 			);
-			path = NewMetric;
+			path = Metric;
 			sourceTree = "<group>";
 		};
 		6DE65E1D285DCEE900F3EF05 /* Frameworks */ = {
@@ -716,7 +725,8 @@
 				6D2C230C2857217900506A7C /* String+Ex.swift in Sources */,
 				6D2C2328285734DE00506A7C /* Mocks.swift in Sources */,
 				6D2C22F628571A7B00506A7C /* Metric.swift in Sources */,
-				6D5C0AFA28591175006B8A3C /* NewMetricViewModel.swift in Sources */,
+				6DCACA38286B827100CC6894 /* EditMetricView.swift in Sources */,
+				6D5C0AFA28591175006B8A3C /* MetricViewModel.swift in Sources */,
 				6D2C2326285727AC00506A7C /* MetricView.swift in Sources */,
 				6D2C230328571F6B00506A7C /* Fetcher.swift in Sources */,
 				6D5C0B002859136D006B8A3C /* ImportMetricParser.swift in Sources */,
@@ -735,6 +745,7 @@
 				6D2C23202857257200506A7C /* AppConfig.swift in Sources */,
 				6D6FCCBB2861A72A00E8387D /* MetricValueParser.swift in Sources */,
 				6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */,
+				6DCACA36286B7FD500CC6894 /* MetricFormView.swift in Sources */,
 				6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */,
 				6D6FCCB52860068300E8387D /* Bundle+Ex.swift in Sources */,
 				6D5C0AF22858E301006B8A3C /* NewMetricView.swift in Sources */,
@@ -745,6 +756,7 @@
 				6D2C2322285725FB00506A7C /* Metric+Codable.swift in Sources */,
 				6D5C0AE1285744F8006B8A3C /* Font+Ex.swift in Sources */,
 				6D2C231E2857253700506A7C /* MainViewModel.swift in Sources */,
+				6DCACA3A286BE68C00CC6894 /* ReviewHandler.swift in Sources */,
 				6D5C0AF8285900E2006B8A3C /* AddHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

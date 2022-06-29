@@ -27,7 +27,7 @@ extension MetricValueFormatter: MetricFormatter {
                 return formatter.string(from: NSNumber(value: doubleValue)) ?? value
             }
         case .none:
-            if let length = length {
+            if let length = length, length > 0 {
                 return String(value.prefix(length))
             }
         }

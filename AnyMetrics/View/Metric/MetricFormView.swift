@@ -1,11 +1,12 @@
 //
-//  NewMetricView.swift
+//  MetricFormView.swift
 //  AnyMetrics
 //
-//  Created by Simon Hudishkin on 14.06.2022.
+//  Created by Simon Hudishkin on 28.06.2022.
 //
 
 import SwiftUI
+
 
 fileprivate enum Constants {
     // MetricResponseView
@@ -33,7 +34,7 @@ fileprivate enum Constants {
     static let opcityEnable: CGFloat = 1.0
     static let opcityDisable: CGFloat = 0.4
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
-    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.7)
+    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
     static let infinityChar = "∞"
     static let circleCheckerSize: CGFloat = 12
@@ -68,11 +69,12 @@ struct MetricResponseView: View {
 
 
 
-struct NewMetricView: View {
-    @Binding var allowDismissed: Bool
-    @StateObject var viewModel = NewMetricViewModel()
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
-    @EnvironmentObject var mainViewModel: MainViewModel
+struct MetricFormView: View {
+
+    let mainButtonTitle: String
+    @StateObject var viewModel: MetricViewModel
+    var action: (Metric) -> Void
+
     @State var showAddHeader: Bool = false
 
     var body: some View {
@@ -233,24 +235,27 @@ struct NewMetricView: View {
                             self.viewModel.updateValue()
                         }
 
-                        HStack(alignment: .center, spacing: Constants.zero) {
-                            Stepper(value: self.$viewModel.maxLengthValue, in: Constants.lengthValueRange) {
-                                HStack {
-                                    Text(R.string.localizable.addmetricMaxlength())
-                                    Spacer()
-                                    Text(maxLength())
-                                        .font(Constants.smallFont)
-                                        .padding(Constants.lengthLabelInset)
-                                        .foregroundColor(R.color.baseText.color)
-                                        .background(Constants.lengthLabelBackground)
-                                        .cornerRadius(Constants.lengthLabelCorner)
-                                }
+                        if viewModel.formatType == .none {
+                            HStack(alignment: .center, spacing: Constants.zero) {
+                                Stepper(value: self.$viewModel.maxLengthValue, in: Constants.lengthValueRange) {
+                                    HStack {
+                                        Text(R.string.localizable.addmetricMaxlength())
+                                        Spacer()
+                                        Text(maxLength())
+                                            .font(Constants.smallFont)
+                                            .padding(Constants.lengthLabelInset)
+                                            .foregroundColor(R.color.baseText.color)
+                                            .background(Constants.lengthLabelBackground)
+                                            .cornerRadius(Constants.lengthLabelCorner)
+                                    }
 
-                            }
-                            .onChange(of: self.viewModel.maxLengthValue) { newValue in
-                                self.viewModel.updateValue(length: newValue)
+                                }
+                                .onChange(of: self.viewModel.maxLengthValue) { newValue in
+                                    self.viewModel.updateValue(length: newValue)
+                                }
                             }
                         }
+
                     }
                 }
             } header: {
@@ -308,11 +313,11 @@ struct NewMetricView: View {
                 HStack(alignment: .center, spacing: Constants.zero, content: {
                     Button(action: {
                         guard let metric = viewModel.getMetric() else { return }
-                        mainViewModel.addMetric(metric: metric)
-                        presentationMode.wrappedValue.dismiss()
+                        action(metric)
+
                     }, label: {
                         Spacer()
-                        Text(R.string.localizable.addmetricAdd())
+                        Text(mainButtonTitle)
                             .font(Constants.mainButtonFont).padding()
                         Spacer()
                     })
@@ -323,14 +328,6 @@ struct NewMetricView: View {
                     .disabled(!self.viewModel.canAddMetric)
                     .opacity(opacityButton())
                 }).padding(Constants.mainButtonPadding)
-            }
-
-            .navigationTitle(R.string.localizable.addmetricNewTitle())
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                 allowDismissed = false
-            }.onDisappear{
-                 allowDismissed = true
             }
         }
     }
@@ -361,15 +358,16 @@ struct NewMetricView: View {
 }
 
 
-#if DEBUG
-let placeholderValueMetric = Metric(id: UUID(), title: "SERVICE", paramName: "Value type", value: "T", request: nil, type: .json, parseRules: nil, created: Date(), updated: nil)
 
-struct MainEdit_Previews: PreviewProvider {
+#if DEBUG
+
+struct MetricFormView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            NewMetricView(allowDismissed: .constant(true))
-                .environmentObject(MainViewModel())
-                .preferredColorScheme(.dark)
+            MetricFormView(mainButtonTitle: "Add", viewModel: MetricViewModel(), action: { _ in
+
+            })
+                .preferredColorScheme(.light)
         }
     }
 }

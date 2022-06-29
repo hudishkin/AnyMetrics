@@ -8,15 +8,20 @@
 
 "appName" = "AnyMetrics";
 "common.optional" = "Optional";
+"common.close" = "Close";
+"common.save" = "Save";
 
 "metric.value.good" = "Good";
 "metric.value.bad" = "Bad";
 "metric.add" = "Add";
 "metric.add.title" = "Add Metric";
 "metric.add.custom" = "Create custom metric";
-"metric.actions.update-value" = "Refresh value";
+"metric.actions.update-value" = "Refresh";
 "metric.actions.delete" = "Remove";
-"metric.actions.title" = "Select action";
+"metric.actions.edit" = "Edit";
+"metric.actions.title" = "Select action for metric «%@»";
+"metric.actions.sure" = "You sure?";
+"metric.actions.confirmDelete" = "Delete metric";
 "metric.placeholder" = "Press + and add your first metric";
 
 "httpheaders.select.title" = "Select HTTP Header";
@@ -70,4 +75,5 @@
 "info.github-app-repo" = "Application code";
 "info.github-gallery-repo" = "Gallery repository";
 "info.version" = "Version: %@";
+"info.rate" = "Rate application";
 
