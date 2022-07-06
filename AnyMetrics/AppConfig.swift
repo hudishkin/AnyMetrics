@@ -9,15 +9,17 @@ import Foundation
 
 enum AppConfig {
 
+
     static let group = "group.anymetrics.app"
     static let metricsKey = "app.metrics"
 
     enum Urls {
+        static let galleryVersion = "v1"
+
         static let appRepository = URL(string: "https://github.com/hudishkin/AnyMetrics")!
         static let galleryRepository = URL(string: "https://github.com/hudishkin/AnyMetricsGallery")!
         static let rules = URL(string: "https://github.com/hudishkin/AnyMetrics")!
-
-        static let gallery = URL(string: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/list.min.json")!
+        static let gallery = URL(string: String(format: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/%@/list.min.json", galleryVersion))!
     }
 
     static let isiOSAppOnMac: Bool = {

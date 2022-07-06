@@ -10,6 +10,7 @@
 "common.optional" = "Не обяз.";
 "common.close" = "Закрыть";
 "common.save" = "Сохранить";
+"common.faq" = "FAQ";
 
 "metric.value.good" = "Хорошо";
 "metric.value.bad" = "Не хорошо";
@@ -24,49 +25,59 @@
 "metric.actions.confirmDelete" = "Да, удалить";
 "metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
 
-"httpheaders.select.title" = "Select HTTP Header";
-"httpheaders.enter-name" = "HTTP-header title";
-"httpheaders.enter-value" = "Header Value";
-"httpheaders.add.title" = "Add Header";
-"httpheaders.add.button" = "Add";
-"httpheaders.select-from-list" = "Select from HTTP-header list";
-"httpheaders.select-values-from-list" = "Select from examples";
-"httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
+"httpheaders.select.title" = "Выберите HTTP заголовок";
+"httpheaders.select.value-title" = "Выберите значение";
+"httpheaders.enter-name" = "Название HTTP-заголвока";
+"httpheaders.enter-value" = "Значение";
+"httpheaders.add.title" = "Добавить заголовок";
+"httpheaders.add.button" = "Добавить";
+"httpheaders.select-from-list" = "Выберите заголвок из списка";
+"httpheaders.select-values-from-list" = "Выберите значение из списка";
+"httpheaders.value-information" = "HTTP-заголвок будет отправляться кажный раз при запросе метрики";
 
-// MARK: - Add Metric
+// MARK: - Add/Edit Metric
 
-"addmetric.new.title" = "Новая метрика";
-"addmetric.empty-response" = "Пустой запрос";
-"addmetric.select-type" = "Выбрать тип";
-"addmetric.load-file" = "Load JSON file";
-"addmetric.placeholder-json-url" = "Enter URL";
-"addmetric.metric-title" = "Заголовк";
-"addmetric.metric-title-example" = "Пример: Bitcoin";
-"addmetric.title-param-metric" = "Описание";
-"addmetric.title-param-example" = "Пример: Price, USD";
-"addmetric.request-url" = "URL ресурса";
-"addmetric.http-method" = "HTTP-метод";
-"addmetric.add-header" = "Добавить заголовок";
-"addmetric.http-headers" = "HTTP заголовка";
-"addmetric.make-request" = "Выполнить запрос";
-"addmetric.parse-rule" = "Правила парсинга";
-"addmetric.faq-rule" = "Что такое «Правила парсинга»?";
-"addmetric.metric-value-format" = "Формат";
-"addmetric.value-title" = "Настройка значения";
-"addmetric.value-display" = "Значение: %@";
-"addmetric.error.invalid-rule" = "Неверное правило";
-"addmetric.details" = "Детали";
-"addmetric.detail.author" = "Авор";
-"addmetric.detail.site" = "Сайт";
-"addmetric.add" = "Добавить";
-"addmetric.maxlength" = "Длина";
-"addmetric.type-metric-json" = "JSON";
-"addmetric.type-metric-web" = "Парсить HTML";
-"addmetric.type-metric-checker" = "Check status";
-"addmetric.add-type-fromjson" = "JSON";
-"addmetric.add-type-manual" = "Ручная";
-"addmetric.format-type-none" = "Сырые данные";
-"addmetric.format-type-currency" = "Валюта";
+"addmetric.title-new" = "Новая метрика";
+"addmetric.title-edit" = "Редактирование";
+
+"addmetric.field.type-metric-json" = "Парсинг JSON";
+"addmetric.field.type-metric-web" = "Парсинг HTML";
+"addmetric.field.type-metric-checkstatus" = "Проверка HTTP статуса (20x - хорошо)";
+"addmetric.field.type-metric" = "Тип метрики";
+"addmetric.field.http-method" = "HTTP Метод";
+"addmetric.field.url" = "URL";
+"addmetric.field.url-placeholder" = "https://yourapi.com/";
+"addmetric.field.title" = "Название";
+"addmetric.field.title-placeholder" = "Bitcoin";
+"addmetric.field.param-measure" = "Мера";
+"addmetric.field.param-measure-placeholder" = "Цена, $";
+"addmetric.field.value-configure" = "Настроить";
+"addmetric.field.json-parse-rule-placeholder" = "Правила парсинга JSON, подробнее в FAQ";
+"addmetric.field.html-parse-rule-placeholder" = "Правила парсинга HTML, подробнее в FAQ";
+"addmetric.field.type-parse-rule-title" = "Выберите проверку";
+"addmetric.field.rule-type-none" = "Нет";
+"addmetric.field.rule-type-equal" = "Сравнить";
+"addmetric.field.rule-type-contains" = "Должно содержать";
+"addmetric.field.rule-type-placeholder" = "Введите значение";
+"addmetric.field.value-type" = "Тип значения";
+"addmetric.field.value-type-currency" = "Валюта";
+"addmetric.field.value-type-none" = "Без формата";
+"addmetric.field.max-length" = "Обрезать если длинее";
+"addmetric.field.case-sensitive" = "Учитывать размер буквы?";
+
+"addmetric.field.rule-type-contains-description" = "Укажите значение, которое должно содержаться в результате обработки ответа. Например: вы хотите проверить содежится ли в строка слово \"ошибка\"";
+"addmetric.field.rule-type-equal-description" = "Укажите значение, которое должно совпадать с результатом обработки ответа. Например: вы хотите проверить совпадает ли ответ значению \"100\"";
+
+"addmetric.section.request-settings" = "Настройки запроса";
+"addmetric.section.http-headers" = "HTTP заголовки";
+"addmetric.section.value-settings" = "Настройка значения метрики";
+"addmetric.section.format-settings" = "Настройка формата";
+
+"addmetric.button.add" = "Добавить метрику";
+"addmetric.button.add-http-header" = "Добавить заголвок";
+"addmetric.button.make-request" = "Выполнить запрос";
+
+"addmetric.text.no-response" = "Нет ответа";
 
 // MARK: - Info View
 

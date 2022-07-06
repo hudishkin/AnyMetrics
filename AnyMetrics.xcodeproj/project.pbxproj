@@ -52,6 +52,10 @@
 		6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */; };
 		6D5C0AFE285912C7006B8A3C /* ImportMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFD285912C7006B8A3C /* ImportMetric.swift */; };
 		6D5C0B002859136D006B8A3C /* ImportMetricParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C0AFF2859136D006B8A3C /* ImportMetricParser.swift */; };
+		6D6F855A286DC9BA00BDCE27 /* ReponseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6F8559286DC9BA00BDCE27 /* ReponseView.swift */; };
+		6D6F855C28703C6900BDCE27 /* ResponseDataParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6F855B28703C6900BDCE27 /* ResponseDataParser.swift */; };
+		6D6F855D2870CFF800BDCE27 /* ResponseDataParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6F855B28703C6900BDCE27 /* ResponseDataParser.swift */; };
+		6D6F856028745A7700BDCE27 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6D2C231A285724C600506A7C /* Localizable.strings */; };
 		6D6FCC89285F8A8500E8387D /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DE65E37285DCFF600F3EF05 /* Intents.framework */; };
 		6D6FCC8C285F8A8500E8387D /* IntentHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6FCC8B285F8A8500E8387D /* IntentHandler.swift */; };
 		6D6FCC90285F8A8500E8387D /* Intent.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 6D6FCC88285F8A8500E8387D /* Intent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -185,6 +189,8 @@
 		6D5C0AFB2859129A006B8A3C /* ImportMetric+Codable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImportMetric+Codable.swift"; sourceTree = "<group>"; };
 		6D5C0AFD285912C7006B8A3C /* ImportMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMetric.swift; sourceTree = "<group>"; };
 		6D5C0AFF2859136D006B8A3C /* ImportMetricParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMetricParser.swift; sourceTree = "<group>"; };
+		6D6F8559286DC9BA00BDCE27 /* ReponseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReponseView.swift; sourceTree = "<group>"; };
+		6D6F855B28703C6900BDCE27 /* ResponseDataParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseDataParser.swift; sourceTree = "<group>"; };
 		6D6FCC88285F8A8500E8387D /* Intent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Intent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D6FCC8B285F8A8500E8387D /* IntentHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentHandler.swift; sourceTree = "<group>"; };
 		6D6FCC8D285F8A8500E8387D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -347,6 +353,7 @@
 				6D5C0AF32858E400006B8A3C /* HttpHeaders.swift */,
 				6D5C0AFD285912C7006B8A3C /* ImportMetric.swift */,
 				6DE65E48285DD63500F3EF05 /* MetricStore.swift */,
+				6D6F855B28703C6900BDCE27 /* ResponseDataParser.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -450,6 +457,7 @@
 				6D5C0AF12858E301006B8A3C /* NewMetricView.swift */,
 				6DCACA35286B7FD500CC6894 /* MetricFormView.swift */,
 				6DCACA37286B827100CC6894 /* EditMetricView.swift */,
+				6D6F8559286DC9BA00BDCE27 /* ReponseView.swift */,
 			);
 			path = Metric;
 			sourceTree = "<group>";
@@ -659,6 +667,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D6FCCB32860041A00E8387D /* Assets.xcassets in Resources */,
+				6D6F856028745A7700BDCE27 /* Localizable.strings in Resources */,
 				6D545CCA285F84420013D4F6 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -725,6 +734,7 @@
 				6D2C230C2857217900506A7C /* String+Ex.swift in Sources */,
 				6D2C2328285734DE00506A7C /* Mocks.swift in Sources */,
 				6D2C22F628571A7B00506A7C /* Metric.swift in Sources */,
+				6D6F855A286DC9BA00BDCE27 /* ReponseView.swift in Sources */,
 				6DCACA38286B827100CC6894 /* EditMetricView.swift in Sources */,
 				6D5C0AFA28591175006B8A3C /* MetricViewModel.swift in Sources */,
 				6D2C2326285727AC00506A7C /* MetricView.swift in Sources */,
@@ -744,6 +754,7 @@
 				6D2C22C7285719F500506A7C /* AnyMetricsApp.swift in Sources */,
 				6D2C23202857257200506A7C /* AppConfig.swift in Sources */,
 				6D6FCCBB2861A72A00E8387D /* MetricValueParser.swift in Sources */,
+				6D6F855C28703C6900BDCE27 /* ResponseDataParser.swift in Sources */,
 				6D5C0AFC2859129A006B8A3C /* ImportMetric+Codable.swift in Sources */,
 				6DCACA36286B7FD500CC6894 /* MetricFormView.swift in Sources */,
 				6DACA39F28624AAE003FD011 /* GalleryViewModel.swift in Sources */,
@@ -785,6 +796,7 @@
 				6D6FCCBC2861B0A400E8387D /* MetricValueParser.swift in Sources */,
 				6D6FCCA3285FA4B100E8387D /* AppConfig.swift in Sources */,
 				6D6FCCA2285F910A00E8387D /* Metric+Codable.swift in Sources */,
+				6D6F855D2870CFF800BDCE27 /* ResponseDataParser.swift in Sources */,
 				6D6FCCB6286006E100E8387D /* Bundle+Ex.swift in Sources */,
 				6D6FCCA6285FA4D000E8387D /* Formatter.swift in Sources */,
 				6D6FCCC12861C0AC00E8387D /* Document+Ex.swift in Sources */,

@@ -23,18 +23,16 @@ extension JSON: ValueParser {
             }
         }
 
-        var stringValue: String?
-        if let value = result.double {
-            stringValue = String(describing: value)
-        } else if let value = result.int {
-            stringValue = String(describing: value)
-        } else if let value = result.bool {
-            stringValue = String(describing: value)
-        } else  if let value = result.string {
-            stringValue = value
-        }
-        if let formatter = formatter, let value = stringValue {
-            return formatter.formatValue(value)
+        let stringValue = String(describing: result)
+//        if let value = result.double {
+//            stringValue = String(describing: value)
+//        } else if let value = result.int {
+//            stringValue = String(describing: value)
+//        } else if let value = result.bool {
+//            stringValue = String(describing: value)
+//        } else
+        if let formatter = formatter {
+            return formatter.formatValue(stringValue)
         }
         return stringValue
     }

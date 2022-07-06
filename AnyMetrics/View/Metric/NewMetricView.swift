@@ -15,21 +15,17 @@ struct NewMetricView: View {
 
     var body: some View {
         MetricFormView(
-            mainButtonTitle: R.string.localizable.addmetricAdd(),
+            allowDismissed: $allowDismissed,
+            mainButtonTitle: R.string.localizable.addmetricButtonAdd(),
             viewModel: viewModel,
             action: { metric in
                 mainViewModel.addMetric(metric: metric)
                 mainViewModel.updateMetric(id: metric.id)
                 presentationMode.wrappedValue.dismiss()
         })
-        .navigationTitle(R.string.localizable.addmetricNewTitle())
+        .navigationTitle(R.string.localizable.addmetricTitleNew())
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            allowDismissed = false
-        }
-        .onDisappear {
-            allowDismissed = true
-        }
+        
     }
 
 }

@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: - Пока не используется
 
 protocol ImportMetricParser {
     func parse(data: Data) throws -> MetricItemImportData

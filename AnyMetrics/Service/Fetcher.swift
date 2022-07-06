@@ -17,7 +17,7 @@ enum FetcherError: Error {
 }
 
 enum FetcherResult {
-    case result(MetricValueParser.ValueParseResult)
+    case result(ParseResult)
     case error(Error)
     case none
 }
@@ -55,8 +55,8 @@ enum Fetcher {
             headers: requestData.headers,
             timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT) { (data, error) in
                 if let error = error {
-                    if metric.type == .checker {
-                        completion(.result(.check(false)))
+                    if metric.type == .checkStatus {
+                        completion(.result(.status(false)))
                     } else {
                         completion(.error(error))
                     }
@@ -64,10 +64,12 @@ enum Fetcher {
                 }
 
                 do {
-                    let result = try MetricValueParser.parse(
-                        rules: metric.parseRules,
-                        data: data,
-                        metricType: metric.type, formatter: metric.formatter)
+
+                    let parser = MetricResponseParser(
+                        type: metric.type,
+                        formatter: metric.formatter ?? .default,
+                        rules: metric.rules ?? .default)
+                    let result = try parser.parse(data)
                     completion(.result(result))
 
                 } catch {
@@ -77,7 +79,7 @@ enum Fetcher {
             }
     }
     
-    static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double) -> Future<Data,Error> {
+    static func fetch(for url: URL, method: String, headers: [String:String], timeout: Double) -> Future<Data, Error> {
         return Future { promise in
             fetch(for: url, method: method, headers: headers, timeout: timeout) { data, error in
                 if let error = error {
@@ -92,20 +94,60 @@ enum Fetcher {
         }
     }
 
+    static func fetch(
+        for url: URL,
+        method: String,
+        headers: [String:String],
+        timeout: Double,
+        responseType: TypeMetric,
+        rules: ParseRules,
+        formatter: MetricValueFormatter
+    ) -> Future<FetcherResult, Never> {
+
+        return Future { promise in
+            fetch(for: url, method: method, headers: headers, timeout: timeout) { data, error in
+                if let error = error {
+                    return promise(.success(.error(error)))
+                }
+
+                guard let data = data else {
+                    promise(.success(.error(FetcherError.invalidData)))
+                    return
+                }
+
+                do {
+
+                    let parser = MetricResponseParser(
+                        type: responseType,
+                        formatter: formatter,
+                        rules: rules)
+                    let result = try parser.parse(data)
+
+                    promise(.success(.result(result)))
+
+                } catch {
+                    promise(.success(.error(error)))
+                }
+
+
+            }
+        }
+    }
+
     static func updateMetric(metric: Metric, completion: @escaping (Metric)-> Void) {
         var newMetric = metric
         Self.fetch(for: metric) { result in
             switch result {
             case .result(let value):
                 switch value {
-                case .check(let success):
-                    newMetric.hasError = !success
-                    newMetric.value = ""
+                case .status(let success):
+                    newMetric.resultWithError = !success
+                    newMetric.result = ""
                 case .value(let valueString):
-                    newMetric.value = valueString
+                    newMetric.result = valueString
                 }
             case .error(_):
-                newMetric.hasError = true
+                newMetric.resultWithError = true
             case .none:
                 break
             }

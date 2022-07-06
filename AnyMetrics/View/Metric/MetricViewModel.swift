@@ -21,7 +21,7 @@ final class MetricViewModel: ObservableObject {
 
     // MARK: - Published Properties
 
-    @Published private(set) var canMakeRequest: Bool = false
+    @Published private(set) var canMakeRequest: Bool = true
     @Published private(set) var showRequestResult: Bool = false
     @Published private(set) var hasRequestError: Bool = false
     @Published private(set) var hasParseRuleError: Bool = false
@@ -30,6 +30,8 @@ final class MetricViewModel: ObservableObject {
     @Published var loading: Bool = false
     @Published var loadingRequest: Bool = false
 
+    @Published var title: String = ""
+    @Published var measure: String = ""
     @Published var requestUrl: String = "" {
         didSet {
             canMakeRequest = URL(string: requestUrl) != nil
@@ -38,39 +40,42 @@ final class MetricViewModel: ObservableObject {
     @Published var httpMethodType: HTTPMethodType = .GET
     @Published var typeMetric: TypeMetric = .json
     @Published var timeout: Double = DEFAULT_TIMEOUT
-    @Published var title: String = ""
-    @Published var paramName: String = ""
+    @Published var typeRule: ParseRules.RuleType = .none
+    @Published var parseConfigurationValue: String = ""
+
+    @Published var caseSensitive: Bool = false
+    @Published var paramEqualTo: String = ""
     @Published var parseRules: String = ""
-    @Published var parseValue: String = ""
+    @Published var result: String = ""
     @Published var httpHeaders: [String: String] = [:]
     @Published var response: String = ""
-    @Published var author: String = ""
-    @Published var description: String = ""
-    @Published var website: String = ""
     @Published var formatType: MetricFormatterType = .none
     @Published var maxLengthValue: Int = DEFAULT_LENGTH_VALUE
 
     // MARK: - Private Properties
 
+    private var resultWithError: Bool = true
     private var parserDocument: ValueParser?
     private var disposables = Set<AnyCancellable>()
     private var metric: Metric?
-    
-    private var websiteURL: URL? {
-        return URL(string: website)
-    }
+
 
     // MARK: - Properties
 
     var parseValueByLength: String {
         if maxLengthValue == 0 {
-            return parseValue
+            return result
         }
-        return String(parseValue.prefix(maxLengthValue))
+        return String(result.prefix(maxLengthValue))
     }
 
     var canAddMetric: Bool {
-        if paramName.isEmpty || title.isEmpty || (parseValue.isEmpty && typeMetric == .json) || !requestUrl.isValidURL || timeout <= 0 || (!website.isEmpty && !website.isValidURL) {
+        if measure.isEmpty
+            || title.isEmpty
+            || !requestUrl.isValidURL
+            || timeout <= 0
+            || (typeMetric != .checkStatus && parseRules.isEmpty) {
+
             return false
         }
         return true
@@ -86,15 +91,16 @@ final class MetricViewModel: ObservableObject {
         httpMethodType = .init(rawValue: metric.request?.method ?? "") ?? .GET
         typeMetric = metric.type
         title = metric.title
-        paramName = metric.paramName
-        description = metric.description ?? ""
-        author = metric.author ?? ""
+        measure = metric.measure
         maxLengthValue = metric.formatter?.length ?? DEFAULT_LENGTH_VALUE
-        website = metric.website?.absoluteString ?? ""
         httpHeaders = metric.request?.headers ?? [:]
-        parseRules = metric.parseRules ?? ""
+        parseRules = metric.rules?.parseRules ?? ""
+        typeRule = metric.rules?.type ?? .none
         formatType = metric.formatter?.format ?? .none
+        parseConfigurationValue = metric.rules?.value ?? ""
         showRequestResult = true
+        resultWithError = metric.resultWithError
+
     }
 
     // MARK: - Public Methods
@@ -121,20 +127,18 @@ final class MetricViewModel: ObservableObject {
             return (nil)
         }
         .receive(on: DispatchQueue.main)
-
         .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
                     self.loadingRequest = false
                     self.errorMessage = error.localizedDescription
                     self.hasRequestError = true
-                    self.showRequestResult = self.typeMetric == .checker
+                    self.showRequestResult = self.typeMetric == .checkStatus
 
                 case .finished:
                     self.hasRequestError = false
                     self.showRequestResult = true
                 }
-
             }, receiveValue: { parser in
                 self.response = parser?.rawData() ?? ""
                 self.parserDocument = parser
@@ -148,49 +152,66 @@ final class MetricViewModel: ObservableObject {
         let formatter = MetricValueFormatter(
             format: self.formatType,
             length: length ?? maxLengthValue)
-
         if let value = parserDocument?.parseValue(by: rules, formatter: formatter) {
-            self.parseValue = value
-            self.hasParseRuleError = false
+            if self.typeRule != .none {
+                let rule = ParseRules(parseRules: rules, type: self.typeRule, value: self.parseConfigurationValue, caseSensitive: false)
+                switch rule.parse(value) {
+                case .status(let status):
+                    self.resultWithError = !status
+                    self.result = ""
+                case .value(let val):
+                    self.result = val
+                }
+            } else {
+                self.result = value
+                self.hasParseRuleError = false
+            }
         } else {
             self.hasParseRuleError = true
         }
     }
 
     func getMetric() -> Metric? {
-        if canAddMetric {
-            return Metric(
-                id: metric?.id ?? UUID(),
-                title: title,
-                paramName: self.paramName,
-                value: parseValue,
-                formatter: .init(format: formatType, length: maxLengthValue),
-                indicateError: false,
-                hasError: false,
-                request: RequestData(
-                    headers: self.httpHeaders,
-                    method: self.httpMethodType.rawValue,
-                    url: URL(string: self.requestUrl)!,
-                    timeout: self.timeout),
-                type: self.typeMetric,
+        guard canAddMetric else { return nil }
+
+        return Metric(
+            id: metric?.id ?? UUID(),
+            title: self.title,
+            measure: self.measure,
+            type: self.typeMetric,
+            result: self.result,
+            resultWithError: self.resultWithError,
+            request: RequestData(
+                headers: self.httpHeaders,
+                method: self.httpMethodType.rawValue,
+                url: URL(string: self.requestUrl)!,
+                timeout: self.timeout),
+            formatter: .init(
+                format: self.formatType,
+                length: self.maxLengthValue),
+            rules: .init(
                 parseRules: self.parseRules,
-                created: Date(),
-                updated: nil,
-                author: self.author,
-                description: self.description,
-                website: self.websiteURL)
-        }
-        return nil
+                type: self.typeRule,
+                value: self.parseConfigurationValue,
+                caseSensitive: self.caseSensitive),
+            created: Date(),
+            updated: nil,
+            author: nil,
+            description: nil,
+            website: nil)
     }
 }
 
-
 extension TypeMetric {
     var localizedString: String {
-        NSLocalizedString("addmetric.type-metric-\(self.rawValue.lowercased())", comment: "")
+        NSLocalizedString("addmetric.field.type-metric-\(self.rawValue.lowercased())", comment: "")
     }
 }
 
 extension MetricFormatterType {
-    var localizedName: String { NSLocalizedString("addmetric.format-type-\(self.rawValue.lowercased())", comment: "") }
+    var localizedName: String { NSLocalizedString("addmetric.field.value-type-\(self.rawValue.lowercased())", comment: "") }
+}
+
+extension ParseRules.RuleType {
+    var localizedName: String { NSLocalizedString("addmetric.field.rule-type-\(self.rawValue.lowercased())", comment: "") }
 }

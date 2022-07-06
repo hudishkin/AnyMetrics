@@ -8,6 +8,7 @@
 import Foundation
 
 
+
 struct MetricStyle: Hashable {
     var symbol: String
     var hexColor: String?
@@ -26,6 +27,24 @@ struct MetricValueFormatter: Hashable {
     var fraction: Int?
 }
 
+enum ParseResult {
+    case value(String)
+    case status(Bool)
+}
+
+struct ParseRules: Hashable {
+
+    enum RuleType: String, Codable, CaseIterable {
+        case none, equal, contains
+    }
+
+    static let `default` = ParseRules()
+
+    var parseRules: String?
+    var type: RuleType = .none
+    var value: String?
+    var caseSensitive = false
+}
 
 struct RequestData: Hashable {
     var headers: [String: String]
@@ -36,21 +55,25 @@ struct RequestData: Hashable {
 
 enum TypeMetric: String, Codable, CaseIterable {
     case json,
-         checker,
+         checkStatus,
          web
 }
 
 struct Metric: Hashable {
     let id: UUID
     var title: String
-    var paramName: String
-    var value: String = ""
-    var formatter: MetricValueFormatter?
-    var indicateError: Bool = false
-    var hasError: Bool = false
-    var request: RequestData?
+    var measure: String
     var type: TypeMetric
-    var parseRules: String?
+
+    /// Store value after parse and format
+    var result: String = ""
+
+    /// Indicate if request finished with error
+    var resultWithError: Bool = false
+
+    var request: RequestData?
+    var formatter: MetricValueFormatter?
+    var rules: ParseRules?
 
     var created: Date = Date()
     var updated: Date?
@@ -59,8 +82,8 @@ struct Metric: Hashable {
     var description: String?
     var website: URL?
 
-    var hasValue: Bool {
-        return !value.isEmpty
+    var hasResult: Bool {
+        return !result.isEmpty
     }
 }
 
