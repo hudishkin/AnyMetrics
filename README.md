@@ -1,4 +1,4 @@
-## AnyMetrics | [RU] (README_ru.md)
+## AnyMetrics | [RU](README_ru.md)
 
 Create the necessary requests to the API or website and get the value from the response and display it in the widget.
 
