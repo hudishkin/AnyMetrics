@@ -16,6 +16,7 @@ fileprivate enum Constants {
 ///
 struct SearchPickerView: View {
 
+    let title: String
     let items: [String]
     let action: (String) -> Void
 
@@ -45,7 +46,7 @@ struct SearchPickerView: View {
             }
         }
         .listStyle(PlainListStyle())
-        .navigationTitle(R.string.localizable.httpheadersSelectTitle())
+        .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(
             text: $searchText,
@@ -58,8 +59,12 @@ struct SearchPickerView: View {
 struct SearchPickerView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            SearchPickerView(items: HTTP_HEADERS, action: { _ in
-            })
+            SearchPickerView(
+                title: R.string.localizable.httpheadersSelectTitle(),
+                items: HTTP_HEADERS,
+                action: { _ in
+                    
+                })
             .preferredColorScheme(.light)
         }
     }

@@ -7,6 +7,8 @@
 
 import Foundation
 
+// TODO: - Пока не используется
+
 enum MetricItemImportDataError: Error {
     case invalidVersion
 }

@@ -12,14 +12,14 @@ extension Metric: Codable {
     enum CodingKeys: String, CodingKey {
         case id,
              title,
-             paramName,
-             value,
+             measure,
              request,
              type,
-             parseRules,
+             result,
+             resultWithError,
+             rules,
              created,
              updated,
-             indicateError,
              style,
              formatter,
              author,
@@ -30,16 +30,15 @@ extension Metric: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = (try? container.decodeIfPresent(UUID.self, forKey: CodingKeys.id)) ?? UUID()
+        result = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.result)) ?? ""
+        resultWithError = (try? container.decodeIfPresent(Bool.self, forKey: CodingKeys.resultWithError)) ?? false
         title = try container.decode(String.self, forKey: CodingKeys.title)
-        paramName = try container.decode(String.self, forKey: CodingKeys.paramName)
-        value = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.value)) ?? ""
+        measure = try container.decode(String.self, forKey: CodingKeys.measure)
         request = try container.decode(RequestData.self, forKey: CodingKeys.request)
         type = try container.decode(TypeMetric.self, forKey: CodingKeys.type)
-        parseRules = try? container.decodeIfPresent(String.self, forKey: CodingKeys.parseRules)
+        rules = try? container.decodeIfPresent(ParseRules.self, forKey: CodingKeys.rules)
         created = (try? container.decodeIfPresent(Date.self, forKey: CodingKeys.created)) ?? Date()
         updated = try? container.decodeIfPresent(Date.self, forKey: CodingKeys.updated)
-        indicateError = (try? container.decodeIfPresent(Bool.self, forKey: CodingKeys.indicateError)) ?? false
-//        style = (try? container.decodeIfPresent(MetricStyle.self, forKey: CodingKeys.style))
         formatter = (try container.decodeIfPresent(MetricValueFormatter?.self, forKey: CodingKeys.formatter)) ?? .default
         author = try container.decodeIfPresent(String.self, forKey: CodingKeys.author)
         description = try container.decodeIfPresent(String.self, forKey: CodingKeys.description)
@@ -50,16 +49,15 @@ extension Metric: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
-//        try container.encode(style, forKey: .style)
-        try container.encode(paramName, forKey: .paramName)
-        try? container.encode(value, forKey: .value)
+        try container.encode(result, forKey: .result)
+        try container.encode(resultWithError, forKey: .resultWithError)
+        try container.encode(measure, forKey: .measure)
         try container.encode(request, forKey: .request)
         try container.encode(type, forKey: .type)
-        try? container.encodeIfPresent(parseRules, forKey: .parseRules)
+        try? container.encodeIfPresent(rules, forKey: .rules)
         try container.encode(created, forKey: .created)
         try? container.encodeIfPresent(updated, forKey: .updated)
         try? container.encodeIfPresent(formatter, forKey: .formatter)
-        try container.encode(indicateError, forKey: .indicateError)
         try? container.encodeIfPresent(author, forKey: .author)
         try? container.encodeIfPresent(description, forKey: .description)
         try? container.encodeIfPresent(website, forKey: .website)
@@ -129,5 +127,27 @@ extension MetricStyle: Codable {
         try? container.encodeIfPresent(self.symbol, forKey: .symbol)
         try? container.encodeIfPresent(self.hexColor, forKey: .hexColor)
         try? container.encodeIfPresent(self.imageURL, forKey: .imageURL)
+    }
+}
+
+extension ParseRules: Codable {
+    enum CodingKeys: String, CodingKey {
+        case parseRules, type, value, caseSensitive
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        parseRules = try? container.decodeIfPresent(String.self, forKey: .parseRules)
+        type = (try? container.decodeIfPresent(ParseRules.RuleType.self, forKey: .type)) ?? .none
+        value = try? container.decodeIfPresent(String.self, forKey: .value)
+        caseSensitive = (try? container.decodeIfPresent(Bool.self, forKey: .caseSensitive)) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.caseSensitive, forKey: .caseSensitive)
+        try container.encode(self.parseRules ?? "", forKey: .parseRules)
+        try container.encode(self.value ?? "", forKey: .value)
+        try container.encode(self.type, forKey: .type)
     }
 }

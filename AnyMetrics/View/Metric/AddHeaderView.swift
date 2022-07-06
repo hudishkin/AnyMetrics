@@ -37,7 +37,9 @@ struct AddHeaderView: View {
                 } footer: {
                     HStack {
                         NavigationLink {
-                            SearchPickerView(items: HTTP_HEADERS) { selectHeader in
+                            SearchPickerView(
+                                title: R.string.localizable.httpheadersSelectTitle(),
+                                items: HTTP_HEADERS) { selectHeader in
                                 self.headerName = selectHeader
                             }
                         } label: {
@@ -59,7 +61,7 @@ struct AddHeaderView: View {
                         VStack {
                             if let examples = HTTP_HEADER_EXAMPLE[self.headerName] {
                                 NavigationLink {
-                                    SearchPickerView(items: examples) { selectedValue in
+                                    SearchPickerView(title: R.string.localizable.httpheadersSelectValueTitle(), items: examples) { selectedValue in
                                         self.headerValue = selectedValue
                                     }
                                 } label: {

@@ -93,7 +93,7 @@ struct MetricContentView: View {
                 .lineLimit(Constants.paramLines)
                 .padding(Constants.titlePaddingInset)
             MetricValue()
-            Text(metric.paramName)
+            Text(metric.measure)
                 .font(Constants.fontParam)
                 .lineLimit(Constants.paramLines)
                 .multilineTextAlignment(.center)
@@ -105,30 +105,30 @@ struct MetricContentView: View {
 
     @ViewBuilder
     func MetricValue() -> some View {
-        if metric.type == .checker {
+        if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
             Text(
-                metric.hasError ? R.string.localizable.metricValueBad() : R.string.localizable.metricValueGood())
+                metric.resultWithError ? R.string.localizable.metricValueBad() : R.string.localizable.metricValueGood())
             .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(Constants.fontValue)
                 .multilineTextAlignment(.center)
                 .foregroundColor(Constants.textColor)
                 .padding(Constants.valuePaddingInset)
         } else {
-            Text(metric.value)
+            Text(metric.result)
                 .multilineTextAlignment(.center)
                 .lineLimit(Constants.paramLines)
                 .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(dynamicFont())
-                .foregroundColor(metric.hasError ? Constants.textErrorColor : Constants.textColor)
+                .foregroundColor(metric.resultWithError ? Constants.textErrorColor : Constants.textColor)
                 .padding(Constants.valuePaddingInset)
         }
     }
 
     private func circleGradient() -> LinearGradient {
-        if metric.type != .checker {
+        if metric.type != .checkStatus && ((metric.rules?.type ?? ParseRules.RuleType.none) == .none) {
             return Constants.defaultCircleGradient
         }
-        if metric.hasError {
+        if metric.resultWithError {
             return Constants.badCircleGradient
         }
         return Constants.goodCircleGradient
@@ -136,19 +136,19 @@ struct MetricContentView: View {
 
 
     private func dynamicFont() -> Font {
-        if metric.value.count < 4 {
+        if metric.result.count < 4 {
             return Constants.fontValue(size: 42)
         }
-        if metric.value.count < 6 {
+        if metric.result.count < 6 {
             return Constants.fontValue(size: 40)
         }
-        if metric.value.count < 10 {
+        if metric.result.count < 10 {
             if Bundle.isInWidget() {
                 return Constants.fontValue(size: 30)
             }
             return Constants.fontValue(size: 38)
         }
-        if metric.value.count < 15 {
+        if metric.result.count < 15 {
             return Constants.fontValue(size: 24)
         }
         return Constants.fontValue(size: 19)

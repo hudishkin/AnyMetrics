@@ -139,7 +139,7 @@ struct MainView: View {
             case .info:
                 InfoView()
             case .editMetric(let metric):
-                EditMetricView(viewModel: MetricViewModel(metric: metric))
+                EditMetricView(allowDismissed: $allowDismissed, viewModel: MetricViewModel(metric: metric))
                     .interactiveDismiss(canDismissSheet: .constant(false))
                     .environmentObject(viewModel)
             case .none:
@@ -164,7 +164,7 @@ struct MainView_Previews: PreviewProvider {
         let vm = MainViewModel()
         vm.metrics = Metrics(
             dictionaryLiteral: (UUID(),
-                                Metric(id: UUID(), title: "Api Service", paramName: "USD", type: .json))
+                                Metric(id: UUID(), title: "Api Service", measure: "USD", type: .json))
         )
         return MainView(viewModel: vm)
             .preferredColorScheme(.dark)

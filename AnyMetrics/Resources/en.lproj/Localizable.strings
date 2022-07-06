@@ -10,6 +10,7 @@
 "common.optional" = "Optional";
 "common.close" = "Close";
 "common.save" = "Save";
+"common.faq" = "FAQ";
 
 "metric.value.good" = "Good";
 "metric.value.bad" = "Bad";
@@ -25,48 +26,58 @@
 "metric.placeholder" = "Press + and add your first metric";
 
 "httpheaders.select.title" = "Select HTTP Header";
+"httpheaders.select.value-title" = "Select Value";
 "httpheaders.enter-name" = "HTTP-header title";
 "httpheaders.enter-value" = "Header Value";
 "httpheaders.add.title" = "Add Header";
 "httpheaders.add.button" = "Add";
-"httpheaders.select-from-list" = "Select from HTTP-header list";
-"httpheaders.select-values-from-list" = "Select from examples";
+"httpheaders.select-from-list" = "Select HTTP-header from list";
+"httpheaders.select-values-from-list" = "Select value from list";
 "httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
 
-// MARK: - Add Metric
+// MARK: - Add/Edit Metric
 
-"addmetric.new.title" = "New metric";
-"addmetric.empty-response" = "Empty response";
-"addmetric.select-type" = "Select type";
-"addmetric.load-file" = "Load JSON file";
-"addmetric.placeholder-json-url" = "Enter URL";
-"addmetric.metric-title" = "Title";
-"addmetric.metric-title-example" = "Bitcoin";
-"addmetric.title-param-metric" = "Description";
-"addmetric.title-param-example" = "Price, USD";
-"addmetric.request-url" = "Enter request URL";
-"addmetric.http-method" = "HTTP Method";
-"addmetric.add-header" = "Add header";
-"addmetric.http-headers" = "HTTP headers";
-"addmetric.make-request" = "Make request";
-"addmetric.parse-rule" = "Parsing rule";
-"addmetric.faq-rule" = "How use «Parsing rule»?";
-"addmetric.metric-value-format" = "Format";
-"addmetric.value-title" = "Settings value";
-"addmetric.value-display" = "Value: %@";
-"addmetric.error.invalid-rule" = "Invalid rule";
-"addmetric.details" = "Details";
-"addmetric.detail.author" = "Author";
-"addmetric.detail.site" = "Site";
-"addmetric.add" = "Add metric";
-"addmetric.maxlength" = "Length";
-"addmetric.type-metric-json" = "JSON";
-"addmetric.type-metric-web" = "Parse HTML";
-"addmetric.type-metric-checker" = "Check status";
-"addmetric.add-type-fromjson" = "JSON";
-"addmetric.add-type-manual" = "Manual";
-"addmetric.format-type-none" = "Raw data";
-"addmetric.format-type-currency" = "Currency";
+"addmetric.title-new" = "New metric";
+"addmetric.title-edit" = "Edit";
+
+"addmetric.field.type-metric-json" = "Parse JSON";
+"addmetric.field.type-metric-web" = "Parse HTML";
+"addmetric.field.type-metric-checkstatus" = "Check HTTP Status (20x is success)";
+"addmetric.field.type-metric" = "Type metric";
+"addmetric.field.http-method" = "HTTP Method";
+"addmetric.field.url" = "URL";
+"addmetric.field.url-placeholder" = "https://yourapi.com/";
+"addmetric.field.title" = "Title";
+"addmetric.field.title-placeholder" = "Bitcoin";
+"addmetric.field.param-measure" = "Measure";
+"addmetric.field.param-measure-placeholder" = "Price, USD";
+"addmetric.field.value-configure" = "Configure";
+"addmetric.field.json-parse-rule-placeholder" = "Enter parse JSON rule, see FAQ";
+"addmetric.field.html-parse-rule-placeholder" = "Enter parse HTML rule, see FAQ";
+"addmetric.field.type-parse-rule-title" = "Select check";
+"addmetric.field.rule-type-none" = "No";
+"addmetric.field.rule-type-equal" = "Compare";
+"addmetric.field.rule-type-contains" = "Must contain";
+"addmetric.field.rule-type-placeholder" = "Enter value";
+"addmetric.field.value-type" = "Value type";
+"addmetric.field.value-type-currency" = "Currency";
+"addmetric.field.value-type-none" = "Raw";
+"addmetric.field.max-length" = "Cut if longer";
+"addmetric.field.case-sensitive" = "Case sensitive";
+
+"addmetric.field.rule-type-contains-description" = "Specify the value that will be contained as a result of processing the response. For example: you want to check if a string contains the word \"error\"";
+"addmetric.field.rule-type-equal-description" = "Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value \"100\"";
+
+"addmetric.section.request-settings" = "Request settings";
+"addmetric.section.http-headers" = "HTTP Headers";
+"addmetric.section.value-settings" = "Value settings";
+"addmetric.section.format-settings" = "Format settings";
+
+"addmetric.button.add" = "Add metric";
+"addmetric.button.add-http-header" = "Add Header";
+"addmetric.button.make-request" = "Make request";
+
+"addmetric.text.no-response" = "No response";
 
 // MARK: - Info View
 

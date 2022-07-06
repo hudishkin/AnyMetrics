@@ -29,13 +29,13 @@ final class MainViewModel: MetricStore, ObservableObject {
                 case .result(let value):
                     switch value {
                     case .value(let valueString):
-                        m.value = valueString
-                    case .check(let success):
-                        m.value = ""
-                        m.hasError = !success
+                        m.result = valueString
+                    case .status(let success):
+                        m.result = ""
+                        m.resultWithError = !success
                     }
                 case .error, .none:
-                    m.hasError = true
+                    m.resultWithError = true
                 }
                 m.updated = Date()
                 updatedMetrics[m.id] = m
@@ -55,13 +55,13 @@ final class MainViewModel: MetricStore, ObservableObject {
             case .result(let value):
                 switch value {
                 case .value(let valueString):
-                    metric.value = valueString
-                case .check(let success):
-                    metric.value = ""
-                    metric.hasError = !success
+                    metric.result = valueString
+                case .status(let success):
+                    metric.result = ""
+                    metric.resultWithError = !success
                 }
             case .error, .none:
-                metric.hasError = true
+                metric.resultWithError = true
             }
 
             metric.updated = Date()

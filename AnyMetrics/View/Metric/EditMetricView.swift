@@ -10,6 +10,7 @@ import SwiftUI
 
 struct EditMetricView: View {
 
+    @Binding var allowDismissed: Bool
     @StateObject var viewModel: MetricViewModel
     @EnvironmentObject var mainViewModel: MainViewModel
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
@@ -17,6 +18,7 @@ struct EditMetricView: View {
     var body: some View {
         NavigationView {
             MetricFormView(
+                allowDismissed: $allowDismissed,
                 mainButtonTitle: R.string.localizable.commonSave(),
                 viewModel: viewModel,
                 action: { metric in
@@ -42,7 +44,7 @@ struct EditMetricView: View {
 struct EditMetricView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            EditMetricView(viewModel: MetricViewModel())
+            EditMetricView(allowDismissed: .constant(true), viewModel: MetricViewModel())
                 .environmentObject(MainViewModel())
                 .preferredColorScheme(.dark)
         }

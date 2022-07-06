@@ -48,7 +48,7 @@ struct GalleryItemView: View {
                     VStack(alignment: .leading, spacing: Constants.itemContentSpacing) {
                         Text(metric.title)
                             .font(Constants.itemTitleFont)
-                        Text(metric.paramName)
+                        Text(metric.measure)
                             .font(Constants.itemDefaultBoldFont)
                             .foregroundColor(R.color.secondaryText.color)
 
@@ -143,6 +143,7 @@ struct GalleryView: View {
                 .tint(R.color.baseText.color)
                 .listRowSeparator(.hidden)
                 .buttonStyle(PlainButtonStyle())
+
                 ForEach(viewModel.galleryItems, id: \.self) { group in
                     Section {
                         ForEach(group.metrics, id: \.self) { metric in
