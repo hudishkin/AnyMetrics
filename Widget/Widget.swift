@@ -16,21 +16,15 @@ struct Provider: IntentTimelineProvider {
         AMEntry(
             date: Date(),
             configuration: ConfigurationIntent(),
-            metric: MetricStore().metrics.values.first ?? Mocks.metricJson)
+            metric: MetricStore().metrics.values.first ?? Mocks.metricEmpty)
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
 
-        var metric: Metric?
-        if let _metric = MetricStore().metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
-            metric = _metric
-        }else {
-            metric = Mocks.metricJson
+        if let metric = MetricStore().metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
+            let entry = AMEntry(date: Date(), configuration: configuration, metric: metric)
+            completion(entry)
         }
-
-        let entry = AMEntry(date: Date(), configuration: configuration, metric: metric!)
-        completion(entry)
-
     }
 
     func getTimeline(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
@@ -49,8 +43,7 @@ struct Provider: IntentTimelineProvider {
                 let timeline = Timeline(entries: entries, policy: .atEnd)
                 completion(timeline)
             }
-
-        }else {
+        } else {
             let timeline = Timeline(entries: entries, policy: .atEnd)
             completion(timeline)
         }
@@ -73,8 +66,6 @@ struct WidgetEntryView : View {
             MetricContentView(metric: entry.metric)
                 .frame(width: 156, height: 156, alignment: .center)
         }
-
-
     }
 }
 
