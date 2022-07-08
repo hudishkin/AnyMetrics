@@ -35,6 +35,7 @@
 		6D2C2328285734DE00506A7C /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2C2327285734DE00506A7C /* Mocks.swift */; };
 		6D36AA23286559310012E366 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D36AA22286559310012E366 /* GoogleService-Info.plist */; };
 		6D36AA2628655A0B0012E366 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 6D36AA2528655A0B0012E366 /* FirebaseAnalyticsWithoutAdIdSupport */; };
+		6D3BBCBD2876B8BF00974576 /* EmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3BBCBC2876B8BF00974576 /* EmailView.swift */; };
 		6D545CC3285F84410013D4F6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DE65E1E285DCEE900F3EF05 /* WidgetKit.framework */; };
 		6D545CC4285F84410013D4F6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DE65E20285DCEE900F3EF05 /* SwiftUI.framework */; };
 		6D545CC7285F84410013D4F6 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D545CC6285F84410013D4F6 /* Widget.swift */; };
@@ -174,6 +175,7 @@
 		6D2C2325285727AC00506A7C /* MetricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricView.swift; sourceTree = "<group>"; };
 		6D2C2327285734DE00506A7C /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		6D36AA22286559310012E366 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		6D3BBCBC2876B8BF00974576 /* EmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailView.swift; sourceTree = "<group>"; };
 		6D545CC2285F84410013D4F6 /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D545CC6285F84410013D4F6 /* Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget.swift; sourceTree = "<group>"; };
 		6D545CC9285F84420013D4F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -341,6 +343,7 @@
 				6DDB0766285C579500F09619 /* Metric */,
 				6D5C0AE22857BF15006B8A3C /* Gallery */,
 				6D2C231C2857252700506A7C /* Main */,
+				6D3BBCBC2876B8BF00974576 /* EmailView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -733,6 +736,7 @@
 				6D5C0AFE285912C7006B8A3C /* ImportMetric.swift in Sources */,
 				6D2C230C2857217900506A7C /* String+Ex.swift in Sources */,
 				6D2C2328285734DE00506A7C /* Mocks.swift in Sources */,
+				6D3BBCBD2876B8BF00974576 /* EmailView.swift in Sources */,
 				6D2C22F628571A7B00506A7C /* Metric.swift in Sources */,
 				6D6F855A286DC9BA00BDCE27 /* ReponseView.swift in Sources */,
 				6DCACA38286B827100CC6894 /* EditMetricView.swift in Sources */,

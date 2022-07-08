@@ -35,6 +35,12 @@
 "httpheaders.select-values-from-list" = "Выберите значение из списка";
 "httpheaders.value-information" = "HTTP-заголвок будет отправляться кажный раз при запросе метрики";
 
+// MARK: - Gallery
+
+"gallery.no-metric-message" = "Если вы не нашли метрику,\nвы можете добавить ее вручную ↑\n\nИли отправить сообщение с информацией о метрике, мы добавим ее в галерею.";
+"gallery.button.send" = "Отправить информацию";
+"gallery.message.subject" = "[AnyMetrics] Не нашел метрику";
+
 // MARK: - Add/Edit Metric
 
 "addmetric.title-new" = "Новая метрика";
@@ -82,8 +88,8 @@
 // MARK: - Info View
 
 "info.title" = "О приложении";
-"info.message" = "ЭниМетрик - это open source проект, разработанный для решения собственной проблемы и выложен на GitHub. \n\nЧто бы добавить в галерею свою метрику нужно отправить PullRequest в репозиторий галереи.";
-"info.github-app-repo" = "Код приложения";
+"info.message" = "ЭниМетрик - это open-source проект, разработанный для решения собственной проблемы и выложен на GitHub.\n\nЧто бы добавить в галерею метрику отправьте pull request в репозиторий галереи на Github.";
+"info.github-app-repo" = "Репозиторий приложения";
 "info.github-gallery-repo" = "Репозиторий галереи";
 "info.version" = "Версия: %@";
 "info.rate" = "Отценить приложение";

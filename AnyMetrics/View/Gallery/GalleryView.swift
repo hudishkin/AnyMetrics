@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MessageUI
 
 // MARK: - Constants
 
@@ -30,7 +31,6 @@ fileprivate enum Constants {
     static let createNewIcon: CGFloat = 16
     static let createNewVSpacing: CGFloat = 16
     static let createNewHSpacing: CGFloat = 12
-
 }
 
 // MARK: - GalleryItemView
@@ -114,10 +114,13 @@ struct GalleryItemView: View {
 
 struct GalleryView: View {
 
+    @State var mailResult: Result<MFMailComposeResult, Error>? = nil
+
     @StateObject var viewModel = GalleryViewModel()
     @Binding var allowDismissed: Bool
     @State var searchText: String = ""
     @State var showAddMenu: Bool = false
+    @State var showEmailForm: Bool = false
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var mainViewModel: MainViewModel
 
@@ -127,46 +130,75 @@ struct GalleryView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                NavigationLink(isActive: $showAddMenu) {
-                    NewMetricView(allowDismissed: $allowDismissed)
-                        .environmentObject(mainViewModel)
-                } label: {
-                    HStack {
-                        R.image.plus.image
-                            .resizable()
-                            .renderingMode(.template)
-                            .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                        Text(R.string.localizable.metricAddCustom()).font(Constants.itemTitleFont)
-                    }
-                }
-                .tint(R.color.baseText.color)
-                .listRowSeparator(.hidden)
-                .buttonStyle(PlainButtonStyle())
-
-                ForEach(viewModel.galleryItems, id: \.self) { group in
-                    Section {
-                        ForEach(group.metrics, id: \.self) { metric in
-                            GalleryItemView(
-                                metric: metric,
-                                addMetric: { m in
-                                    ImpactHelper.success()
-                                    mainViewModel.addMetric(metric: m)
-                                    mainViewModel.updateMetric(id: m.id)
-                                }, removeMetric: { uuid in
-                                    mainViewModel.removeMetric(id: uuid)
-                                }, alreadyAdded: mainViewModel.metrics[metric.id] != nil)
-                            .buttonStyle(PlainButtonStyle())
-                            .listRowSeparator(.hidden)
+            ZStack {
+                List {
+                    NavigationLink(isActive: $showAddMenu) {
+                        NewMetricView(allowDismissed: $allowDismissed)
+                            .environmentObject(mainViewModel)
+                    } label: {
+                        HStack {
+                            R.image.plus.image
+                                .resizable()
+                                .renderingMode(.template)
+                                .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                            Text(R.string.localizable.metricAddCustom()).font(Constants.itemTitleFont)
                         }
-                    } header: {
-                        Text(group.name).font(Constants.sectionFont)
+                    }
+                    .tint(R.color.baseText.color)
+                    .listRowSeparator(.hidden)
+                    .buttonStyle(PlainButtonStyle())
+                    if !viewModel.showSendRequestMetric {
+                        ForEach(viewModel.galleryItems, id: \.self) { group in
+                            Section {
+                                ForEach(group.metrics, id: \.self) { metric in
+                                    GalleryItemView(
+                                        metric: metric,
+                                        addMetric: { m in
+                                            ImpactHelper.success()
+                                            mainViewModel.addMetric(metric: m)
+                                            mainViewModel.updateMetric(id: m.id)
+                                        }, removeMetric: { uuid in
+                                            mainViewModel.removeMetric(id: uuid)
+                                        }, alreadyAdded: mainViewModel.metrics[metric.id] != nil)
+                                    .buttonStyle(PlainButtonStyle())
+                                    .listRowSeparator(.hidden)
+                                }
+                            } header: {
+                                Text(group.name).font(Constants.sectionFont)
+                            }
+                        }
+                    }
+
+                }
+
+                if viewModel.showSendRequestMetric {
+                    VStack(alignment: .center) {
+                        Text(R.string.localizable.galleryNoMetricMessage())
+                            .font(Constants.itemDefaultFont)
+                            .foregroundColor(R.color.secondaryText.color)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        Button {
+                            showEmailForm = true
+                        } label: {
+                            Text(R.string.localizable.galleryButtonSend())
+                                .font(Constants.itemTitleFont)
+                        }.buttonStyle(PlainButtonStyle())
                     }
                 }
+
             }
             .padding(0)
             .navigationTitle(R.string.localizable.metricAddTitle())
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showEmailForm) {
+                MailView(result: self.$mailResult) { compose in
+                    compose.setSubject(R.string.localizable.galleryMessageSubject())
+                    compose.setToRecipients([AppConfig.emailForReport])
+                }
+            }
+
+
         }
         .listStyle(PlainListStyle())
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))

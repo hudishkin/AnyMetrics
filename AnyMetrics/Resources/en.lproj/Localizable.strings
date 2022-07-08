@@ -16,7 +16,7 @@
 "metric.value.bad" = "Bad";
 "metric.add" = "Add";
 "metric.add.title" = "Add Metric";
-"metric.add.custom" = "Create custom metric";
+"metric.add.custom" = "Create metric";
 "metric.actions.update-value" = "Refresh";
 "metric.actions.delete" = "Remove";
 "metric.actions.edit" = "Edit";
@@ -34,6 +34,12 @@
 "httpheaders.select-from-list" = "Select HTTP-header from list";
 "httpheaders.select-values-from-list" = "Select value from list";
 "httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
+
+// MARK: - Gallery
+
+"gallery.no-metric-message" = "If you didn't find the metric,\nyou can add it manually ↑.\n\nOr send the message with the metric information,\nwe'll add it to the gallery.";
+"gallery.button.send" = "Send information";
+"gallery.message.subject" = "[AnyMetrics] Can't find metric";
 
 // MARK: - Add/Edit Metric
 
@@ -82,9 +88,9 @@
 // MARK: - Info View
 
 "info.title" = "About";
-"info.message" = "AnyMetrics is open source project. Developed to solve own problem and published on GitHub.\n\nIf want to add metric to gallery send PullRequest to gallery repository.";
-"info.github-app-repo" = "Application code";
+"info.message" = "AnyMetrics is an open-source project developed to solve its own problem and source code was published on GitHub.\n\nTo add a metric to the gallery, send a pull request to the gallery repository on Github.";
+"info.github-app-repo" = "App repository";
 "info.github-gallery-repo" = "Gallery repository";
 "info.version" = "Version: %@";
-"info.rate" = "Rate application";
+"info.rate" = "Rate app";
 

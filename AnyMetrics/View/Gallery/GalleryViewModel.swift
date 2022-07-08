@@ -13,6 +13,7 @@ final class GalleryViewModel: ObservableObject {
 
     @Published var galleryItems: [GalleryItem] = []
 
+    private(set) var showSendRequestMetric: Bool = false
     private var allGallery: [GalleryItem] = []
     private var tokens = Set<AnyCancellable>()
 
@@ -37,6 +38,7 @@ final class GalleryViewModel: ObservableObject {
 
     func search(text: String) {
         guard !text.isEmpty else {
+            self.showSendRequestMetric = false
             self.galleryItems = allGallery
             return
         }
@@ -61,6 +63,7 @@ final class GalleryViewModel: ObservableObject {
                 }
             }
             DispatchQueue.main.async {
+                self.showSendRequestMetric = result.isEmpty
                 self.galleryItems = result
             }
         }
