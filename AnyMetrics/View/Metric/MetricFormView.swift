@@ -198,8 +198,9 @@ struct MetricFormView: View {
                                 .environmentObject(viewModel)
                         } label: {
                             Text(R.string.localizable.addmetricFieldValueConfigure())
+                                .opacity(viewModel.canMakeRequest ? Constants.opcityEnable : Constants.opcityDisable)
                             Spacer()
-                            if viewModel.parseRules.isEmpty {
+                            if viewModel.parseRules.isEmpty && viewModel.canMakeRequest {
                                 Circle()
                                     .fill(Constants.checkerBadBackground)
                                     .frame(
@@ -208,7 +209,8 @@ struct MetricFormView: View {
                                         alignment: .leading)
                             }
 
-                        }
+                        }.disabled(!viewModel.canMakeRequest)
+
 
                     }
                 }
@@ -226,8 +228,7 @@ struct MetricFormView: View {
                                 RoundedRectangle(cornerRadius: Constants.metricViewCorner)
                                     .fill(Color(uiColor: .systemBackground))
                                     .padding(Constants.metricViewPadding))
-                            .opacity(viewModel.canAddMetric ? 1.0 : 0.5)
-
+                            .opacity(viewModel.canAddMetric ? Constants.opcityEnable : Constants.opcityDisable)
                     }
                     .frame(maxWidth: .infinity)
                     .padding()

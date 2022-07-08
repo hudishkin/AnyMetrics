@@ -21,7 +21,7 @@ final class MetricViewModel: ObservableObject {
 
     // MARK: - Published Properties
 
-    @Published private(set) var canMakeRequest: Bool = true
+    @Published private(set) var canMakeRequest: Bool = false
     @Published private(set) var showRequestResult: Bool = false
     @Published private(set) var hasRequestError: Bool = false
     @Published private(set) var hasParseRuleError: Bool = false
@@ -34,7 +34,7 @@ final class MetricViewModel: ObservableObject {
     @Published var measure: String = ""
     @Published var requestUrl: String = "" {
         didSet {
-            canMakeRequest = URL(string: requestUrl) != nil
+            canMakeRequest = requestUrl.isValidURL
         }
     }
     @Published var httpMethodType: HTTPMethodType = .GET
@@ -100,6 +100,7 @@ final class MetricViewModel: ObservableObject {
         parseConfigurationValue = metric.rules?.value ?? ""
         showRequestResult = true
         resultWithError = metric.resultWithError
+        canMakeRequest = true
 
     }
 
