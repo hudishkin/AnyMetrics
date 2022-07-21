@@ -10,6 +10,7 @@ import Foundation
 enum AppConfig {
 
 
+    static let emailForReport = "anymetrics.app@gmail.com"
     static let group = "group.anymetrics.app"
     static let metricsKey = "app.metrics"
 

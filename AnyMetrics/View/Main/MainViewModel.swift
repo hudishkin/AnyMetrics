@@ -30,6 +30,7 @@ final class MainViewModel: MetricStore, ObservableObject {
                     switch value {
                     case .value(let valueString):
                         m.result = valueString
+                        m.resultWithError = false
                     case .status(let success):
                         m.result = ""
                         m.resultWithError = !success
@@ -56,6 +57,7 @@ final class MainViewModel: MetricStore, ObservableObject {
                 switch value {
                 case .value(let valueString):
                     metric.result = valueString
+                    metric.resultWithError = false
                 case .status(let success):
                     metric.result = ""
                     metric.resultWithError = !success

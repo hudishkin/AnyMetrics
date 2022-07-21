@@ -9,6 +9,11 @@ import Foundation
 import SwiftSoup
 import SwiftyJSON
 
+protocol ValueParser {
+    func parseValue(by rules: String, formatter: MetricFormatter?) -> String?
+    func rawData() -> String?
+}
+
 extension ParseRules {
     func parse(_ value: String) -> ParseResult {
         switch self.type {
@@ -21,8 +26,8 @@ extension ParseRules {
                 return .status(true)
             }
         case .contains:
-            guard let containsString = self.value else { return .status(false) }
-            if value.contains(containsString) || (!self.caseSensitive && value.lowercased().contains(containsString.lowercased())) {
+            guard let containsString = self.value, !containsString.isEmpty else { return .status(false) }
+            if (self.caseSensitive && value.localizedStandardContains(containsString)) || value.lowercased().contains(containsString.lowercased()) {
                 return .status(true)
             }
         }

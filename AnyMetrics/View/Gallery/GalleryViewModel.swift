@@ -12,16 +12,20 @@ import Combine
 final class GalleryViewModel: ObservableObject {
 
     @Published var galleryItems: [GalleryItem] = []
+    @Published var showLoading: Bool = false
 
+    private(set) var showSendRequestMetric: Bool = false
     private var allGallery: [GalleryItem] = []
     private var tokens = Set<AnyCancellable>()
 
     init() { }
 
     func load() {
+        showLoading = true
         GalleryService.load()
             .receive(on: DispatchQueue.main)
             .sink { result in
+                self.showLoading = false
                 switch result {
                 case .failure(let error):
                     debugPrint(error.localizedDescription)
@@ -37,6 +41,7 @@ final class GalleryViewModel: ObservableObject {
 
     func search(text: String) {
         guard !text.isEmpty else {
+            self.showSendRequestMetric = false
             self.galleryItems = allGallery
             return
         }
@@ -61,6 +66,7 @@ final class GalleryViewModel: ObservableObject {
                 }
             }
             DispatchQueue.main.async {
+                self.showSendRequestMetric = result.isEmpty
                 self.galleryItems = result
             }
         }
