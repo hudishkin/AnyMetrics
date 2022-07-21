@@ -146,7 +146,7 @@ struct MetricContentView: View {
             if Bundle.isInWidget() {
                 return Constants.fontValue(size: 30)
             }
-            return Constants.fontValue(size: 38)
+            return Constants.fontValue(size: 34)
         }
         if metric.result.count < 15 {
             return Constants.fontValue(size: 24)

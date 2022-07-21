@@ -17,24 +17,44 @@ enum HTTPMethodType: String, Equatable, CaseIterable {
     case POST, GET, HEAD, DELETE, PUT
 }
 
+
+
+enum FormStep: Hashable {
+    case requestStep, valueStep, displayStep
+
+//    static let checkStatusSteps: [FormStep] = [.requestStep, .displayStep]
+//    static let parseResponseSteps: [FormStep] = [.requestStep, .valueStep, .displayStep]
+}
+
 final class MetricViewModel: ObservableObject {
+
+    // MARK: - Types
+
+    enum RequestStatus {
+        case none, loading, success, error
+    }
 
     // MARK: - Published Properties
 
-    @Published private(set) var canMakeRequest: Bool = true
-    @Published private(set) var showRequestResult: Bool = false
+    var selectedStepIndex: Int = 0
+    @Published var selectedStep: FormStep = .requestStep
+
+    @Published private(set) var canMakeRequest: Bool = false
+    @Published private(set) var canSetupResponse: Bool = false
     @Published private(set) var hasRequestError: Bool = false
     @Published private(set) var hasParseRuleError: Bool = false
     @Published private(set) var errorMessage: String = ""
 
-    @Published var loading: Bool = false
-    @Published var loadingRequest: Bool = false
+//    @Published var loading: Bool = false
+//    @Published var loadingRequest: Bool = false
+    @Published var requestStatus: RequestStatus = .none
+    
 
     @Published var title: String = ""
     @Published var measure: String = ""
-    @Published var requestUrl: String = "" {
+    @Published var requestUrl: String = "http://jsonplaceholder.typicode.com/posts" {
         didSet {
-            canMakeRequest = URL(string: requestUrl) != nil
+            canMakeRequest = requestUrl.isValidURL
         }
     }
     @Published var httpMethodType: HTTPMethodType = .GET
@@ -54,11 +74,14 @@ final class MetricViewModel: ObservableObject {
 
     // MARK: - Private Properties
 
-    private var resultWithError: Bool = true
+    private(set) var resultWithError: Bool = true
     private var parserDocument: ValueParser?
     private var disposables = Set<AnyCancellable>()
     private var metric: Metric?
 
+    var isEdited: Bool {
+        return metric != nil
+    }
 
     // MARK: - Properties
 
@@ -80,6 +103,10 @@ final class MetricViewModel: ObservableObject {
         }
         return true
     }
+//
+//    var hasNextPage: Bool {
+//        getNextIndex() != nil
+//    }
 
     // MARK: - Init
 
@@ -98,8 +125,9 @@ final class MetricViewModel: ObservableObject {
         typeRule = metric.rules?.type ?? .none
         formatType = metric.formatter?.format ?? .none
         parseConfigurationValue = metric.rules?.value ?? ""
-        showRequestResult = true
+        canSetupResponse = true
         resultWithError = metric.resultWithError
+        canMakeRequest = true
 
     }
 
@@ -107,7 +135,7 @@ final class MetricViewModel: ObservableObject {
 
     func makeRequest() {
         guard let url = URL(string: self.requestUrl) else { return }
-        self.loadingRequest = true
+        self.requestStatus = .loading
 
         Fetcher.fetch(
             for: url,
@@ -130,19 +158,20 @@ final class MetricViewModel: ObservableObject {
         .sink(receiveCompletion: { completion in
                 switch completion {
                 case .failure(let error):
-                    self.loadingRequest = false
+                    self.requestStatus = .error
                     self.errorMessage = error.localizedDescription
                     self.hasRequestError = true
-                    self.showRequestResult = self.typeMetric == .checkStatus
+                    self.canSetupResponse = self.typeMetric == .checkStatus
 
                 case .finished:
                     self.hasRequestError = false
-                    self.showRequestResult = true
+                    self.canSetupResponse = true
+                    self.requestStatus = .success
                 }
             }, receiveValue: { parser in
                 self.response = parser?.rawData() ?? ""
                 self.parserDocument = parser
-                self.loadingRequest = false
+                self.updateValue()
             })
             .store(in: &disposables)
     }
@@ -158,7 +187,7 @@ final class MetricViewModel: ObservableObject {
                 switch rule.parse(value) {
                 case .status(let status):
                     self.resultWithError = !status
-                    self.result = ""
+                    self.result = String(describing: status)
                 case .value(let val):
                     self.result = val
                 }
@@ -200,6 +229,23 @@ final class MetricViewModel: ObservableObject {
             description: nil,
             website: nil)
     }
+
+    // MARK: - Private Methods
+
+//    private func getNextIndex() -> Int? {
+//        switch typeMetric {
+//        case .json, .web:
+//            guard
+//                let index = FormStep.parseResponseSteps.firstIndex(of: selectedStep),
+//                FormStep.checkStatusSteps.endIndex > index + 1 else { return nil }
+//            return index + 1
+//        case .checkStatus:
+//            guard
+//                let index = FormStep.checkStatusSteps.firstIndex(of: selectedStep),
+//                    FormStep.checkStatusSteps.endIndex > index + 1 else { return  nil }
+//            return index + 1
+//        }
+//    }
 }
 
 extension TypeMetric {

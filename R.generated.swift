@@ -383,7 +383,7 @@ struct R: Rswift.Validatable {
 
   /// This `R.string` struct is generated, and contains static references to 1 localization tables.
   struct string {
-    /// This `R.string.localizable` struct is generated, and contains static references to 68 localization keys.
+    /// This `R.string.localizable` struct is generated, and contains static references to 81 localization keys.
     struct localizable {
       /// en translation: About
       ///
@@ -417,11 +417,11 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let appName = Rswift.StringResource(key: "appName", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: AnyMetrics is open source project. Developed to solve own problem and published on GitHub.  If want to add metric to gallery send PullRequest to gallery repository.
+      /// en translation: AnyMetrics is project developed to solve its own problem and published to App Store for everyone for free.  To add a metric to the gallery, send a pull request to the gallery repository on Github.
       ///
       /// Locales: en, ru
       static let infoMessage = Rswift.StringResource(key: "info.message", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Application code
+      /// en translation: App repository
       ///
       /// Locales: en, ru
       static let infoGithubAppRepo = Rswift.StringResource(key: "info.github-app-repo", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -453,7 +453,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricFieldValueConfigure = Rswift.StringResource(key: "addmetric.field.value-configure", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Create custom metric
+      /// en translation: Create metric
       ///
       /// Locales: en, ru
       static let metricAddCustom = Rswift.StringResource(key: "metric.add.custom", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -489,6 +489,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricFieldRuleTypePlaceholder = Rswift.StringResource(key: "addmetric.field.rule-type-placeholder", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Error
+      ///
+      /// Locales: en, ru
+      static let commonError = Rswift.StringResource(key: "common.error", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: FAQ
       ///
       /// Locales: en, ru
@@ -497,6 +501,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricSectionFormatSettings = Rswift.StringResource(key: "addmetric.section.format-settings", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Gallery
+      ///
+      /// Locales: en, ru
+      static let galleryTitle = Rswift.StringResource(key: "gallery.title", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Gallery repository
       ///
       /// Locales: en, ru
@@ -521,6 +529,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let httpheadersEnterValue = Rswift.StringResource(key: "httpheaders.enter-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: If you didn't find the metric, you can add it manually ↑.  Or send the message with the metric information, we'll add it to the gallery.
+      ///
+      /// Locales: en, ru
+      static let galleryNoMetricMessage = Rswift.StringResource(key: "gallery.no-metric-message", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Make request
       ///
       /// Locales: en, ru
@@ -537,6 +549,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricTitleNew = Rswift.StringResource(key: "addmetric.title-new", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Next
+      ///
+      /// Locales: en, ru
+      static let addmetricButtonNext = Rswift.StringResource(key: "addmetric.button.next", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: No
       ///
       /// Locales: en, ru
@@ -545,6 +561,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricTextNoResponse = Rswift.StringResource(key: "addmetric.text.no-response", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Ok
+      ///
+      /// Locales: en, ru
+      static let commonOk = Rswift.StringResource(key: "common.ok", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Optional
       ///
       /// Locales: en, ru
@@ -565,7 +585,7 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricFieldParamMeasurePlaceholder = Rswift.StringResource(key: "addmetric.field.param-measure-placeholder", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
-      /// en translation: Rate application
+      /// en translation: Rate app
       ///
       /// Locales: en, ru
       static let infoRate = Rswift.StringResource(key: "info.rate", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
@@ -581,10 +601,22 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let metricActionsDelete = Rswift.StringResource(key: "metric.actions.delete", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Request Settings
+      ///
+      /// Locales: en, ru
+      static let addmetricTitleRequest = Rswift.StringResource(key: "addmetric.title-request", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Request settings
       ///
       /// Locales: en, ru
       static let addmetricSectionRequestSettings = Rswift.StringResource(key: "addmetric.section.request-settings", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Result
+      ///
+      /// Locales: en, ru
+      static let addmetricSectionResult = Rswift.StringResource(key: "addmetric.section.result", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Save
+      ///
+      /// Locales: en, ru
+      static let addmetricButtonSave = Rswift.StringResource(key: "addmetric.button.save", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Save
       ///
       /// Locales: en, ru
@@ -613,6 +645,10 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let httpheadersSelectValuesFromList = Rswift.StringResource(key: "httpheaders.select-values-from-list", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Send information
+      ///
+      /// Locales: en, ru
+      static let galleryButtonSend = Rswift.StringResource(key: "gallery.button.send", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value "100"
       ///
       /// Locales: en, ru
@@ -637,6 +673,14 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let addmetricFieldUrl = Rswift.StringResource(key: "addmetric.field.url", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Value
+      ///
+      /// Locales: en, ru
+      static let addmetricFieldValue = Rswift.StringResource(key: "addmetric.field.value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Value Settings
+      ///
+      /// Locales: en, ru
+      static let addmetricTitleValue = Rswift.StringResource(key: "addmetric.title-value", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: Value settings
       ///
       /// Locales: en, ru
@@ -649,10 +693,18 @@ struct R: Rswift.Validatable {
       ///
       /// Locales: en, ru
       static let infoVersion = Rswift.StringResource(key: "info.version", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: Widget Settings
+      ///
+      /// Locales: en, ru
+      static let addmetricTitleDisplay = Rswift.StringResource(key: "addmetric.title-display", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: You sure?
       ///
       /// Locales: en, ru
       static let metricActionsSure = Rswift.StringResource(key: "metric.actions.sure", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
+      /// en translation: [AnyMetrics] Can't find metric
+      ///
+      /// Locales: en, ru
+      static let galleryMessageSubject = Rswift.StringResource(key: "gallery.message.subject", tableName: "Localizable", bundle: R.hostingBundle, locales: ["en", "ru"], comment: nil)
       /// en translation: https://yourapi.com/
       ///
       /// Locales: en, ru
@@ -778,7 +830,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("appName", bundle: bundle, comment: "")
       }
 
-      /// en translation: AnyMetrics is open source project. Developed to solve own problem and published on GitHub.  If want to add metric to gallery send PullRequest to gallery repository.
+      /// en translation: AnyMetrics is project developed to solve its own problem and published to App Store for everyone for free.  To add a metric to the gallery, send a pull request to the gallery repository on Github.
       ///
       /// Locales: en, ru
       static func infoMessage(preferredLanguages: [String]? = nil) -> String {
@@ -793,7 +845,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("info.message", bundle: bundle, comment: "")
       }
 
-      /// en translation: Application code
+      /// en translation: App repository
       ///
       /// Locales: en, ru
       static func infoGithubAppRepo(preferredLanguages: [String]? = nil) -> String {
@@ -913,7 +965,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.field.value-configure", bundle: bundle, comment: "")
       }
 
-      /// en translation: Create custom metric
+      /// en translation: Create metric
       ///
       /// Locales: en, ru
       static func metricAddCustom(preferredLanguages: [String]? = nil) -> String {
@@ -1048,6 +1100,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.field.rule-type-placeholder", bundle: bundle, comment: "")
       }
 
+      /// en translation: Error
+      ///
+      /// Locales: en, ru
+      static func commonError(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("common.error", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "common.error"
+        }
+
+        return NSLocalizedString("common.error", bundle: bundle, comment: "")
+      }
+
       /// en translation: FAQ
       ///
       /// Locales: en, ru
@@ -1076,6 +1143,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("addmetric.section.format-settings", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Gallery
+      ///
+      /// Locales: en, ru
+      static func galleryTitle(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("gallery.title", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "gallery.title"
+        }
+
+        return NSLocalizedString("gallery.title", bundle: bundle, comment: "")
       }
 
       /// en translation: Gallery repository
@@ -1168,6 +1250,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("httpheaders.enter-value", bundle: bundle, comment: "")
       }
 
+      /// en translation: If you didn't find the metric, you can add it manually ↑.  Or send the message with the metric information, we'll add it to the gallery.
+      ///
+      /// Locales: en, ru
+      static func galleryNoMetricMessage(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("gallery.no-metric-message", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "gallery.no-metric-message"
+        }
+
+        return NSLocalizedString("gallery.no-metric-message", bundle: bundle, comment: "")
+      }
+
       /// en translation: Make request
       ///
       /// Locales: en, ru
@@ -1228,6 +1325,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.title-new", bundle: bundle, comment: "")
       }
 
+      /// en translation: Next
+      ///
+      /// Locales: en, ru
+      static func addmetricButtonNext(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.button.next", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.button.next"
+        }
+
+        return NSLocalizedString("addmetric.button.next", bundle: bundle, comment: "")
+      }
+
       /// en translation: No
       ///
       /// Locales: en, ru
@@ -1256,6 +1368,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("addmetric.text.no-response", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Ok
+      ///
+      /// Locales: en, ru
+      static func commonOk(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("common.ok", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "common.ok"
+        }
+
+        return NSLocalizedString("common.ok", bundle: bundle, comment: "")
       }
 
       /// en translation: Optional
@@ -1333,7 +1460,7 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.field.param-measure-placeholder", bundle: bundle, comment: "")
       }
 
-      /// en translation: Rate application
+      /// en translation: Rate app
       ///
       /// Locales: en, ru
       static func infoRate(preferredLanguages: [String]? = nil) -> String {
@@ -1393,6 +1520,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("metric.actions.delete", bundle: bundle, comment: "")
       }
 
+      /// en translation: Request Settings
+      ///
+      /// Locales: en, ru
+      static func addmetricTitleRequest(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.title-request", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.title-request"
+        }
+
+        return NSLocalizedString("addmetric.title-request", bundle: bundle, comment: "")
+      }
+
       /// en translation: Request settings
       ///
       /// Locales: en, ru
@@ -1406,6 +1548,36 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("addmetric.section.request-settings", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Result
+      ///
+      /// Locales: en, ru
+      static func addmetricSectionResult(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.section.result", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.section.result"
+        }
+
+        return NSLocalizedString("addmetric.section.result", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Save
+      ///
+      /// Locales: en, ru
+      static func addmetricButtonSave(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.button.save", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.button.save"
+        }
+
+        return NSLocalizedString("addmetric.button.save", bundle: bundle, comment: "")
       }
 
       /// en translation: Save
@@ -1515,6 +1687,21 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("httpheaders.select-values-from-list", bundle: bundle, comment: "")
       }
 
+      /// en translation: Send information
+      ///
+      /// Locales: en, ru
+      static func galleryButtonSend(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("gallery.button.send", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "gallery.button.send"
+        }
+
+        return NSLocalizedString("gallery.button.send", bundle: bundle, comment: "")
+      }
+
       /// en translation: Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value "100"
       ///
       /// Locales: en, ru
@@ -1605,6 +1792,36 @@ struct R: Rswift.Validatable {
         return NSLocalizedString("addmetric.field.url", bundle: bundle, comment: "")
       }
 
+      /// en translation: Value
+      ///
+      /// Locales: en, ru
+      static func addmetricFieldValue(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.field.value", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.field.value"
+        }
+
+        return NSLocalizedString("addmetric.field.value", bundle: bundle, comment: "")
+      }
+
+      /// en translation: Value Settings
+      ///
+      /// Locales: en, ru
+      static func addmetricTitleValue(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.title-value", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.title-value"
+        }
+
+        return NSLocalizedString("addmetric.title-value", bundle: bundle, comment: "")
+      }
+
       /// en translation: Value settings
       ///
       /// Locales: en, ru
@@ -1652,6 +1869,21 @@ struct R: Rswift.Validatable {
         return String(format: format, locale: locale, value1)
       }
 
+      /// en translation: Widget Settings
+      ///
+      /// Locales: en, ru
+      static func addmetricTitleDisplay(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("addmetric.title-display", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "addmetric.title-display"
+        }
+
+        return NSLocalizedString("addmetric.title-display", bundle: bundle, comment: "")
+      }
+
       /// en translation: You sure?
       ///
       /// Locales: en, ru
@@ -1665,6 +1897,21 @@ struct R: Rswift.Validatable {
         }
 
         return NSLocalizedString("metric.actions.sure", bundle: bundle, comment: "")
+      }
+
+      /// en translation: [AnyMetrics] Can't find metric
+      ///
+      /// Locales: en, ru
+      static func galleryMessageSubject(preferredLanguages: [String]? = nil) -> String {
+        guard let preferredLanguages = preferredLanguages else {
+          return NSLocalizedString("gallery.message.subject", bundle: hostingBundle, comment: "")
+        }
+
+        guard let (_, bundle) = localeBundle(tableName: "Localizable", preferredLanguages: preferredLanguages) else {
+          return "gallery.message.subject"
+        }
+
+        return NSLocalizedString("gallery.message.subject", bundle: bundle, comment: "")
       }
 
       /// en translation: https://yourapi.com/

@@ -13,6 +13,7 @@ fileprivate enum Constants {
     static let spacing: CGFloat = 12
     static let spacing2: CGFloat = 24
     static let iconCorner: CGFloat = 30
+    static let buttonCorner: CGFloat = 30
     static let imageArrow = Image(systemName: "arrow.right")
     static let imageStar = Image(systemName: "star")
     static let textColor = R.color.baseText.color
@@ -34,81 +35,105 @@ fileprivate enum Constants {
 }
 struct InfoView: View {
 
+    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Constants.spacing) {
-                HStack(alignment: .center) {
-                    R.image.appIconInfo.image
-                        .resizable()
-                        .cornerRadius(Constants.iconCorner)
-                        .frame(width: Constants.imageSize, height: Constants.imageSize, alignment: .center)
-                }
-                .frame(minWidth: 0, maxWidth: .infinity)
-
-                Spacer(minLength: Constants.spacing2)
-                Text(R.string.localizable.infoTitle())
-                    .font(Constants.fontTitle)
-                    .foregroundColor(Constants.titleColor)
-                Text(R.string.localizable.infoMessage())
-                    .font(Constants.fontBody)
-                    .foregroundColor(Constants.textColor)
-                Spacer(minLength: Constants.spacing2)
-                Link(destination: AppConfig.Urls.appRepository) {
-                    HStack {
-                        Text(R.string.localizable.infoGithubAppRepo())
-                            .font(Constants.fontLink)
-                            .foregroundColor(Constants.linkColor)
-                        Constants.imageArrow
+        VStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Constants.spacing) {
+                    HStack(alignment: .center) {
+                        R.image.appIconInfo.image
                             .resizable()
-                            .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
-                            .foregroundColor(Constants.linkColor)
+                            .cornerRadius(Constants.iconCorner)
+                            .frame(width: Constants.imageSize, height: Constants.imageSize, alignment: .center)
                     }
-                }
-                Link(destination: AppConfig.Urls.galleryRepository) {
-                    HStack {
-                        Text(R.string.localizable.infoGithubGalleryRepo())
-                            .font(Constants.fontLink)
-                            .foregroundColor(Constants.linkColor)
-                        Constants.imageArrow
-                            .resizable()
-                            .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
-                            .foregroundColor(Constants.linkColor)
-                    }
-                }
+                    .frame(minWidth: 0, maxWidth: .infinity)
 
-                Spacer(minLength: Constants.spacing2 + Constants.spacing2)
-
-                VStack(alignment: .leading) {
-                    Button {
-                        ReviewHandler.requestReview()
-                    } label: {
-                        Text(R.string.localizable.infoRate())
-                            .font(Constants.fontLink)
-                            .foregroundColor(Constants.linkColor)
-                        Constants.imageStar
-                            .resizable()
-                            .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
-                            .foregroundColor(Constants.linkColor)
-                    }
-
-
-
-                    Text(R.string.localizable.infoVersion(Bundle.version()))
-                        .foregroundColor(R.color.secondaryText.color)
+                    Spacer(minLength: Constants.spacing2)
+                    Text(R.string.localizable.infoTitle())
+                        .font(Constants.fontTitle)
+                        .foregroundColor(Constants.titleColor)
+                    Text(R.string.localizable.infoMessage())
                         .font(Constants.fontBody)
+                        .foregroundColor(Constants.textColor)
+                    Spacer(minLength: Constants.spacing2)
+//                    Link(destination: AppConfig.Urls.appRepository) {
+//                        HStack {
+//                            Text(R.string.localizable.infoGithubAppRepo())
+//                                .font(Constants.fontLink)
+//                                .foregroundColor(Constants.linkColor)
+//                            Constants.imageArrow
+//                                .resizable()
+//                                .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
+//                                .foregroundColor(Constants.linkColor)
+//                        }
+//                    }
+                    Link(destination: AppConfig.Urls.galleryRepository) {
+                        HStack {
+                            Text(R.string.localizable.infoGithubGalleryRepo())
+                                .font(Constants.fontLink)
+                                .foregroundColor(Constants.linkColor)
+                            Constants.imageArrow
+                                .resizable()
+                                .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
+                                .foregroundColor(Constants.linkColor)
+                        }
+                    }
+
+                    Spacer(minLength: Constants.spacing2 + Constants.spacing2)
+
+                    VStack(alignment: .leading) {
+                        Button {
+                            ReviewHandler.requestReview()
+                        } label: {
+                            Text(R.string.localizable.infoRate())
+                                .font(Constants.fontLink)
+                                .foregroundColor(Constants.linkColor)
+                            Constants.imageStar
+                                .resizable()
+                                .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
+                                .foregroundColor(Constants.linkColor)
+                        }
+
+
+
+                        Text(R.string.localizable.infoVersion(Bundle.version()))
+                            .foregroundColor(R.color.secondaryText.color)
+                            .font(Constants.fontBody)
+
+                    }
+
+
                 }
-
+                .frame(
+                    minWidth: 0,
+                    maxWidth: .infinity,
+                    minHeight: 0,
+                    maxHeight: .infinity,
+                    alignment: .leading)
+                .padding()
             }
-            .frame(
-                minWidth: 0,
-                maxWidth: .infinity,
-                minHeight: 0,
-                maxHeight: .infinity,
-                alignment: .leading)
+
+            Spacer()
+            HStack {
+                Button {
+                    ImpactHelper.impactButton()
+                    presentationMode.wrappedValue.dismiss()
+                } label: {
+                    HStack {
+                        Spacer()
+                        Text(R.string.localizable.commonClose())
+                            .foregroundColor(R.color.baseText.color)
+                        Spacer()
+                    }
+                    .padding()
+                }
+                .background(R.color.galleryItemBackground.color)
+                .cornerRadius(Constants.buttonCorner)
+            }
             .padding()
+
         }
-
-
     }
 }
 
