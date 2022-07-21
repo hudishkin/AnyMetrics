@@ -31,8 +31,8 @@ fileprivate enum Constants {
     static let requestImage = R.image.request.image
     static let imageFAQ = Image(systemName: "questionmark.circle.fill")
     static let faqSize: CGFloat = 20
-    static let opcityEnable: CGFloat = 1.0
-    static let opcityDisable: CGFloat = 0.4
+    static let opacityEnable: CGFloat = 1.0
+    static let opacityDisable: CGFloat = 0.4
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
     static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
@@ -46,41 +46,18 @@ fileprivate enum Constants {
     static let metricViewPadding: CGFloat = -10
 }
 
-
-struct MetricFormView: View {
-
-    @Binding var allowDismissed: Bool
-
-    let mainButtonTitle: String
-    @StateObject var viewModel: MetricViewModel
-    var action: (Metric) -> Void
+struct MetricRequestForm: View {
 
     @State var showAddHeader: Bool = false
+    @EnvironmentObject var viewModel: MetricViewModel
 
     var body: some View {
         Form {
             Section {
-                HStack {
-                    Text(R.string.localizable.addmetricFieldTitle())
-                    TextField(
-                        R.string.localizable.addmetricFieldTitlePlaceholder(),
-                        text: $viewModel.title)
-                    .multilineTextAlignment(.trailing)
-                }
-                HStack {
-                    Text(R.string.localizable.addmetricFieldParamMeasure())
-                    TextField(
-                        R.string.localizable.addmetricFieldParamMeasurePlaceholder(),
-                        text: $viewModel.measure)
-                    .multilineTextAlignment(.trailing)
-                }
-            }
-
-            Section {
                 TextField(
                     R.string.localizable.addmetricFieldUrlPlaceholder(),
                     text: $viewModel.requestUrl)
-                .disabled(viewModel.loading)
+                .disabled(viewModel.requestStatus == .loading)
                 .disableAutocorrection(true)
                 Picker(
                     R.string.localizable.addmetricFieldHttpMethod(),
@@ -140,113 +117,191 @@ struct MetricFormView: View {
                             viewModel.httpHeaders[headerName] = headerValue
                         })
                     }
-
-
                 }
             } header: {
                 Text(R.string.localizable.addmetricSectionHttpHeaders())
             }
+
             Section {
-                if viewModel.typeMetric == .checkStatus {
-                    HStack(alignment: .center) {
-                        Button {
-                            self.viewModel.makeRequest()
-                        } label: {
-                            HStack {
-                                Constants.requestImage
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundColor(Constants.buttonTextColor)
-                                    .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                                    .aspectRatio(contentMode: .fit)
-                                Text(R.string.localizable.addmetricButtonMakeRequest())
-                                    .font(Constants.mainButtonFont)
-                                    .foregroundColor(Constants.buttonTextColor)
-                            }
-                        }
-                        .disabled(!viewModel.canMakeRequest)
-                        .opacity(opacityRequestButton())
-                        Spacer()
-                        if viewModel.loadingRequest {
-                            ProgressView()
-                        } else {
-                            EmptyView()
+                HStack(alignment: .center) {
+                    Button {
+                        self.viewModel.makeRequest()
+                    } label: {
+                        HStack {
+                            Constants.requestImage
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundColor(R.color.baseText.color)
+                                .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                                .aspectRatio(contentMode: .fit)
+                            Text(R.string.localizable.addmetricButtonMakeRequest())
+                                .font(Constants.mainButtonFont)
+                                .foregroundColor(R.color.baseText.color)
                         }
                     }
-                    if viewModel.showRequestResult {
-                        HStack(alignment: .center) {
-                            Circle()
-                                .fill(self.viewModel.hasRequestError ? Constants.checkerBadBackground : Constants.checkerGoodBackground)
-                                .frame(
-                                    width: Constants.circleCheckerSize,
-                                    height: Constants.circleCheckerSize,
-                                    alignment: .leading)
-
-                            Text(checkerText())
-                            Spacer()
-                            if viewModel.loadingRequest {
-                                ProgressView()
-                            } else {
-                                EmptyView()
-                            }
-                        }
+                    .disabled(!viewModel.canMakeRequest)
+                    .opacity(opacityRequestButton())
+                    Spacer()
+                    switch viewModel.requestStatus {
+                    case .error:
+                        Text(R.string.localizable.commonError())
+                            .foregroundColor(.red)
+                    case .loading:
+                        ProgressView()
+                    case .success:
+                        Text(R.string.localizable.commonOk())
+                            .foregroundColor(.green)
+                    case .none:
+                        EmptyView()
                     }
-                } else {
-                    HStack {
-                        NavigationLink {
-                            MetricReponseView(allowDismissed: $allowDismissed)
-                                .environmentObject(viewModel)
-                        } label: {
-                            Text(R.string.localizable.addmetricFieldValueConfigure())
-                                .opacity(viewModel.canMakeRequest ? Constants.opcityEnable : Constants.opcityDisable)
-                            Spacer()
-                            if viewModel.parseRules.isEmpty && viewModel.canMakeRequest {
-                                Circle()
-                                    .fill(Constants.checkerBadBackground)
-                                    .frame(
-                                        width: Constants.circleConfigureSize,
-                                        height: Constants.circleConfigureSize,
-                                        alignment: .leading)
-                            }
 
-                        }.disabled(!viewModel.canMakeRequest)
-
-
-                    }
                 }
-            } header: {
-                Text(R.string.localizable.addmetricSectionValueSettings())
             } footer: {
-                if let metric = viewModel.getMetric() ?? Mocks.metricEmpty {
-                    HStack(alignment: .center) {
-                        MetricContentView(metric: metric)
-                            .frame(
-                                width: Constants.metricViewSize,
-                                height: Constants.metricViewSize,
-                                alignment: .center)
-                            .background(
-                                RoundedRectangle(cornerRadius: Constants.metricViewCorner)
-                                    .fill(Color(uiColor: .systemBackground))
-                                    .padding(Constants.metricViewPadding))
-                            .opacity(viewModel.canAddMetric ? Constants.opcityEnable : Constants.opcityDisable)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                }
+                VStack {
+                    Text(viewModel.response)
+                        .font(Constants.responseFont)
+                        .foregroundColor(R.color.secondaryText.color)
+
+                }.frame(maxHeight: 300)
+                    .overlay(Rectangle().fill(LinearGradient(colors: [Color(uiColor: .systemGroupedBackground).opacity(0), Color(uiColor: .systemGroupedBackground)], startPoint:  UnitPoint.top, endPoint: UnitPoint.bottom)))
+
             }
+        }
+        .navigationTitle(R.string.localizable.addmetricTitleRequest())
+    }
 
-            // MARK: - Add button
-            Section {
-                EmptyView()
-            } footer: {
-                HStack(alignment: .center, spacing: Constants.zero, content: {
+
+
+    func opacityRequestButton() -> CGFloat {
+        self.viewModel.canMakeRequest ? Constants.opacityEnable : Constants.opacityDisable
+    }
+}
+
+struct MetricDisplayView: View {
+
+    @Binding var allowDismissed: Bool
+    @EnvironmentObject var viewModel: MetricViewModel
+    var action: (Metric) -> Void
+
+    var body: some View {
+
+        ZStack(alignment: .bottomTrailing) {
+            Form {
+                Section {
+                    HStack {
+                        Text(R.string.localizable.addmetricFieldTitle())
+                        TextField(
+                            R.string.localizable.addmetricFieldTitlePlaceholder(),
+                            text: $viewModel.title)
+                        .multilineTextAlignment(.trailing)
+                    }
+                    HStack {
+                        Text(R.string.localizable.addmetricFieldParamMeasure())
+                        TextField(
+                            R.string.localizable.addmetricFieldParamMeasurePlaceholder(),
+                            text: $viewModel.measure)
+                        .multilineTextAlignment(.trailing)
+                    }
+                } header: {
+                    if let metric = getMetric() {
+                            HStack(alignment: .center) {
+                                MetricContentView(metric: metric)
+                                    .frame(
+                                        width: Constants.metricViewSize,
+                                        height: Constants.metricViewSize,
+                                        alignment: .center)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: Constants.metricViewCorner)
+                                            .fill(Color(uiColor: .systemBackground))
+                                            .padding(Constants.metricViewPadding))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                        }
+                }
+
+            }
+            HStack(alignment: .center, spacing: Constants.zero, content: {
+                Button(action: {
+                    guard let metric = viewModel.getMetric() else { return }
+                    action(metric)
+                    
+                }, label: {
+                    Spacer()
+                    Text(viewModel.isEdited ? R.string.localizable.addmetricButtonSave() : R.string.localizable.addmetricButtonAdd())
+                        .font(Constants.mainButtonFont).padding()
+                    Spacer()
+                })
+                .frame(maxWidth: .infinity)
+                .foregroundColor(Constants.buttonTextColor)
+                .background(Constants.buttonBackground)
+                .cornerRadius(Constants.mainButtonCorner)
+                .disabled(!enableNextButton())
+                .opacity(opacityButton())
+            })
+            .padding()
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .navigationTitle(R.string.localizable.addmetricTitleDisplay())
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                allowDismissed = false
+            }
+        }
+    }
+
+    func getMetric() -> Metric {
+        return viewModel.getMetric() ?? Mocks.getMockMetric(
+            title: viewModel.title,
+            measure: viewModel.measure,
+            type: viewModel.typeMetric,
+            typeRule: ParseRules(
+                parseRules: viewModel.parseConfigurationValue,
+                type: viewModel.typeRule,
+                value: viewModel.paramEqualTo,
+                caseSensitive: viewModel.caseSensitive),
+            result: viewModel.result,
+            resultWithError: viewModel.resultWithError)
+    }
+
+    func opacityButton() -> CGFloat {
+        enableNextButton() ? Constants.opacityEnable : Constants.opacityDisable
+    }
+
+    func enableNextButton() -> Bool {
+        viewModel.canAddMetric
+    }
+}
+
+struct MetricFormView: View {
+
+    @Binding var allowDismissed: Bool
+
+    let mainButtonTitle: String
+    @StateObject var viewModel: MetricViewModel
+    @State var showNext: Bool = false
+    var action: (Metric) -> Void
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            MetricRequestForm()
+                .environmentObject(viewModel)
+            HStack(alignment: .center, spacing: Constants.zero, content: {
+                NavigationLink(isActive: $showNext) {
+                    switch viewModel.typeMetric {
+                    case .checkStatus:
+                        MetricDisplayView(allowDismissed: $allowDismissed, action: action)
+                            .environmentObject(viewModel)
+                    case .json, .web:
+                        MetricReponseView(allowDismissed: $allowDismissed, action: action)
+                            .environmentObject(viewModel)
+                    }
+                } label: {
                     Button(action: {
-                        guard let metric = viewModel.getMetric() else { return }
-                        action(metric)
-
+                        showNext = true
                     }, label: {
                         Spacer()
-                        Text(mainButtonTitle)
+                        Text(R.string.localizable.addmetricButtonNext())
                             .font(Constants.mainButtonFont).padding()
                         Spacer()
                     })
@@ -254,11 +309,12 @@ struct MetricFormView: View {
                     .foregroundColor(Constants.buttonTextColor)
                     .background(Constants.buttonBackground)
                     .cornerRadius(Constants.mainButtonCorner)
-                    .disabled(!self.viewModel.canAddMetric)
+                    .disabled(!enableNextButton())
                     .opacity(opacityButton())
-                }).padding(Constants.mainButtonPadding)
-            }
-        }
+                }
+            })
+            .padding()
+        }.ignoresSafeArea(.keyboard, edges: .bottom)
         .onAppear {
             allowDismissed = false
         }
@@ -267,23 +323,13 @@ struct MetricFormView: View {
         }
     }
 
-    func checkerText() -> String {
-        if self.viewModel.hasRequestError {
-            return R.string.localizable.metricValueBad()
-        }else {
-            return R.string.localizable.metricValueGood()
-        }
-    }
-
     func opacityButton() -> CGFloat {
-        self.viewModel.canAddMetric ? Constants.opcityEnable : Constants.opcityDisable
+        enableNextButton() ? Constants.opacityEnable : Constants.opacityDisable
     }
 
-    func opacityRequestButton() -> CGFloat {
-        self.viewModel.canMakeRequest ? Constants.opcityEnable : Constants.opcityDisable
+    func enableNextButton() -> Bool {
+        viewModel.canSetupResponse
     }
-
-    
 }
 
 
@@ -300,4 +346,17 @@ struct MetricFormView_Previews: PreviewProvider {
         }
     }
 }
+
+struct MetricDispayView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            MetricDisplayView(allowDismissed: .constant(false),action: { _ in
+                
+            })
+                .environmentObject(MetricViewModel())
+                .preferredColorScheme(.light)
+        }
+    }
+}
 #endif
+

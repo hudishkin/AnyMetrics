@@ -12,6 +12,7 @@ import Combine
 final class GalleryViewModel: ObservableObject {
 
     @Published var galleryItems: [GalleryItem] = []
+    @Published var showLoading: Bool = false
 
     private(set) var showSendRequestMetric: Bool = false
     private var allGallery: [GalleryItem] = []
@@ -20,9 +21,11 @@ final class GalleryViewModel: ObservableObject {
     init() { }
 
     func load() {
+        showLoading = true
         GalleryService.load()
             .receive(on: DispatchQueue.main)
             .sink { result in
+                self.showLoading = false
                 switch result {
                 case .failure(let error):
                     debugPrint(error.localizedDescription)

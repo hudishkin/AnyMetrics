@@ -57,17 +57,17 @@ struct InfoView: View {
                         .font(Constants.fontBody)
                         .foregroundColor(Constants.textColor)
                     Spacer(minLength: Constants.spacing2)
-                    Link(destination: AppConfig.Urls.appRepository) {
-                        HStack {
-                            Text(R.string.localizable.infoGithubAppRepo())
-                                .font(Constants.fontLink)
-                                .foregroundColor(Constants.linkColor)
-                            Constants.imageArrow
-                                .resizable()
-                                .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
-                                .foregroundColor(Constants.linkColor)
-                        }
-                    }
+//                    Link(destination: AppConfig.Urls.appRepository) {
+//                        HStack {
+//                            Text(R.string.localizable.infoGithubAppRepo())
+//                                .font(Constants.fontLink)
+//                                .foregroundColor(Constants.linkColor)
+//                            Constants.imageArrow
+//                                .resizable()
+//                                .frame(width: Constants.arrowIconSize, height: Constants.arrowIconSize, alignment: .center)
+//                                .foregroundColor(Constants.linkColor)
+//                        }
+//                    }
                     Link(destination: AppConfig.Urls.galleryRepository) {
                         HStack {
                             Text(R.string.localizable.infoGithubGalleryRepo())

@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct NewMetricView: View {
+    
     @Binding var allowDismissed: Bool
+    var close: () -> Void
+
     @StateObject var viewModel = MetricViewModel()
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var mainViewModel: MainViewModel
 
     var body: some View {
@@ -21,7 +23,7 @@ struct NewMetricView: View {
             action: { metric in
                 mainViewModel.addMetric(metric: metric)
                 mainViewModel.updateMetric(id: metric.id)
-                presentationMode.wrappedValue.dismiss()
+                close()
         })
         .navigationTitle(R.string.localizable.addmetricTitleNew())
         .navigationBarTitleDisplayMode(.inline)
@@ -36,7 +38,9 @@ struct NewMetricView: View {
 struct NewMetricView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            NewMetricView(allowDismissed: .constant(true))
+            NewMetricView(allowDismissed: .constant(true), close: {
+                
+            })
                 .environmentObject(MainViewModel())
                 .preferredColorScheme(.dark)
         }

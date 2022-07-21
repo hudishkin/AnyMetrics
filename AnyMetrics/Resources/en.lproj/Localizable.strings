@@ -11,10 +11,13 @@
 "common.close" = "Close";
 "common.save" = "Save";
 "common.faq" = "FAQ";
+"common.error" = "Error";
+"common.ok" = "Ok";
 
 "metric.value.good" = "Good";
 "metric.value.bad" = "Bad";
 "metric.add" = "Add";
+
 "metric.add.title" = "Add Metric";
 "metric.add.custom" = "Create metric";
 "metric.actions.update-value" = "Refresh";
@@ -40,11 +43,15 @@
 "gallery.no-metric-message" = "If you didn't find the metric,\nyou can add it manually ↑.\n\nOr send the message with the metric information,\nwe'll add it to the gallery.";
 "gallery.button.send" = "Send information";
 "gallery.message.subject" = "[AnyMetrics] Can't find metric";
+"gallery.title" = "Gallery";
 
 // MARK: - Add/Edit Metric
 
 "addmetric.title-new" = "New metric";
 "addmetric.title-edit" = "Edit";
+"addmetric.title-request" = "Request Settings";
+"addmetric.title-value" = "Value Settings";
+"addmetric.title-display" = "Widget Settings";
 
 "addmetric.field.type-metric-json" = "Parse JSON";
 "addmetric.field.type-metric-web" = "Parse HTML";
@@ -70,6 +77,7 @@
 "addmetric.field.value-type-none" = "Raw";
 "addmetric.field.max-length" = "Cut if longer";
 "addmetric.field.case-sensitive" = "Case sensitive";
+"addmetric.field.value" = "Value";
 
 "addmetric.field.rule-type-contains-description" = "Specify the value that will be contained as a result of processing the response. For example: you want to check if a string contains the word \"error\"";
 "addmetric.field.rule-type-equal-description" = "Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value \"100\"";
@@ -78,17 +86,20 @@
 "addmetric.section.http-headers" = "HTTP Headers";
 "addmetric.section.value-settings" = "Value settings";
 "addmetric.section.format-settings" = "Format settings";
+"addmetric.section.result" = "Result";
 
 "addmetric.button.add" = "Add metric";
 "addmetric.button.add-http-header" = "Add Header";
 "addmetric.button.make-request" = "Make request";
+"addmetric.button.next" = "Next";
+"addmetric.button.save" = "Save";
 
 "addmetric.text.no-response" = "No response";
 
 // MARK: - Info View
 
 "info.title" = "About";
-"info.message" = "AnyMetrics is an open-source project developed to solve its own problem and source code was published on GitHub.\n\nTo add a metric to the gallery, send a pull request to the gallery repository on Github.";
+"info.message" = "AnyMetrics is project developed to solve its own problem and published to App Store for everyone for free.\n\nTo add a metric to the gallery, send a pull request to the gallery repository on Github.";
 "info.github-app-repo" = "App repository";
 "info.github-gallery-repo" = "Gallery repository";
 "info.version" = "Version: %@";

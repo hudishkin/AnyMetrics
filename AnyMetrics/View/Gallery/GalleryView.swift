@@ -133,8 +133,10 @@ struct GalleryView: View {
             ZStack {
                 List {
                     NavigationLink(isActive: $showAddMenu) {
-                        NewMetricView(allowDismissed: $allowDismissed)
-                            .environmentObject(mainViewModel)
+                        NewMetricView(allowDismissed: $allowDismissed) {
+                            showAddMenu.toggle()
+                            presentationMode.wrappedValue.dismiss()
+                        }.environmentObject(mainViewModel)
                     } label: {
                         HStack {
                             R.image.plus.image
@@ -147,6 +149,7 @@ struct GalleryView: View {
                     .tint(R.color.baseText.color)
                     .listRowSeparator(.hidden)
                     .buttonStyle(PlainButtonStyle())
+
                     if !viewModel.showSendRequestMetric {
                         ForEach(viewModel.galleryItems, id: \.self) { group in
                             Section {
@@ -170,6 +173,9 @@ struct GalleryView: View {
                     }
 
                 }
+                if viewModel.showLoading {
+                    ProgressView()
+                }
 
                 if viewModel.showSendRequestMetric {
                     VStack(alignment: .center) {
@@ -189,7 +195,7 @@ struct GalleryView: View {
 
             }
             .padding(0)
-            .navigationTitle(R.string.localizable.metricAddTitle())
+            .navigationTitle(R.string.localizable.galleryTitle())
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showEmailForm) {
                 MailView(result: self.$mailResult) { compose in

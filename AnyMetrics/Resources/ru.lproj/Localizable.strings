@@ -11,9 +11,12 @@
 "common.close" = "Закрыть";
 "common.save" = "Сохранить";
 "common.faq" = "FAQ";
+"common.error" = "Ошибка";
+"common.ok" = "Ок";
 
 "metric.value.good" = "Хорошо";
 "metric.value.bad" = "Не хорошо";
+
 "metric.add" = "Добавить";
 "metric.add.title" = "Добавить метрику";
 "metric.add.custom" = "Создать метрику";
@@ -40,11 +43,15 @@
 "gallery.no-metric-message" = "Если вы не нашли метрику,\nвы можете добавить ее вручную ↑\n\nИли отправить сообщение с информацией о метрике, мы добавим ее в галерею.";
 "gallery.button.send" = "Отправить информацию";
 "gallery.message.subject" = "[AnyMetrics] Не нашел метрику";
+"gallery.title" = "Галерея";
 
 // MARK: - Add/Edit Metric
 
 "addmetric.title-new" = "Новая метрика";
 "addmetric.title-edit" = "Редактирование";
+"addmetric.title-request" = "Настройка запроса";
+"addmetric.title-value" = "Настрока значения";
+"addmetric.title-display" = "Настройка виджета";
 
 "addmetric.field.type-metric-json" = "Парсинг JSON";
 "addmetric.field.type-metric-web" = "Парсинг HTML";
@@ -70,6 +77,7 @@
 "addmetric.field.value-type-none" = "Без формата";
 "addmetric.field.max-length" = "Обрезать если длинее";
 "addmetric.field.case-sensitive" = "Учитывать размер буквы?";
+"addmetric.field.value" = "Значение";
 
 "addmetric.field.rule-type-contains-description" = "Укажите значение, которое должно содержаться в результате обработки ответа. Например: вы хотите проверить содежится ли в строка слово \"ошибка\"";
 "addmetric.field.rule-type-equal-description" = "Укажите значение, которое должно совпадать с результатом обработки ответа. Например: вы хотите проверить совпадает ли ответ значению \"100\"";
@@ -78,17 +86,20 @@
 "addmetric.section.http-headers" = "HTTP заголовки";
 "addmetric.section.value-settings" = "Настройка значения метрики";
 "addmetric.section.format-settings" = "Настройка формата";
+"addmetric.section.result" = "Результат";
 
 "addmetric.button.add" = "Добавить метрику";
 "addmetric.button.add-http-header" = "Добавить заголвок";
 "addmetric.button.make-request" = "Выполнить запрос";
+"addmetric.button.next" = "Далее";
+"addmetric.button.save" = "Сохранить";
 
 "addmetric.text.no-response" = "Нет ответа";
 
 // MARK: - Info View
 
 "info.title" = "О приложении";
-"info.message" = "ЭниМетрик - это open-source проект, разработанный для решения собственной проблемы и выложен на GitHub.\n\nЧто бы добавить в галерею метрику отправьте pull request в репозиторий галереи на Github.";
+"info.message" = "ЭниМетрик проект, разработанный для решения собственной проблемы и опубликованный в AppStore для всех бесплатно.\n\nЧто бы добавить в галерею метрику отправьте pull request в репозиторий галереи на Github.";
 "info.github-app-repo" = "Репозиторий приложения";
 "info.github-gallery-repo" = "Репозиторий галереи";
 "info.version" = "Версия: %@";
