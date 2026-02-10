@@ -9,6 +9,7 @@
 import WidgetKit
 import SwiftUI
 import Intents
+import AnyMetricsShared
 
 struct Provider: IntentTimelineProvider {
 

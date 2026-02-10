@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AnyMetricsShared
 
 fileprivate enum Constants {
     static let imageSize: CGFloat = 120
@@ -16,9 +17,9 @@ fileprivate enum Constants {
     static let buttonCorner: CGFloat = 30
     static let imageArrow = Image(systemName: "arrow.right")
     static let imageStar = Image(systemName: "star")
-    static let textColor = R.color.baseText.color
-    static let titleColor = R.color.baseText.color
-    static let linkColor = R.color.baseText.color
+    static let textColor = AssetColor.baseText
+    static let titleColor = AssetColor.baseText
+    static let linkColor = AssetColor.baseText
     static let fontTitle: Font = {
         Font.system(size: 34, weight: .bold, design: .default)
     }()
@@ -42,7 +43,7 @@ struct InfoView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.spacing) {
                     HStack(alignment: .center) {
-                        R.image.appIconInfo.image
+                        AssetImage.appIconInfo
                             .resizable()
                             .cornerRadius(Constants.iconCorner)
                             .frame(width: Constants.imageSize, height: Constants.imageSize, alignment: .center)
@@ -50,16 +51,16 @@ struct InfoView: View {
                     .frame(minWidth: 0, maxWidth: .infinity)
 
                     Spacer(minLength: Constants.spacing2)
-                    Text(R.string.localizable.infoTitle())
+                    Text(L10n.infoTitle())
                         .font(Constants.fontTitle)
                         .foregroundColor(Constants.titleColor)
-                    Text(R.string.localizable.infoMessage())
+                    Text(L10n.infoMessage())
                         .font(Constants.fontBody)
                         .foregroundColor(Constants.textColor)
                     Spacer(minLength: Constants.spacing2)
 //                    Link(destination: AppConfig.Urls.appRepository) {
 //                        HStack {
-//                            Text(R.string.localizable.infoGithubAppRepo())
+//                            Text(L10n.infoGithubAppRepo())
 //                                .font(Constants.fontLink)
 //                                .foregroundColor(Constants.linkColor)
 //                            Constants.imageArrow
@@ -70,7 +71,7 @@ struct InfoView: View {
 //                    }
                     Link(destination: AppConfig.Urls.galleryRepository) {
                         HStack {
-                            Text(R.string.localizable.infoGithubGalleryRepo())
+                            Text(L10n.infoGithubGalleryRepo())
                                 .font(Constants.fontLink)
                                 .foregroundColor(Constants.linkColor)
                             Constants.imageArrow
@@ -86,7 +87,7 @@ struct InfoView: View {
                         Button {
                             ReviewHandler.requestReview()
                         } label: {
-                            Text(R.string.localizable.infoRate())
+                            Text(L10n.infoRate())
                                 .font(Constants.fontLink)
                                 .foregroundColor(Constants.linkColor)
                             Constants.imageStar
@@ -97,8 +98,8 @@ struct InfoView: View {
 
 
 
-                        Text(R.string.localizable.infoVersion(Bundle.version()))
-                            .foregroundColor(R.color.secondaryText.color)
+                        Text(L10n.infoVersion(Bundle.appVersion()))
+                            .foregroundColor(AssetColor.secondaryText)
                             .font(Constants.fontBody)
 
                     }
@@ -122,13 +123,13 @@ struct InfoView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text(R.string.localizable.commonClose())
-                            .foregroundColor(R.color.baseText.color)
+                        Text(L10n.commonClose())
+                            .foregroundColor(AssetColor.baseText)
                         Spacer()
                     }
                     .padding()
                 }
-                .background(R.color.galleryItemBackground.color)
+                .background(AssetColor.galleryItemBackground)
                 .cornerRadius(Constants.buttonCorner)
             }
             .padding()

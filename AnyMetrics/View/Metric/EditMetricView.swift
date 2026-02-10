@@ -19,17 +19,17 @@ struct EditMetricView: View {
         NavigationView {
             MetricFormView(
                 allowDismissed: $allowDismissed,
-                mainButtonTitle: R.string.localizable.commonSave(),
+                mainButtonTitle: L10n.commonSave(),
                 viewModel: viewModel,
                 action: { metric in
                     mainViewModel.addMetric(metric: metric)
                     mainViewModel.updateMetric(id: metric.id)
                     presentationMode.wrappedValue.dismiss()
             })
-            .navigationTitle(R.string.localizable.metricActionsEdit())
+            .navigationTitle(L10n.metricActionsEdit())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                Button(R.string.localizable.commonClose()) {
+                Button(L10n.commonClose()) {
                     presentationMode.wrappedValue.dismiss()
                 }
             }

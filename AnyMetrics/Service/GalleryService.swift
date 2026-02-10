@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AnyMetricsShared
 
 struct GalleryItem: Hashable, Codable {
     var name: String

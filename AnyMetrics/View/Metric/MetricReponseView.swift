@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AnyMetricsShared
 
 fileprivate enum Constants {
     static let imageFAQ = Image(systemName: "questionmark.circle.fill")
@@ -14,17 +15,17 @@ fileprivate enum Constants {
     static let faqSize: CGFloat = 20
     static let responsPadding = EdgeInsets(top: -50, leading: 20, bottom: 20, trailing: 20) //CGFloat = 20
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
-    static let lengthLabelBackground = R.color.secondaryText.color.opacity(0.5)
+    static let lengthLabelBackground = AssetColor.secondaryText.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
     static let infinityChar = "∞"
     static let smallFont = Font.system(size: 12, weight: .regular, design: .default)
     static let responseFont = Font.system(size: 12, design: .monospaced)
     static let responsPaddingButton: CGFloat = -10
     static let mainButtonFont = Font.system(size: 17, weight: .semibold, design: .default)
-    static let requestImage = R.image.request.image
+    static let requestImage = AssetImage.request
     static let createNewIcon: CGFloat = 16
-    static let buttonBackground = R.color.baseText.color
-    static let buttonTextColor = R.color.addMetricTint.color
+    static let buttonBackground = AssetColor.baseText
+    static let buttonTextColor = AssetColor.addMetricTint
     static let requestButtonInset =  EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
     static let requestButtonCorner: CGFloat = 24
     static let mainButtonCorner: CGFloat = 40
@@ -71,7 +72,7 @@ struct MetricReponseView: View {
                                             .foregroundColor(Constants.buttonBackground)
                                             .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
                                             .aspectRatio(contentMode: .fit)
-                                        Text(R.string.localizable.addmetricButtonMakeRequest())
+                                        Text(L10n.addmetricButtonMakeRequest())
                                             .font(Constants.mainButtonFont)
                                             .foregroundColor(Constants.buttonBackground)
                                     }
@@ -121,7 +122,7 @@ struct MetricReponseView: View {
                             }
 
                             Picker(
-                                R.string.localizable.addmetricFieldTypeParseRuleTitle(),
+                                L10n.addmetricFieldTypeParseRuleTitle(),
                                 selection: $viewModel.typeRule) {
                                     ForEach(ParseRules.RuleType.allCases, id: \.self) { item in
                                     Text(item.localizedName).tag(item)
@@ -133,7 +134,7 @@ struct MetricReponseView: View {
                             }
                             if viewModel.typeRule != .none {
                                 HStack(alignment: .center, spacing: Constants.zero) {
-                                    TextField( R.string.localizable.addmetricFieldRuleTypePlaceholder(),
+                                    TextField( L10n.addmetricFieldRuleTypePlaceholder(),
                                         text: self.$viewModel.parseConfigurationValue)
                                     .onChange(of: self.viewModel.parseConfigurationValue) { _ in
                                         self.viewModel.updateValue()
@@ -142,7 +143,7 @@ struct MetricReponseView: View {
                                 }
 
                                 HStack(alignment: .center, spacing: Constants.zero) {
-                                    Toggle(R.string.localizable.addmetricFieldCaseSensitive(), isOn: $viewModel.caseSensitive)
+                                    Toggle(L10n.addmetricFieldCaseSensitive(), isOn: $viewModel.caseSensitive)
                                 }
                             }
 
@@ -150,11 +151,11 @@ struct MetricReponseView: View {
                         footer: {
                             if viewModel.typeRule == .contains {
                                 VStack {
-                                    Text(R.string.localizable.addmetricFieldRuleTypeContainsDescription())
+                                    Text(L10n.addmetricFieldRuleTypeContainsDescription())
                                 }
                             } else if viewModel.typeRule == .equal {
                                 VStack {
-                                    Text(R.string.localizable.addmetricFieldRuleTypeEqualDescription())
+                                    Text(L10n.addmetricFieldRuleTypeEqualDescription())
                                 }
                             }
                         }
@@ -162,7 +163,7 @@ struct MetricReponseView: View {
                         if viewModel.typeRule == .none {
                             Section {
                                 Picker(
-                                    R.string.localizable.addmetricFieldValueType(),
+                                    L10n.addmetricFieldValueType(),
                                     selection: $viewModel.formatType) {
                                     ForEach(MetricFormatterType.allCases, id: \.self) { item in
                                         Text(item.localizedName).tag(item)
@@ -177,12 +178,12 @@ struct MetricReponseView: View {
                                     HStack(alignment: .center, spacing: 0) {
                                         Stepper(value: self.$viewModel.maxLengthValue, in:  0...Int.max) {
                                             HStack {
-                                                Text(R.string.localizable.addmetricFieldMaxLength())
+                                                Text(L10n.addmetricFieldMaxLength())
                                                 Spacer()
                                                 Text(maxLength())
                                                     .font(Constants.smallFont)
                                                     .padding(Constants.lengthLabelInset)
-                                                    .foregroundColor(R.color.baseText.color)
+                                                    .foregroundColor(AssetColor.baseText)
                                                     .background(Constants.lengthLabelBackground)
                                                     .cornerRadius(Constants.lengthLabelCorner)
                                             }
@@ -193,7 +194,7 @@ struct MetricReponseView: View {
                                     }
                                 }
                             } header: {
-                                Text(R.string.localizable.addmetricSectionFormatSettings())
+                                Text(L10n.addmetricSectionFormatSettings())
                             }
                         }
 
@@ -201,15 +202,15 @@ struct MetricReponseView: View {
                         if viewModel.canSetupResponse && !viewModel.parseRules.isEmpty {
                             Section {
                                 HStack(alignment: .top) {
-                                    Text(R.string.localizable.addmetricFieldValue())
+                                    Text(L10n.addmetricFieldValue())
                                     Spacer()
                                     Text(getResultText())
-                                        .foregroundColor(R.color.secondaryText.color)
+                                        .foregroundColor(AssetColor.secondaryText)
                                         .lineLimit(1)
                                 }
 
                             } header: {
-                                Text(R.string.localizable.addmetricSectionResult())
+                                Text(L10n.addmetricSectionResult())
                             }
                         }
                     }
@@ -224,7 +225,7 @@ struct MetricReponseView: View {
                             showNext = true
                         }, label: {
                             Spacer()
-                            Text(R.string.localizable.addmetricButtonNext())
+                            Text(L10n.addmetricButtonNext())
                                 .font(Constants.mainButtonFont).padding()
                             Spacer()
                         })
@@ -240,7 +241,7 @@ struct MetricReponseView: View {
             }
 
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle(R.string.localizable.addmetricTitleValue())
+            .navigationTitle(L10n.addmetricTitleValue())
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -255,7 +256,7 @@ struct MetricReponseView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Link(R.string.localizable.commonFaq(), destination: AppConfig.Urls.rules)
+                    Link(L10n.commonFaq(), destination: AppConfig.Urls.rules)
                 }
             }
             .onAppear {
@@ -268,9 +269,9 @@ struct MetricReponseView: View {
 
     func getRulesPlaceholder() -> String {
         if viewModel.typeMetric == .json {
-            return R.string.localizable.addmetricFieldJsonParseRulePlaceholder()
+            return L10n.addmetricFieldJsonParseRulePlaceholder()
         }
-        return R.string.localizable.addmetricFieldHtmlParseRulePlaceholder()
+        return L10n.addmetricFieldHtmlParseRulePlaceholder()
     }
 
     func getResultText() -> String {

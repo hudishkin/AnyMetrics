@@ -32,28 +32,28 @@ struct AddHeaderView: View {
             Form {
                 Section {
                     HStack {
-                        TextField(R.string.localizable.httpheadersEnterName(), text: $headerName)
+                        TextField(L10n.httpheadersEnterName(), text: $headerName)
                     }
                 } footer: {
                     HStack {
                         NavigationLink {
                             SearchPickerView(
-                                title: R.string.localizable.httpheadersSelectTitle(),
+                                title: L10n.httpheadersSelectTitle(),
                                 items: HTTP_HEADERS) { selectHeader in
                                 self.headerName = selectHeader
                             }
                         } label: {
 
-                            Text(R.string.localizable.httpheadersSelectFromList())
-                                .foregroundColor(R.color.baseText.color)
+                            Text(L10n.httpheadersSelectFromList())
+                                .foregroundColor(AssetColor.baseText)
                             Constants.imageArrow
-                                .foregroundColor(R.color.baseText.color)
+                                .foregroundColor(AssetColor.baseText)
                         }
                     }
                 }
                 Section {
                     HStack {
-                        TextField(R.string.localizable.httpheadersEnterValue(), text: $headerValue)
+                        TextField(L10n.httpheadersEnterValue(), text: $headerValue)
                     }
                 } footer: {
                     VStack {
@@ -61,20 +61,20 @@ struct AddHeaderView: View {
                         VStack {
                             if let examples = HTTP_HEADER_EXAMPLE[self.headerName] {
                                 NavigationLink {
-                                    SearchPickerView(title: R.string.localizable.httpheadersSelectValueTitle(), items: examples) { selectedValue in
+                                    SearchPickerView(title: L10n.httpheadersSelectValueTitle(), items: examples) { selectedValue in
                                         self.headerValue = selectedValue
                                     }
                                 } label: {
-                                    Text(R.string.localizable.httpheadersSelectValuesFromList())
-                                        .foregroundColor(R.color.baseText.color)
+                                    Text(L10n.httpheadersSelectValuesFromList())
+                                        .foregroundColor(AssetColor.baseText)
                                     Constants.imageArrow
-                                        .foregroundColor(R.color.baseText.color)
+                                        .foregroundColor(AssetColor.baseText)
                                     Spacer()
                                 }
                                 Divider()
                             }
 
-                            Text(R.string.localizable.httpheadersValueInformation())
+                            Text(L10n.httpheadersValueInformation())
                                 .frame(maxHeight: .infinity)
                         }
                         HStack(alignment: .center, spacing: Constants.spacing, content: {
@@ -83,14 +83,14 @@ struct AddHeaderView: View {
                                 presentationMode.wrappedValue.dismiss()
                             }, label: {
                                 Spacer()
-                                Text(R.string.localizable.httpheadersAddButton())
+                                Text(L10n.httpheadersAddButton())
                                     .font(Constants.font)
                                     .padding()
                                 Spacer()
                             })
                                 .frame(maxWidth: .infinity)
-                                .foregroundColor(R.color.addMetricTint.color)
-                                .background(R.color.baseText.color)
+                                .foregroundColor(AssetColor.addMetricTint)
+                                .background(AssetColor.baseText)
                                 .cornerRadius(Constants.buttonCorner)
                                 .disabled(headerName.isEmpty || headerValue.isEmpty)
                                 .opacity(opacityButton())
@@ -101,7 +101,7 @@ struct AddHeaderView: View {
                 }
             }
             .padding(Constants.formInset)
-            .navigationTitle(R.string.localizable.httpheadersAddTitle())
+            .navigationTitle(L10n.httpheadersAddTitle())
             .navigationBarTitleDisplayMode(.inline)
             .listStyle(PlainListStyle())
         }

@@ -8,6 +8,7 @@
 import SwiftUI
 import WidgetKit
 import Combine
+import AnyMetricsShared
 
 final class MainViewModel: MetricStore, ObservableObject {
 

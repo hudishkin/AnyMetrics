@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import AnyMetricsShared
 
 final class GalleryViewModel: ObservableObject {
 
