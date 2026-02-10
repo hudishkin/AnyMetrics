@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftyJSON
+import AnyMetricsShared
 
 
 
@@ -68,9 +69,9 @@ struct MainView: View {
                 Button {
                     showSheet(activeSheet: .info)
                 } label: {
-                    Text(R.string.localizable.appName())
+                    Text(L10n.appName())
                         .font(Constants.fontTitle)
-                        .foregroundColor(R.color.baseText.color)
+                        .foregroundColor(AssetColor.baseText)
                         .padding(Constants.titleInset)
                         .background(.ultraThinMaterial)
                         .cornerRadius(Constants.titleCorner)
@@ -106,10 +107,10 @@ struct MainView: View {
                 showSheet(activeSheet: .addMetrics)
 
             } label: {
-                R.image.plus.image
+                AssetImage.plus
                     .resizable()
                     .renderingMode(.template)
-                    .foregroundColor(R.color.baseText.color)
+                    .foregroundColor(AssetColor.baseText)
                     .padding(Constants.addButtonPadding)
             }
             .background(.ultraThinMaterial)
@@ -121,9 +122,9 @@ struct MainView: View {
 
                 VStack {
                     Spacer()
-                    Text(R.string.localizable.metricPlaceholder())
+                    Text(L10n.metricPlaceholder())
                         .font(Constants.fontPlaceholder)
-                        .foregroundColor(R.color.secondaryText.color)
+                        .foregroundColor(AssetColor.secondaryText)
                     Spacer()
                 }
 

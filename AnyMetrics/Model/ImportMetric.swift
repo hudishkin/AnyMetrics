@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AnyMetricsShared
 
 
 struct MetricItemImportData {

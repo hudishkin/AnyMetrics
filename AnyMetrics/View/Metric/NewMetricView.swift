@@ -18,14 +18,14 @@ struct NewMetricView: View {
     var body: some View {
         MetricFormView(
             allowDismissed: $allowDismissed,
-            mainButtonTitle: R.string.localizable.addmetricButtonAdd(),
+            mainButtonTitle: L10n.addmetricButtonAdd(),
             viewModel: viewModel,
             action: { metric in
                 mainViewModel.addMetric(metric: metric)
                 mainViewModel.updateMetric(id: metric.id)
                 close()
         })
-        .navigationTitle(R.string.localizable.addmetricTitleNew())
+        .navigationTitle(L10n.addmetricTitleNew())
         .navigationBarTitleDisplayMode(.inline)
         
     }

@@ -6,6 +6,7 @@
 //
 
 import Intents
+import AnyMetricsShared
 
 class IntentHandler: INExtension, ConfigurationIntentHandling {
 

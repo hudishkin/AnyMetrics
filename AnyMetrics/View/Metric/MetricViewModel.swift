@@ -10,6 +10,7 @@ import SwiftUI
 import Combine
 import SwiftyJSON
 import SwiftSoup
+import AnyMetricsShared
 
 let DEFAULT_LENGTH_VALUE = 0
 

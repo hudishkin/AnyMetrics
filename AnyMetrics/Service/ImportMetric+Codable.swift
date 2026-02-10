@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AnyMetricsShared
 
 // TODO: - Пока не используется
 

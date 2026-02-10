@@ -40,7 +40,7 @@ struct SearchPickerView: View {
                 } label: {
                     Text(item)
                         .font(Constants.font)
-                        .foregroundColor(R.color.baseText.color)
+                        .foregroundColor(AssetColor.baseText)
                         .padding(Constants.itemInset)
                 }
             }
@@ -60,7 +60,7 @@ struct SearchPickerView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
             SearchPickerView(
-                title: R.string.localizable.httpheadersSelectTitle(),
+                title: L10n.httpheadersSelectTitle(),
                 items: HTTP_HEADERS,
                 action: { _ in
                     

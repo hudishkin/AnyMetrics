@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AnyMetricsShared
 
 fileprivate enum Constants {
 
@@ -37,20 +38,20 @@ struct MetricView: View {
         }
         .actionSheet(isPresented: $showActionMenu, content: { [metric] in
             ActionSheet(
-                title: Text(R.string.localizable.metricActionsTitle(metric.title)),
+                title: Text(L10n.metricActionsTitle(metric.title)),
                 message: nil,
                 buttons:
                     [
                         .default(
-                            Text(R.string.localizable.metricActionsUpdateValue())) {
+                            Text(L10n.metricActionsUpdateValue())) {
                             refreshMetric?(metric.id)
                         },
                         .default(
-                            Text(R.string.localizable.metricActionsEdit())) {
+                            Text(L10n.metricActionsEdit())) {
                             editMetric?(metric)
                         },
                         .destructive(
-                            Text(R.string.localizable.metricActionsDelete())) {
+                            Text(L10n.metricActionsDelete())) {
                                 showConfirmationDelete = true
 
                         },
@@ -68,9 +69,9 @@ struct MetricView: View {
                 }
             }
         }.confirmationDialog(
-            R.string.localizable.metricActionsSure(),
+            L10n.metricActionsSure(),
             isPresented: $showConfirmationDelete) {
-                Button(R.string.localizable.metricActionsConfirmDelete(), role: .destructive) {
+                Button(L10n.metricActionsConfirmDelete(), role: .destructive) {
                     deletehMetric?(metric.id)
                 }
             }

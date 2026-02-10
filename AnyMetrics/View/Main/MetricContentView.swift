@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AnyMetricsShared
 
 
 fileprivate enum Constants {
@@ -40,11 +41,11 @@ fileprivate enum Constants {
         Bundle.isInWidget() ? 48 : 54
     }()
     static let spacing: CGFloat = 20
-    static let textColor = R.color.metricText.color
-    static let textErrorColor = R.color.red.color
-    static let strokeColor = R.color.metricText.color
-    static let titleBackground = R.color.metricParamBackground.color
-    static let secondaryText = R.color.secondaryText.color
+    static let textColor = AssetColor.metricText
+    static let textErrorColor = AssetColor.red
+    static let strokeColor = AssetColor.metricText
+    static let titleBackground = AssetColor.metricParamBackground
+    static let secondaryText = AssetColor.secondaryText
     static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
 
     static let titlePaddingInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
@@ -107,7 +108,7 @@ struct MetricContentView: View {
     func MetricValue() -> some View {
         if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
             Text(
-                metric.resultWithError ? R.string.localizable.metricValueBad() : R.string.localizable.metricValueGood())
+                metric.resultWithError ? L10n.metricValueBad() : L10n.metricValueGood())
             .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(Constants.fontValue)
                 .multilineTextAlignment(.center)

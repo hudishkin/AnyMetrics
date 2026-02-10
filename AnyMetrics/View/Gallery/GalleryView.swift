@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MessageUI
+import AnyMetricsShared
 
 // MARK: - Constants
 
@@ -50,7 +51,7 @@ struct GalleryItemView: View {
                             .font(Constants.itemTitleFont)
                         Text(metric.measure)
                             .font(Constants.itemDefaultBoldFont)
-                            .foregroundColor(R.color.secondaryText.color)
+                            .foregroundColor(AssetColor.secondaryText)
 
                     }
                     Spacer()
@@ -61,7 +62,7 @@ struct GalleryItemView: View {
                         .lineLimit(nil)
 
                         .font(Constants.itemDefaultFont)
-                        .foregroundColor(R.color.secondaryText.color)
+                        .foregroundColor(AssetColor.secondaryText)
                         .padding(Constants.descriptionInset)
                 }
 
@@ -71,7 +72,7 @@ struct GalleryItemView: View {
                 }
             }
             .padding(Constants.itemContentPadding)
-            .background(R.color.galleryItemBackground.color)
+            .background(AssetColor.galleryItemBackground)
             .cornerRadius(Constants.itemCorner)
             if alreadyAdded {
                 Button {
@@ -79,11 +80,11 @@ struct GalleryItemView: View {
                     removeMetric(metric.id)
 
                 } label: {
-                    R.image.minus.image
+                    AssetImage.minus
                         .renderingMode(.template)
                         .foregroundColor(.white)
                         .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
-                        .background(Circle().fill(R.color.red.color))
+                        .background(Circle().fill(AssetColor.red))
 
                 }
                 .offset(Constants.itemButtonOffset)
@@ -93,15 +94,15 @@ struct GalleryItemView: View {
                     alreadyAdded = true
                     addMetric(metric)
                 } label: {
-                    R.image.plus.image
+                    AssetImage.plus
                         .renderingMode(.template)
                         .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
                         .overlay {
                             Circle()
-                                .stroke(R.color.baseText.color, lineWidth: Constants.itemButtonLine)
+                                .stroke(AssetColor.baseText, lineWidth: Constants.itemButtonLine)
                         }
                 }
-                .tint(R.color.baseText.color)
+                .tint(AssetColor.baseText)
                 .offset(Constants.itemButtonOffset)
 
             }
@@ -139,14 +140,14 @@ struct GalleryView: View {
                         }.environmentObject(mainViewModel)
                     } label: {
                         HStack {
-                            R.image.plus.image
+                            AssetImage.plus
                                 .resizable()
                                 .renderingMode(.template)
                                 .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                            Text(R.string.localizable.metricAddCustom()).font(Constants.itemTitleFont)
+                            Text(L10n.metricAddCustom()).font(Constants.itemTitleFont)
                         }
                     }
-                    .tint(R.color.baseText.color)
+                    .tint(AssetColor.baseText)
                     .listRowSeparator(.hidden)
                     .buttonStyle(PlainButtonStyle())
 
@@ -179,15 +180,15 @@ struct GalleryView: View {
 
                 if viewModel.showSendRequestMetric {
                     VStack(alignment: .center) {
-                        Text(R.string.localizable.galleryNoMetricMessage())
+                        Text(L10n.galleryNoMetricMessage())
                             .font(Constants.itemDefaultFont)
-                            .foregroundColor(R.color.secondaryText.color)
+                            .foregroundColor(AssetColor.secondaryText)
                             .multilineTextAlignment(.center)
                             .padding()
                         Button {
                             showEmailForm = true
                         } label: {
-                            Text(R.string.localizable.galleryButtonSend())
+                            Text(L10n.galleryButtonSend())
                                 .font(Constants.itemTitleFont)
                         }.buttonStyle(PlainButtonStyle())
                     }
@@ -195,11 +196,11 @@ struct GalleryView: View {
 
             }
             .padding(0)
-            .navigationTitle(R.string.localizable.galleryTitle())
+            .navigationTitle(L10n.galleryTitle())
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showEmailForm) {
                 MailView(result: self.$mailResult) { compose in
-                    compose.setSubject(R.string.localizable.galleryMessageSubject())
+                    compose.setSubject(L10n.galleryMessageSubject())
                     compose.setToRecipients([AppConfig.emailForReport])
                 }
             }
