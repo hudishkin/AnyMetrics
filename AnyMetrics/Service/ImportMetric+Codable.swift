@@ -1,10 +1,3 @@
-//
-//  ImportMetric.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 15.06.2022.
-//
-
 import Foundation
 import AnyMetricsShared
 

@@ -1,10 +1,3 @@
-//
-//  CodeView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 14.07.2022.
-//
-
 import SwiftUI
 import Highlightr
 
@@ -29,7 +22,6 @@ struct CodeView: UIViewRepresentable {
             theme = "atelier-cave-light"
         }
         highlightr?.setTheme(to: theme)
-
     }
 
     func makeUIView(context: Context) -> UITextView {

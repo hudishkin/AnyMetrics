@@ -1,10 +1,3 @@
-//
-//  SearchPickerView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 14.06.2022.
-//
-
 import SwiftUI
 
 fileprivate enum Constants {
@@ -12,16 +5,16 @@ fileprivate enum Constants {
     static let itemInset = EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0)
 }
 
-/// Call in NavigationView for searchable
-///
 struct SearchPickerView: View {
 
     let title: String
     let items: [String]
     let action: (String) -> Void
 
-    @State var searchText: String = ""
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @State 
+    var searchText: String = ""
+    @Environment(\.presentationMode) 
+    var presentationMode: Binding<PresentationMode>
 
     var searchResults: [String] {
         if searchText.isEmpty {
@@ -40,7 +33,7 @@ struct SearchPickerView: View {
                 } label: {
                     Text(item)
                         .font(Constants.font)
-                        .foregroundColor(AssetColor.baseText)
+                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         .padding(Constants.itemInset)
                 }
             }
@@ -60,7 +53,7 @@ struct SearchPickerView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
             SearchPickerView(
-                title: L10n.httpheadersSelectTitle(),
+                title: AnyMetricsStrings.Httpheaders.Select.title,
                 items: HTTP_HEADERS,
                 action: { _ in
                     

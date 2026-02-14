@@ -1,10 +1,3 @@
-//
-//  GalleryService.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 13.06.2022.
-//
-
 import Foundation
 import Combine
 import AnyMetricsShared

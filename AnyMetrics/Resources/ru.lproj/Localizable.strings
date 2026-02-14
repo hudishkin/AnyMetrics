@@ -24,6 +24,7 @@
 "metric.actions.delete" = "Удалить метрику";
 "metric.actions.edit" = "Редактировать";
 "metric.actions.title" = "Что хотите сделать с метрикой «%@»?";
+"metric.actions.export" = "Экспорт";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.confirmDelete" = "Да, удалить";
 "metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
@@ -95,6 +96,25 @@
 "addmetric.button.save" = "Сохранить";
 
 "addmetric.text.no-response" = "Нет ответа";
+
+// MARK: - Import Metric
+
+"import.title" = "Импорт из JSON";
+"import.button.title" = "Импортировать";
+"import.placeholder" = "Вставьте JSON метрики...";
+"import.validation.valid" = "JSON валиден";
+"import.validation.duplicate-id" = "Метрика с таким ID уже существует — будет создан новый ID";
+"import.info.title" = "Название";
+"import.info.measure" = "Единица";
+"import.info.type" = "Тип";
+"import.error.cannot-read" = "Невозможно прочитать текст";
+"import.error.no-valid-metric" = "Нет валидной метрики для импорта";
+"import.error.missing-field" = "Отсутствует обязательное поле: %@";
+"import.error.wrong-type" = "Неверный тип данных: %@";
+"import.error.empty-value" = "Пустое значение: %@";
+"import.error.corrupted-data" = "Повреждённые данные: %@";
+"import.error.decoding" = "Ошибка декодирования: %@";
+"import.error.invalid-json" = "Невалидный JSON: %@";
 
 // MARK: - Info View
 

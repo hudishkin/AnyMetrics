@@ -24,6 +24,7 @@
 "metric.actions.delete" = "Remove";
 "metric.actions.edit" = "Edit";
 "metric.actions.title" = "Select action for metric «%@»";
+"metric.actions.export" = "Export";
 "metric.actions.sure" = "You sure?";
 "metric.actions.confirmDelete" = "Delete metric";
 "metric.placeholder" = "Press + and add your first metric";
@@ -95,6 +96,25 @@
 "addmetric.button.save" = "Save";
 
 "addmetric.text.no-response" = "No response";
+
+// MARK: - Import Metric
+
+"import.title" = "Import from JSON";
+"import.button.title" = "Import";
+"import.placeholder" = "Paste metric JSON...";
+"import.validation.valid" = "JSON is valid";
+"import.validation.duplicate-id" = "A metric with this ID already exists — a new ID will be created";
+"import.info.title" = "Title";
+"import.info.measure" = "Measure";
+"import.info.type" = "Type";
+"import.error.cannot-read" = "Cannot read text";
+"import.error.no-valid-metric" = "No valid metric to import";
+"import.error.missing-field" = "Missing required field: %@";
+"import.error.wrong-type" = "Wrong data type: %@";
+"import.error.empty-value" = "Empty value: %@";
+"import.error.corrupted-data" = "Corrupted data: %@";
+"import.error.decoding" = "Decoding error: %@";
+"import.error.invalid-json" = "Invalid JSON: %@";
 
 // MARK: - Info View
 

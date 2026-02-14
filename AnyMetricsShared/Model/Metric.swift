@@ -1,6 +1,6 @@
 import Foundation
 
-public struct MetricStyle: Hashable {
+public struct MetricStyle: Hashable, Sendable {
     public var symbol: String
     public var hexColor: String?
     public var imageURL: URL?
@@ -12,11 +12,11 @@ public struct MetricStyle: Hashable {
     }
 }
 
-public enum MetricFormatterType: String, Codable, CaseIterable {
+public enum MetricFormatterType: String, Codable, CaseIterable, Sendable {
     case none, currency
 }
 
-public struct MetricValueFormatter: Hashable {
+public struct MetricValueFormatter: Hashable, Sendable {
     public static let `default` = MetricValueFormatter()
 
     public var format: MetricFormatterType = .none
@@ -30,13 +30,13 @@ public struct MetricValueFormatter: Hashable {
     }
 }
 
-public enum ParseResult {
+public enum ParseResult: Sendable {
     case value(String)
     case status(Bool)
 }
 
-public struct ParseRules: Hashable {
-    public enum RuleType: String, Codable, CaseIterable {
+public struct ParseRules: Hashable, Sendable {
+    public enum RuleType: String, Codable, CaseIterable, Sendable {
         case none, equal, contains
     }
 
@@ -55,7 +55,7 @@ public struct ParseRules: Hashable {
     }
 }
 
-public struct RequestData: Hashable {
+public struct RequestData: Hashable, Sendable {
     public var headers: [String: String]
     public var method: String
     public var url: URL
@@ -69,11 +69,11 @@ public struct RequestData: Hashable {
     }
 }
 
-public enum TypeMetric: String, Codable, CaseIterable {
+public enum TypeMetric: String, Codable, CaseIterable, Sendable {
     case json, checkStatus, web
 }
 
-public struct Metric: Hashable, Identifiable {
+public struct Metric: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var title: String
     public var measure: String

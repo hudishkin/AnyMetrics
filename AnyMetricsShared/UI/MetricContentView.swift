@@ -1,5 +1,4 @@
 import SwiftUI
-import AnyMetricsShared
 
 fileprivate enum Constants {
     static let titleInset = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
@@ -33,19 +32,11 @@ fileprivate enum Constants {
         Bundle.isInWidget() ? 48 : 54
     }()
     static let spacing: CGFloat = 20
-    #if WIDGET_EXTENSION
-    static let textColor = WidgetExtensionAsset.metricText.swiftUIColor
-    static let textErrorColor = WidgetExtensionAsset.red.swiftUIColor
-    static let strokeColor = WidgetExtensionAsset.metricText.swiftUIColor
-    static let titleBackground = WidgetExtensionAsset.metricParamBackground.swiftUIColor
-    static let secondaryText = WidgetExtensionAsset.secondaryText.swiftUIColor
-    #else
-    static let textColor = AnyMetricsAsset.Assets.metricText.swiftUIColor
-    static let textErrorColor = AnyMetricsAsset.Assets.red.swiftUIColor
-    static let strokeColor = AnyMetricsAsset.Assets.metricText.swiftUIColor
-    static let titleBackground = AnyMetricsAsset.Assets.metricParamBackground.swiftUIColor
-    static let secondaryText = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
-    #endif
+    static let textColor = Color.primary
+    static let textErrorColor = Color.red
+    static let strokeColor = Color.primary
+    static let titleBackground = Color(uiColor: .secondarySystemGroupedBackground)
+    static let secondaryText = Color.secondary
     static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
 
     static let titlePaddingInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
@@ -79,11 +70,15 @@ fileprivate enum Constants {
     static let paramLines: Int = 2
 }
 
-struct MetricContentView: View {
+public struct MetricContentView: View {
 
-    var metric: Metric
+    public var metric: Metric
+
+    public init(metric: Metric) {
+        self.metric = metric
+    }
     
-    var body: some View {
+    public var body: some View {
         ZStack(alignment: .center, content: {
             Circle()
                 .fill(circleGradient())
@@ -107,8 +102,7 @@ struct MetricContentView: View {
     @ViewBuilder
     func MetricValue() -> some View {
         if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
-            Text(
-                metric.resultWithError ? metricValueBad() : metricValueGood())
+            Text(metric.resultWithError ? "Bad" : "Good")
             .frame(height: Constants.valueFrameHeight, alignment: .center)
                 .font(Constants.fontValue)
                 .multilineTextAlignment(.center)
@@ -133,22 +127,6 @@ struct MetricContentView: View {
             return Constants.badCircleGradient
         }
         return Constants.goodCircleGradient
-    }
-
-    private func metricValueBad() -> String {
-        #if WIDGET_EXTENSION
-        WidgetExtensionStrings.Metric.Value.bad
-        #else
-        AnyMetricsStrings.Metric.Value.bad
-        #endif
-    }
-
-    private func metricValueGood() -> String {
-        #if WIDGET_EXTENSION
-        WidgetExtensionStrings.Metric.Value.good
-        #else
-        AnyMetricsStrings.Metric.Value.good
-        #endif
     }
 
 

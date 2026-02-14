@@ -18,6 +18,27 @@ fileprivate enum Constants {
     static let animationOpacityEnd: CGFloat = 1.0
 }
 
+// MARK: - Share Sheet Wrapper
+
+struct ActivityViewController: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]?
+    let completion: (() -> Void)?
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            completion?()
+        }
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 struct MetricView: View {
     
     var metric: Metric
@@ -25,6 +46,8 @@ struct MetricView: View {
     @State var opacity = Constants.animationOpacityBegin
     @State var showActionMenu = false
     @State var showConfirmationDelete = false
+    @State var exportFileURL: URL?
+    @State var showShareSheet = false
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
@@ -38,20 +61,24 @@ struct MetricView: View {
         }
         .actionSheet(isPresented: $showActionMenu, content: { [metric] in
             ActionSheet(
-                title: Text(L10n.metricActionsTitle(metric.title)),
+                title: Text(AnyMetricsStrings.Metric.Actions.title(metric.title)),
                 message: nil,
                 buttons:
                     [
                         .default(
-                            Text(L10n.metricActionsUpdateValue())) {
+                            Text(AnyMetricsStrings.Metric.Actions.updateValue)) {
                             refreshMetric?(metric.id)
                         },
                         .default(
-                            Text(L10n.metricActionsEdit())) {
+                            Text(AnyMetricsStrings.Metric.Actions.edit)) {
                             editMetric?(metric)
                         },
+                        .default(
+                            Text(AnyMetricsStrings.Metric.Actions.export)) {
+                            exportMetricAsJSON(metric)
+                        },
                         .destructive(
-                            Text(L10n.metricActionsDelete())) {
+                            Text(AnyMetricsStrings.Metric.Actions.delete)) {
                                 showConfirmationDelete = true
 
                         },
@@ -59,6 +86,19 @@ struct MetricView: View {
                     ]
             )
         })
+        .sheet(isPresented: $showShareSheet, onDismiss: {
+            cleanupExportFile()
+        }) {
+            if let fileURL = exportFileURL {
+                ActivityViewController(
+                    activityItems: [fileURL],
+                    applicationActivities: nil,
+                    completion: {
+                        showShareSheet = false
+                    }
+                )
+            }
+        }
         .scaleEffect(scale)
         .opacity(opacity)
         .onAppear {
@@ -69,9 +109,9 @@ struct MetricView: View {
                 }
             }
         }.confirmationDialog(
-            L10n.metricActionsSure(),
+            AnyMetricsStrings.Metric.Actions.sure,
             isPresented: $showConfirmationDelete) {
-                Button(L10n.metricActionsConfirmDelete(), role: .destructive) {
+                Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
                     deletehMetric?(metric.id)
                 }
             }
@@ -79,6 +119,32 @@ struct MetricView: View {
 
     private func getAnimationTimeInterval() -> DispatchTime {
         return DispatchTime.now() + Double.random(in: Constants.timeRange)
+    }
+
+    private func exportMetricAsJSON(_ metric: Metric) {
+        let exportData = MetricItemImportData.exportData(for: metric)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+
+        guard let jsonData = try? encoder.encode(exportData) else { return }
+
+        let fileName = metric.title
+            .replacingOccurrences(of: " ", with: "_")
+            .lowercased()
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(fileName).json")
+
+        try? jsonData.write(to: tempURL)
+        exportFileURL = tempURL
+        showShareSheet = true
+    }
+
+    private func cleanupExportFile() {
+        if let url = exportFileURL {
+            try? FileManager.default.removeItem(at: url)
+            exportFileURL = nil
+        }
     }
 }
 
