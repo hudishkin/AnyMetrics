@@ -1,35 +1,39 @@
-//
-//  EditMetricView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 28.06.2022.
-//
-
 import SwiftUI
-
+import VVSI
+import AnyMetricsShared
 
 struct EditMetricView: View {
 
-    @Binding var allowDismissed: Bool
-    @StateObject var viewModel: MetricViewModel
-    @EnvironmentObject var mainViewModel: MainViewModel
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @Binding
+    var allowDismissed: Bool
+    let metric: Metric
+    @Environment(\.presentationMode)
+    var presentationMode: Binding<PresentationMode>
+    var callback: (Metric) -> Void
+    
+    init(
+        metric: Metric,
+        allowDismissed: Binding<Bool>,
+        callback: @escaping (Metric) -> Void
+    ) {
+        self._allowDismissed = allowDismissed
+        self.metric = metric
+        self.callback = callback
+    }
 
     var body: some View {
         NavigationView {
             MetricFormView(
                 allowDismissed: $allowDismissed,
-                mainButtonTitle: L10n.commonSave(),
-                viewModel: viewModel,
+                metric: metric,
                 action: { metric in
-                    mainViewModel.addMetric(metric: metric)
-                    mainViewModel.updateMetric(id: metric.id)
+                    callback(metric)
                     presentationMode.wrappedValue.dismiss()
             })
-            .navigationTitle(L10n.metricActionsEdit())
+            .navigationTitle(AnyMetricsStrings.Metric.Actions.edit)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                Button(L10n.commonClose()) {
+                Button(AnyMetricsStrings.Common.close) {
                     presentationMode.wrappedValue.dismiss()
                 }
             }
@@ -38,15 +42,25 @@ struct EditMetricView: View {
     }
 }
 
-
 #if DEBUG
-
 struct EditMetricView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            EditMetricView(allowDismissed: .constant(true), viewModel: MetricViewModel())
-                .environmentObject(MainViewModel())
-                .preferredColorScheme(.dark)
+            EditMetricView(
+                metric: Mocks.getMockMetric(
+                    title: "Preview",
+                    measure: "pc",
+                    type: .json,
+                    typeRule: ParseRules(),
+                    result: "0",
+                    resultWithError: false
+                ),
+                allowDismissed: .constant(true)
+            ) { _ in
+
+            }
+            .environmentObject(ViewState(MainView.Interactor()))
+            .preferredColorScheme(.dark)
         }
     }
 }

@@ -1,12 +1,6 @@
-//
-//  MetricReponseView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 30.06.2022.
-//
-
 import SwiftUI
 import AnyMetricsShared
+import VVSI
 
 fileprivate enum Constants {
     static let imageFAQ = Image(systemName: "questionmark.circle.fill")
@@ -15,17 +9,17 @@ fileprivate enum Constants {
     static let faqSize: CGFloat = 20
     static let responsPadding = EdgeInsets(top: -50, leading: 20, bottom: 20, trailing: 20) //CGFloat = 20
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
-    static let lengthLabelBackground = AssetColor.secondaryText.opacity(0.5)
+    static let lengthLabelBackground = AnyMetricsAsset.Assets.secondaryText.swiftUIColor.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
     static let infinityChar = "∞"
     static let smallFont = Font.system(size: 12, weight: .regular, design: .default)
     static let responseFont = Font.system(size: 12, design: .monospaced)
     static let responsPaddingButton: CGFloat = -10
     static let mainButtonFont = Font.system(size: 17, weight: .semibold, design: .default)
-    static let requestImage = AssetImage.request
+    static let requestImage = AnyMetricsAsset.Assets.request.swiftUIImage
     static let createNewIcon: CGFloat = 16
-    static let buttonBackground = AssetColor.baseText
-    static let buttonTextColor = AssetColor.addMetricTint
+    static let buttonBackground = AnyMetricsAsset.Assets.baseText.swiftUIColor
+    static let buttonTextColor = AnyMetricsAsset.Assets.addMetricTint.swiftUIColor
     static let requestButtonInset =  EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
     static let requestButtonCorner: CGFloat = 24
     static let mainButtonCorner: CGFloat = 40
@@ -36,16 +30,19 @@ fileprivate enum Constants {
     static let codeBottomPadding: CGFloat = -10
 }
 
-struct MetricReponseView: View {
+struct MetricResponseView: View {
 
-    @Binding var allowDismissed: Bool
-    @State var showNext = false
+    @Binding
+    var allowDismissed: Bool
+    @State
+    var showNext = false
 
-    @EnvironmentObject var viewModel: MetricViewModel
+    @EnvironmentObject
+    var viewState: ViewState<MetricFormView.Interactor>
     var action: (Metric) -> Void
 
     private var typeCode: CodeView.CodeType {
-        switch viewModel.typeMetric {
+        switch viewState.state.typeMetric {
         case .web:
             return .html
         case .json, .checkStatus:
@@ -57,13 +54,11 @@ struct MetricReponseView: View {
         GeometryReader { geomentry in
             ZStack(alignment: .bottomTrailing) {
                 VStack {
-                    // MARK: - Response
                     VStack(alignment: .center) {
-
-                        if viewModel.response.isEmpty {
+                        if viewState.state.response.isEmpty {
                             VStack {
                                 Button {
-                                    self.viewModel.makeRequest()
+                                    self.viewState.trigger(.makeRequest)
                                 } label: {
                                     HStack {
                                         Constants.requestImage
@@ -72,7 +67,7 @@ struct MetricReponseView: View {
                                             .foregroundColor(Constants.buttonBackground)
                                             .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
                                             .aspectRatio(contentMode: .fit)
-                                        Text(L10n.addmetricButtonMakeRequest())
+                                        Text(AnyMetricsStrings.Addmetric.Button.makeRequest)
                                             .font(Constants.mainButtonFont)
                                             .foregroundColor(Constants.buttonBackground)
                                     }
@@ -89,7 +84,10 @@ struct MetricReponseView: View {
 
                         } else {
                             CodeView(
-                                code: $viewModel.response,
+                                code: Binding(
+                                    get: { viewState.state.response },
+                                    set: { _ in }
+                                ),
                                 codeType: .constant(self.typeCode))
                             .padding(.bottom, Constants.codeBottomPadding)
                             .frame(
@@ -99,7 +97,7 @@ struct MetricReponseView: View {
                                     maxHeight: .infinity)
                         }
                     }
-                    .background(viewModel.response.isEmpty ? .clear : Color(uiColor: .systemBackground))
+                    .background(viewState.state.response.isEmpty ? .clear : Color(uiColor: .systemBackground))
                     .frame(
                         width: geomentry.size.width,
                         height: geomentry.size.height / 2.5,
@@ -113,104 +111,88 @@ struct MetricReponseView: View {
                             HStack(alignment: .center, spacing: Constants.zero) {
                                 TextField(
                                     getRulesPlaceholder(),
-                                    text: self.$viewModel.parseRules)
-                                .onChange(of: self.viewModel.parseRules) { newValue in
-                                    self.viewModel.updateValue(rule: newValue)
-                                }
+                                    text: binding(for: \.parseRules, set: MetricFormView.VAction.setParseRules))
                                 .disableAutocorrection(true)
-
                             }
 
                             Picker(
-                                L10n.addmetricFieldTypeParseRuleTitle(),
-                                selection: $viewModel.typeRule) {
+                                AnyMetricsStrings.Addmetric.Field.typeParseRuleTitle,
+                                selection: binding(for: \.typeRule, set: MetricFormView.VAction.setTypeRule)) {
                                     ForEach(ParseRules.RuleType.allCases, id: \.self) { item in
                                     Text(item.localizedName).tag(item)
                                 }
                             }
                             .pickerStyle(.automatic)
-                            .onChange(of: self.viewModel.formatType) { _ in
-                                self.viewModel.updateValue()
-                            }
-                            if viewModel.typeRule != .none {
+                            if viewState.state.typeRule != .none {
                                 HStack(alignment: .center, spacing: Constants.zero) {
-                                    TextField( L10n.addmetricFieldRuleTypePlaceholder(),
-                                        text: self.$viewModel.parseConfigurationValue)
-                                    .onChange(of: self.viewModel.parseConfigurationValue) { _ in
-                                        self.viewModel.updateValue()
-                                    }
+                                    TextField(AnyMetricsStrings.Addmetric.Field.ruleTypePlaceholder,
+                                        text: binding(for: \.parseConfigurationValue, set: MetricFormView.VAction.setParseConfigurationValue))
                                     .disableAutocorrection(true)
                                 }
 
                                 HStack(alignment: .center, spacing: Constants.zero) {
-                                    Toggle(L10n.addmetricFieldCaseSensitive(), isOn: $viewModel.caseSensitive)
+                                    Toggle(AnyMetricsStrings.Addmetric.Field.caseSensitive, isOn: binding(for: \.caseSensitive, set: MetricFormView.VAction.setCaseSensitive))
                                 }
                             }
 
                         }
                         footer: {
-                            if viewModel.typeRule == .contains {
+                            if viewState.state.typeRule == .contains {
                                 VStack {
-                                    Text(L10n.addmetricFieldRuleTypeContainsDescription())
+                                    Text(AnyMetricsStrings.Addmetric.Field.ruleTypeContainsDescription)
                                 }
-                            } else if viewModel.typeRule == .equal {
+                            } else if viewState.state.typeRule == .equal {
                                 VStack {
-                                    Text(L10n.addmetricFieldRuleTypeEqualDescription())
+                                    Text(AnyMetricsStrings.Addmetric.Field.ruleTypeEqualDescription)
                                 }
                             }
                         }
 
-                        if viewModel.typeRule == .none {
+                        if viewState.state.typeRule == .none {
                             Section {
                                 Picker(
-                                    L10n.addmetricFieldValueType(),
-                                    selection: $viewModel.formatType) {
+                                    AnyMetricsStrings.Addmetric.Field.valueType,
+                                    selection: binding(for: \.formatType, set: MetricFormView.VAction.setFormatType)) {
                                     ForEach(MetricFormatterType.allCases, id: \.self) { item in
                                         Text(item.localizedName).tag(item)
                                     }
                                 }
                                 .pickerStyle(.automatic)
-                                .onChange(of: self.viewModel.formatType) { _ in
-                                    self.viewModel.updateValue()
-                                }
 
-                                if viewModel.formatType == .none {
+                                if viewState.state.formatType == .none {
                                     HStack(alignment: .center, spacing: 0) {
-                                        Stepper(value: self.$viewModel.maxLengthValue, in:  0...Int.max) {
+                                        Stepper(value: binding(for: \.maxLengthValue, set: MetricFormView.VAction.setMaxLengthValue), in:  0...Int.max) {
                                             HStack {
-                                                Text(L10n.addmetricFieldMaxLength())
+                                                Text(AnyMetricsStrings.Addmetric.Field.maxLength)
                                                 Spacer()
                                                 Text(maxLength())
                                                     .font(Constants.smallFont)
                                                     .padding(Constants.lengthLabelInset)
-                                                    .foregroundColor(AssetColor.baseText)
+                                                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                                                     .background(Constants.lengthLabelBackground)
                                                     .cornerRadius(Constants.lengthLabelCorner)
                                             }
                                         }
-                                        .onChange(of: self.viewModel.maxLengthValue) { newValue in
-                                            self.viewModel.updateValue(length: newValue)
-                                        }
                                     }
                                 }
                             } header: {
-                                Text(L10n.addmetricSectionFormatSettings())
+                                Text(AnyMetricsStrings.Addmetric.Section.formatSettings)
                             }
                         }
 
 
-                        if viewModel.canSetupResponse && !viewModel.parseRules.isEmpty {
+                        if viewState.state.canSetupResponse && !viewState.state.parseRules.isEmpty {
                             Section {
                                 HStack(alignment: .top) {
-                                    Text(L10n.addmetricFieldValue())
+                                    Text(AnyMetricsStrings.Addmetric.Field.value)
                                     Spacer()
                                     Text(getResultText())
-                                        .foregroundColor(AssetColor.secondaryText)
+                                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
                                         .lineLimit(1)
                                 }
 
                             } header: {
-                                Text(L10n.addmetricSectionResult())
+                                Text(AnyMetricsStrings.Addmetric.Section.result)
                             }
                         }
                     }
@@ -218,14 +200,14 @@ struct MetricReponseView: View {
 
                 HStack(alignment: .center, spacing: Constants.zero, content: {
                     NavigationLink(isActive: $showNext) {
-                        MetricDisplayView(allowDismissed: $allowDismissed, action: action)
-                            .environmentObject(viewModel)
+                        MetricFormView.DisplayView(allowDismissed: $allowDismissed, action: action)
+                            .environmentObject(viewState)
                     } label: {
                         Button(action: {
                             showNext = true
                         }, label: {
                             Spacer()
-                            Text(L10n.addmetricButtonNext())
+                            Text(AnyMetricsStrings.Addmetric.Button.next)
                                 .font(Constants.mainButtonFont).padding()
                             Spacer()
                         })
@@ -241,22 +223,22 @@ struct MetricReponseView: View {
             }
 
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle(L10n.addmetricTitleValue())
+            .navigationTitle(AnyMetricsStrings.Addmetric.titleValue)
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if viewModel.requestStatus == .loading {
+                    if viewState.state.requestStatus == .loading {
                         ProgressView()
                     } else {
                         Button {
-                            viewModel.makeRequest()
+                            viewState.trigger(.makeRequest)
                         } label: {
                             Constants.imageRefresh
                         }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Link(L10n.commonFaq(), destination: AppConfig.Urls.rules)
+                    Link(AnyMetricsStrings.Common.faq, destination: AppConfig.Urls.rules)
                 }
             }
             .onAppear {
@@ -268,24 +250,27 @@ struct MetricReponseView: View {
     }
 
     func getRulesPlaceholder() -> String {
-        if viewModel.typeMetric == .json {
-            return L10n.addmetricFieldJsonParseRulePlaceholder()
+        if viewState.state.typeMetric == .json {
+            return AnyMetricsStrings.Addmetric.Field.jsonParseRulePlaceholder
         }
-        return L10n.addmetricFieldHtmlParseRulePlaceholder()
+        return AnyMetricsStrings.Addmetric.Field.htmlParseRulePlaceholder
     }
 
     func getResultText() -> String {
-        if viewModel.result.isEmpty && (viewModel.typeMetric == .checkStatus || viewModel.typeRule == .contains || viewModel.typeRule == .equal) {
-            return String(describing: viewModel.resultWithError)
+        if viewState.state.result.isEmpty
+            && (viewState.state.typeMetric == .checkStatus
+                || viewState.state.typeRule == .contains
+                || viewState.state.typeRule == .equal) {
+            return String(describing: viewState.state.resultWithError)
         }
-        return viewModel.result.isEmpty ? "-" : viewModel.result
+        return viewState.state.result.isEmpty ? "-" : viewState.state.result
     }
 
     func maxLength() -> String {
-        if viewModel.maxLengthValue == 0 {
+        if viewState.state.maxLengthValue == 0 {
             return Constants.infinityChar
         }else {
-            return String(viewModel.maxLengthValue)
+            return String(viewState.state.maxLengthValue)
         }
     }
 
@@ -294,7 +279,17 @@ struct MetricReponseView: View {
     }
 
     func enableNextButton() -> Bool {
-        !viewModel.parseRules.isEmpty && !viewModel.hasParseRuleError
+        !viewState.state.parseRules.isEmpty && !viewState.state.hasParseRuleError
+    }
+
+    private func binding<Value>(
+        for keyPath: KeyPath<MetricFormView.VState, Value>,
+        set action: @escaping (Value) -> MetricFormView.VAction
+    ) -> Binding<Value> {
+        Binding(
+            get: { viewState.state[keyPath: keyPath] },
+            set: { viewState.trigger(action($0)) }
+        )
     }
 }
 
@@ -303,10 +298,10 @@ struct MetricReponseView: View {
 struct MetricReponseView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            MetricReponseView(allowDismissed: .constant(false),action: { _ in
+            MetricResponseView(allowDismissed: .constant(false),action: { _ in
                 
             })
-            .environmentObject(MetricViewModel())
+            .environmentObject(ViewState(MetricFormView.Interactor()))
             .preferredColorScheme(.light)
         }
     }

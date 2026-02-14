@@ -17,9 +17,9 @@ fileprivate enum Constants {
     static let buttonCorner: CGFloat = 30
     static let imageArrow = Image(systemName: "arrow.right")
     static let imageStar = Image(systemName: "star")
-    static let textColor = AssetColor.baseText
-    static let titleColor = AssetColor.baseText
-    static let linkColor = AssetColor.baseText
+    static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
+    static let titleColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
+    static let linkColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
     static let fontTitle: Font = {
         Font.system(size: 34, weight: .bold, design: .default)
     }()
@@ -43,7 +43,7 @@ struct InfoView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.spacing) {
                     HStack(alignment: .center) {
-                        AssetImage.appIconInfo
+                        AnyMetricsAsset.Assets.appIconInfo.swiftUIImage
                             .resizable()
                             .cornerRadius(Constants.iconCorner)
                             .frame(width: Constants.imageSize, height: Constants.imageSize, alignment: .center)
@@ -51,16 +51,16 @@ struct InfoView: View {
                     .frame(minWidth: 0, maxWidth: .infinity)
 
                     Spacer(minLength: Constants.spacing2)
-                    Text(L10n.infoTitle())
+                    Text(AnyMetricsStrings.Info.title)
                         .font(Constants.fontTitle)
                         .foregroundColor(Constants.titleColor)
-                    Text(L10n.infoMessage())
+                    Text(AnyMetricsStrings.Info.message)
                         .font(Constants.fontBody)
                         .foregroundColor(Constants.textColor)
                     Spacer(minLength: Constants.spacing2)
 //                    Link(destination: AppConfig.Urls.appRepository) {
 //                        HStack {
-//                            Text(L10n.infoGithubAppRepo())
+//                            Text(AnyMetricsStrings.Info.githubAppRepo)
 //                                .font(Constants.fontLink)
 //                                .foregroundColor(Constants.linkColor)
 //                            Constants.imageArrow
@@ -71,7 +71,7 @@ struct InfoView: View {
 //                    }
                     Link(destination: AppConfig.Urls.galleryRepository) {
                         HStack {
-                            Text(L10n.infoGithubGalleryRepo())
+                            Text(AnyMetricsStrings.Info.githubGalleryRepo)
                                 .font(Constants.fontLink)
                                 .foregroundColor(Constants.linkColor)
                             Constants.imageArrow
@@ -87,7 +87,7 @@ struct InfoView: View {
                         Button {
                             ReviewHandler.requestReview()
                         } label: {
-                            Text(L10n.infoRate())
+                            Text(AnyMetricsStrings.Info.rate)
                                 .font(Constants.fontLink)
                                 .foregroundColor(Constants.linkColor)
                             Constants.imageStar
@@ -98,8 +98,8 @@ struct InfoView: View {
 
 
 
-                        Text(L10n.infoVersion(Bundle.appVersion()))
-                            .foregroundColor(AssetColor.secondaryText)
+                        Text(AnyMetricsStrings.Info.version(Bundle.appVersion()))
+                            .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
                             .font(Constants.fontBody)
 
                     }
@@ -123,13 +123,13 @@ struct InfoView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text(L10n.commonClose())
-                            .foregroundColor(AssetColor.baseText)
+                        Text(AnyMetricsStrings.Common.close)
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         Spacer()
                     }
                     .padding()
                 }
-                .background(AssetColor.galleryItemBackground)
+                .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
                 .cornerRadius(Constants.buttonCorner)
             }
             .padding()

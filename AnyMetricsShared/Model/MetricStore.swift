@@ -23,7 +23,8 @@ extension Metrics: RawRepresentable {
 }
 
 open class MetricStore {
-    @AppStorage(AppConfig.metricsKey, store: UserDefaults(suiteName: AppConfig.group)) public var metrics = Metrics()
+    @AppStorage(AppConfig.metricsKey, store: UserDefaults(suiteName: AppConfig.group))
+    public var metrics = Metrics()
 
     public init() {}
 

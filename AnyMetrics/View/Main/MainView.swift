@@ -1,64 +1,25 @@
-//
-//  MainView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 13.06.2022.
-//
-
 import SwiftUI
 import SwiftyJSON
 import AnyMetricsShared
-
-
-
-fileprivate enum Constants {
-    static let fontTitle: Font = Font.system(size: 19, weight: .heavy, design: .default)
-    static let fontPlaceholder: Font = Font.system(size: 16, weight: .regular, design: .default)
-    static let padding: CGFloat = 10
-    static let titleInset = EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
-    static let infoInset = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
-    static let spacing: CGFloat = {
-        AppConfig.isiOSAppOnMac ? 20 : 10
-    }()
-    static let size: CGFloat = {
-        if AppConfig.isiOSAppOnMac {
-            return 260
-        }
-        return (UIScreen.main.bounds.width / CGFloat(Constants.collumns.count)) - (Self.spacing * 2)
-
-    }()
-    static let heightPlaceholder: CGFloat = (UIScreen.main.bounds.height) - (Self.spacing * 2)
-    static let zIndexTitle: CGFloat = 999
-    static let titleCorner: CGFloat = 8
-    static let topPadding: CGFloat = 58
-    static let bottomPadding: CGFloat = 58
-    static let scrollViewInset = EdgeInsets(top: 0, leading: Constants.padding, bottom: 0, trailing: Constants.padding)
-    static let addButtonPadding: CGFloat = 14
-    static let addButtonSize: CGFloat = {  AppConfig.isiOSAppOnMac ? 82 : 62 }()
-    static let addButtonCorner: CGFloat = Self.addButtonSize / 2
-    static let collumns: [GridItem] = {
-
-        if AppConfig.isiOSAppOnMac {
-            return [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ]
-        } else {
-            return [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ]
-        }
-    }()
-}
+import VVSI
 
 struct MainView: View {
 
-    @ObservedObject var viewModel: MainViewModel
-    @State var showSheet = false
-    @State var allowDismissed = true
-    @State var showActionMenu = false
+    enum SheetType: Identifiable {
+        var id: String { "\(self)" }
+        case addMetrics
+        case info
+        case editMetric(Metric)
+    }
+
+    @StateObject
+    var viewState: ViewState<Interactor> = .init(Interactor())
+    @State
+    var sheetType: SheetType?
+    @State
+    var allowDismissed = true
+    @State
+    var showActionMenu = false
 
     let columns = Constants.collumns
 
@@ -67,11 +28,11 @@ struct MainView: View {
             ZStack(alignment: .top) {
                 // MARK: - Header
                 Button {
-                    showSheet(activeSheet: .info)
+                    sheetType = .info
                 } label: {
-                    Text(L10n.appName())
+                    Text(AnyMetricsStrings.appName)
                         .font(Constants.fontTitle)
-                        .foregroundColor(AssetColor.baseText)
+                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         .padding(Constants.titleInset)
                         .background(.ultraThinMaterial)
                         .cornerRadius(Constants.titleCorner)
@@ -83,13 +44,13 @@ struct MainView: View {
                 ScrollView {
                     Spacer(minLength: Constants.topPadding)
                     LazyVGrid(columns: columns, spacing: Constants.spacing) {
-                        ForEach(viewModel.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
+                        ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
                             MetricView(metric: metric, refreshMetric: { uuid in
-                                viewModel.updateMetric(id: uuid)
+                                viewState.trigger(.refreshMetric(uuid))
                             }, deletehMetric: { uuid in
-                                viewModel.removeMetric(id: uuid)
+                                viewState.trigger(.removeMetric(uuid))
                             }, editMetric: { metric in
-                                showSheet(activeSheet: .editMetric(metric))
+                                sheetType = .editMetric(metric)
                             })
                                 .frame(width: Constants.size,
                                        height: Constants.size)
@@ -104,13 +65,13 @@ struct MainView: View {
             // MARK: - Add Button
             Button {
                 ImpactHelper.impactButton()
-                showSheet(activeSheet: .addMetrics)
+                sheetType = .addMetrics
 
             } label: {
-                AssetImage.plus
+                AnyMetricsAsset.Assets.plus.swiftUIImage
                     .resizable()
                     .renderingMode(.template)
-                    .foregroundColor(AssetColor.baseText)
+                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                     .padding(Constants.addButtonPadding)
             }
             .background(.ultraThinMaterial)
@@ -118,57 +79,54 @@ struct MainView: View {
             .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
             .padding()
 
-            if viewModel.metrics.isEmpty {
+            if viewState.state.metrics.isEmpty {
 
                 VStack {
                     Spacer()
-                    Text(L10n.metricPlaceholder())
+                    Text(AnyMetricsStrings.Metric.placeholder)
                         .font(Constants.fontPlaceholder)
-                        .foregroundColor(AssetColor.secondaryText)
+                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
                     Spacer()
                 }
-
-
             }
         }
-        .sheet(isPresented: $showSheet) {
-            switch self.viewModel.activeSheet {
+        .sheet(item: $sheetType) { type in
+            switch type {
             case .addMetrics:
                 GalleryView(allowDismissed: $allowDismissed)
                     .interactiveDismiss(canDismissSheet: $allowDismissed)
-                    .environmentObject(viewModel)
+                    .environmentObject(viewState)
             case .info:
                 InfoView()
             case .editMetric(let metric):
-                EditMetricView(allowDismissed: $allowDismissed, viewModel: MetricViewModel(metric: metric))
-                    .interactiveDismiss(canDismissSheet: .constant(false))
-                    .environmentObject(viewModel)
-            case .none:
-                EmptyView()
+                NavigationView {
+                    MetricFormView(
+                        allowDismissed: $allowDismissed,
+                        metric: metric,
+                        action: { updatedMetric in
+                            viewState.trigger(.addMetric(updatedMetric))
+                            sheetType = nil
+                        }
+                    )
+                    .navigationTitle(AnyMetricsStrings.Metric.Actions.edit)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        Button(AnyMetricsStrings.Common.close) {
+                            sheetType = nil
+                        }
+                    }
+                }
+                .interactiveDismiss(canDismissSheet: .constant(false))
+                .environmentObject(viewState)
             }
         }
         .onAppear {
-            viewModel.updateMetrics()
+            viewState.trigger(.onAppear)
         }
 
     }
-
-    func showSheet(activeSheet: MainViewModel.ActiveSheet) {
-        self.viewModel.activeSheet = activeSheet
-        self.showSheet.toggle()
-    }
 }
 
-#if DEBUG
-struct MainView_Previews: PreviewProvider {
-    static var previews: some View {
-        let vm = MainViewModel()
-        vm.metrics = Metrics(
-            dictionaryLiteral: (UUID(),
-                                Metric(id: UUID(), title: "Api Service", measure: "USD", type: .json))
-        )
-        return MainView(viewModel: vm)
-            .preferredColorScheme(.dark)
-    }
+#Preview {
+    MainView()
 }
-#endif

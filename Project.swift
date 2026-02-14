@@ -1,11 +1,11 @@
 import ProjectDescription
 
-let version = "2.0.0"
+let version = "2.0"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
+let teamId = "Q424U5CAPS"
 
 let appInfoPlist: [String: Plist.Value] = [
-    "CFBundleDisplayName": .string("AnyMetrics"),
     "NSAppTransportSecurity": .dictionary([
         "NSAllowsArbitraryLoads": .boolean(true)
     ]),
@@ -27,12 +27,17 @@ let appInfoPlist: [String: Plist.Value] = [
     ]),
     "NSUserActivityTypes": .array([
         .string("ConfigurationIntent")
-    ])
+    ]),
+    "CFBundleShortVersionString": .string(version),
+    "CFBundleVersion": .string(buildNumber),
+    "ITSAppUsesNonExemptEncryption": .boolean(false)
 ]
 
 let widgetInfoPlist: [String: Plist.Value] = [
     "CFBundleIdentifier": .string("$(PRODUCT_BUNDLE_IDENTIFIER)"),
     "CFBundleDisplayName": .string("Widget"),
+    "CFBundleShortVersionString": .string(version),
+    "CFBundleVersion": .string(buildNumber),
     "NSExtension": .dictionary([
         "NSExtensionPointIdentifier": .string("com.apple.widgetkit-extension")
     ])
@@ -41,6 +46,8 @@ let widgetInfoPlist: [String: Plist.Value] = [
 let intentInfoPlist: [String: Plist.Value] = [
     "CFBundleIdentifier": .string("$(PRODUCT_BUNDLE_IDENTIFIER)"),
     "CFBundleDisplayName": .string("Intent"),
+    "CFBundleShortVersionString": .string(version),
+    "CFBundleVersion": .string(buildNumber),
     "NSExtension": .dictionary([
         "NSExtensionAttributes": .dictionary([
             "IntentsRestrictedWhileLocked": .array([]),
@@ -64,13 +71,20 @@ let sharedTarget: Target = .target(
     sources: [
         "AnyMetricsShared/**/*.swift"
     ],
+    resources: [
+        "AnyMetrics/Resources/Assets.xcassets",
+        "AnyMetrics/Resources/en.lproj/Localizable.strings",
+        "AnyMetrics/Resources/ru.lproj/Localizable.strings"
+    ],
     dependencies: [
         .external(name: "SwiftyJSON"),
         .external(name: "SwiftSoup")
     ],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
+            "DEVELOPMENT_TEAM": .string(teamId),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber),
+            "MARKETING_VERSION": .string(version),
             "SWIFT_VERSION": "5.0"
         ]
     )
@@ -124,11 +138,12 @@ let appTarget: Target = .target(
         .external(name: "FirebaseCrashlytics"),
         .external(name: "SwiftyJSON"),
         .external(name: "SwiftSoup"),
-        .external(name: "Highlightr")
+        .external(name: "Highlightr"),
+        .external(name: "VVSI")
     ],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
+            "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
             "CODE_SIGN_STYLE": "Automatic",
@@ -139,7 +154,8 @@ let appTarget: Target = .target(
             "ENABLE_PREVIEWS": "YES",
             "SWIFT_VERSION": "5.0",
             "TARGETED_DEVICE_FAMILY": "1",
-            "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks"
+            "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks",
+            "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics"
         ]
     )
 )
@@ -154,16 +170,10 @@ let widgetTarget: Target = .target(
     sources: [
         "Widget/Widget.swift",
         "Intent/IntentHandler.swift",
-        "Widget/Base.lproj/Widget.intentdefinition",
-        "AnyMetrics/Extensions/TuistResources.swift",
-        "AnyMetrics/View/Main/MetricContentView.swift",
-        "AnyMetrics/Resources/Mocks.swift"
+        "Widget/Base.lproj/Widget.intentdefinition"
     ],
     resources: [
-        "Widget/Assets.xcassets",
-        "AnyMetrics/Resources/Assets.xcassets",
-        "AnyMetrics/Resources/en.lproj/Localizable.strings",
-        "AnyMetrics/Resources/ru.lproj/Localizable.strings"
+        "Widget/Assets.xcassets"
     ],
     entitlements: .file(path: "WidgetExtension.entitlements"),
     dependencies: [
@@ -173,9 +183,9 @@ let widgetTarget: Target = .target(
     ],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
-            "CURRENT_PROJECT_VERSION": "1",
-            "MARKETING_VERSION": "1.2",
+            "DEVELOPMENT_TEAM": .string(teamId),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber),
+            "MARKETING_VERSION": .string(version),
             "CODE_SIGN_STYLE": "Automatic",
             "CODE_SIGN_IDENTITY": "Apple Development",
             "SWIFT_VERSION": "5.0",
@@ -207,9 +217,9 @@ let intentTarget: Target = .target(
     ],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
-            "CURRENT_PROJECT_VERSION": "1",
-            "MARKETING_VERSION": "1.2",
+            "DEVELOPMENT_TEAM": .string(teamId),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber),
+            "MARKETING_VERSION": .string(version),
             "CODE_SIGN_STYLE": "Automatic",
             "CODE_SIGN_IDENTITY": "Apple Development",
             "SWIFT_VERSION": "5.0",
@@ -225,15 +235,15 @@ let unitTestsTarget: Target = .target(
     destinations: .iOS,
     product: .unitTests,
     bundleId: "\(bundleId).AnyMetricsTests",
-    deploymentTargets: .iOS("15.4"),
+    deploymentTargets: .iOS("15.0"),
     infoPlist: .default,
     sources: ["AnyMetricsTests/**/*.swift"],
     dependencies: [.target(name: "AnyMetrics")],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
-            "CURRENT_PROJECT_VERSION": "1",
-            "MARKETING_VERSION": "1.0",
+            "DEVELOPMENT_TEAM": .string(teamId),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber),
+            "MARKETING_VERSION": .string(version),
             "SWIFT_VERSION": "5.0",
             "TARGETED_DEVICE_FAMILY": "1,2",
             "BUNDLE_LOADER": "$(TEST_HOST)",
@@ -253,9 +263,9 @@ let uiTestsTarget: Target = .target(
     dependencies: [.target(name: "AnyMetrics")],
     settings: .settings(
         base: [
-            "DEVELOPMENT_TEAM": "Q424U5CAPS",
-            "CURRENT_PROJECT_VERSION": "1",
-            "MARKETING_VERSION": "1.0",
+            "DEVELOPMENT_TEAM": .string(teamId),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber),
+            "MARKETING_VERSION": .string(version),
             "SWIFT_VERSION": "5.0",
             "TARGETED_DEVICE_FAMILY": "1,2",
             "TEST_TARGET_NAME": "AnyMetrics"
@@ -268,7 +278,9 @@ let project = Project(
     settings: .settings(
         base: [
             "IPHONEOS_DEPLOYMENT_TARGET": "15.0",
-            "SWIFT_VERSION": "5.0"
+            "SWIFT_VERSION": "5.0",
+            "MARKETING_VERSION": .string(version),
+            "CURRENT_PROJECT_VERSION": .string(buildNumber)
         ],
         defaultSettings: .recommended
     ),

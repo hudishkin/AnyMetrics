@@ -1,10 +1,3 @@
-//
-//  AddHeaderView.swift
-//  AnyMetrics
-//
-//  Created by Simon Hudishkin on 14.06.2022.
-//
-
 import SwiftUI
 
 fileprivate enum Constants {
@@ -22,38 +15,42 @@ struct AddHeaderView: View {
 
     var action: (String, String) -> Void
 
-    @State var headerName: String = ""
-    @State var headerValue: String = ""
-    @State var showHeaderPicker: Bool = false
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @State 
+    var headerName: String = ""
+    @State 
+    var headerValue: String = ""
+    @State 
+    var showHeaderPicker: Bool = false
+    @Environment(\.presentationMode) 
+    var presentationMode: Binding<PresentationMode>
 
     var body: some View {
         NavigationView {
             Form {
                 Section {
                     HStack {
-                        TextField(L10n.httpheadersEnterName(), text: $headerName)
+                        TextField(AnyMetricsStrings.Httpheaders.enterName, text: $headerName)
                     }
                 } footer: {
                     HStack {
                         NavigationLink {
                             SearchPickerView(
-                                title: L10n.httpheadersSelectTitle(),
+                                title: AnyMetricsStrings.Httpheaders.Select.title,
                                 items: HTTP_HEADERS) { selectHeader in
                                 self.headerName = selectHeader
                             }
                         } label: {
 
-                            Text(L10n.httpheadersSelectFromList())
-                                .foregroundColor(AssetColor.baseText)
+                            Text(AnyMetricsStrings.Httpheaders.selectFromList)
+                                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                             Constants.imageArrow
-                                .foregroundColor(AssetColor.baseText)
+                                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         }
                     }
                 }
                 Section {
                     HStack {
-                        TextField(L10n.httpheadersEnterValue(), text: $headerValue)
+                        TextField(AnyMetricsStrings.Httpheaders.enterValue, text: $headerValue)
                     }
                 } footer: {
                     VStack {
@@ -61,20 +58,20 @@ struct AddHeaderView: View {
                         VStack {
                             if let examples = HTTP_HEADER_EXAMPLE[self.headerName] {
                                 NavigationLink {
-                                    SearchPickerView(title: L10n.httpheadersSelectValueTitle(), items: examples) { selectedValue in
+                                    SearchPickerView(title: AnyMetricsStrings.Httpheaders.Select.valueTitle, items: examples) { selectedValue in
                                         self.headerValue = selectedValue
                                     }
                                 } label: {
-                                    Text(L10n.httpheadersSelectValuesFromList())
-                                        .foregroundColor(AssetColor.baseText)
+                                    Text(AnyMetricsStrings.Httpheaders.selectValuesFromList)
+                                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                                     Constants.imageArrow
-                                        .foregroundColor(AssetColor.baseText)
+                                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                                     Spacer()
                                 }
                                 Divider()
                             }
 
-                            Text(L10n.httpheadersValueInformation())
+                            Text(AnyMetricsStrings.Httpheaders.valueInformation)
                                 .frame(maxHeight: .infinity)
                         }
                         HStack(alignment: .center, spacing: Constants.spacing, content: {
@@ -83,14 +80,14 @@ struct AddHeaderView: View {
                                 presentationMode.wrappedValue.dismiss()
                             }, label: {
                                 Spacer()
-                                Text(L10n.httpheadersAddButton())
+                                Text(AnyMetricsStrings.Httpheaders.Add.button)
                                     .font(Constants.font)
                                     .padding()
                                 Spacer()
                             })
                                 .frame(maxWidth: .infinity)
-                                .foregroundColor(AssetColor.addMetricTint)
-                                .background(AssetColor.baseText)
+                                .foregroundColor(AnyMetricsAsset.Assets.addMetricTint.swiftUIColor)
+                                .background(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                                 .cornerRadius(Constants.buttonCorner)
                                 .disabled(headerName.isEmpty || headerValue.isEmpty)
                                 .opacity(opacityButton())
@@ -101,7 +98,7 @@ struct AddHeaderView: View {
                 }
             }
             .padding(Constants.formInset)
-            .navigationTitle(L10n.httpheadersAddTitle())
+            .navigationTitle(AnyMetricsStrings.Httpheaders.Add.title)
             .navigationBarTitleDisplayMode(.inline)
             .listStyle(PlainListStyle())
         }
