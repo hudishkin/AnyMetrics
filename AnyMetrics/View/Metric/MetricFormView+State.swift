@@ -14,58 +14,28 @@ extension MetricFormView {
 
     struct VState: StateProtocol {
 
-        enum RequestStatus {
-            case none, loading, success, error
-        }
-
         let id: UUID
         let isNew: Bool
-        
-        var canMakeRequest: Bool {
-            requestUrl.isValidURL
-        }
-        var canSetupResponse: Bool = false
-        var hasRequestError: Bool = false
-        var hasParseRuleError: Bool = false
-        var errorMessage: String = ""
-        var requestStatus: RequestStatus = .none
 
         var title: String = ""
         var measure: String = ""
-        var requestUrl: String = "http://jsonplaceholder.typicode.com/posts"
-        var httpMethodType: HTTPMethodType = .GET
-        var typeMetric: TypeMetric = .json
-        var timeout: Double = DEFAULT_TIMEOUT
         var typeRule: ParseRules.RuleType = .none
         var parseConfigurationValue: String = ""
         var caseSensitive: Bool = false
         var paramEqualTo: String = ""
         var parseRules: String = ""
         var result: String = ""
-        var httpHeaders: [String: String] = [:]
-        var response: String = ""
         var formatType: MetricFormatterType = .none
         var maxLengthValue: Int = DEFAULT_LENGTH_VALUE
         var resultWithError: Bool = true
         var isEdited: Bool = false
-        var canAddMetric: Bool {
-            !measure.isEmpty
-            && !title.isEmpty
-            && requestUrl.isValidURL
-            && timeout > 0
-            && (typeMetric == .checkStatus || !parseRules.isEmpty)
-        }
+        var hasParseRuleError: Bool = false
     }
 
     enum VAction: ActionProtocol {
-        case makeRequest
         case updateValue(rule: String? = nil, length: Int? = nil)
         case setTitle(String)
         case setMeasure(String)
-        case setRequestUrl(String)
-        case setHTTPMethodType(HTTPMethodType)
-        case setTypeMetric(TypeMetric)
-        case setTimeout(Double)
         case setTypeRule(ParseRules.RuleType)
         case setParseConfigurationValue(String)
         case setCaseSensitive(Bool)
@@ -73,8 +43,6 @@ extension MetricFormView {
         case setParseRules(String)
         case setFormatType(MetricFormatterType)
         case setMaxLengthValue(Int)
-        case addHeader(name: String, value: String)
-        case removeHeader(name: String)
     }
 
     enum VNotification: NotificationProtocol {
@@ -84,30 +52,34 @@ extension MetricFormView {
 
 extension Metric {
 
-    init?(with state: MetricFormView.VState) {
-        guard state.canAddMetric else { return nil }
-        guard let url = URL(string: state.requestUrl) else { return nil }
+    init?(formState: MetricFormView.VState, requestState: RequestFormView.VState) {
+        guard !formState.measure.isEmpty,
+              !formState.title.isEmpty,
+              requestState.requestUrl.isValidURL,
+              (requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty)
+        else { return nil }
+        guard let url = URL(string: requestState.requestUrl) else { return nil }
 
         self.init(
-            id: state.id,
-            title: state.title,
-            measure: state.measure,
-            type: state.typeMetric,
-            result: state.result,
-            resultWithError: state.resultWithError,
+            id: formState.id,
+            title: formState.title,
+            measure: formState.measure,
+            type: requestState.typeMetric,
+            result: formState.result,
+            resultWithError: formState.resultWithError,
             request: RequestData(
-                headers: state.httpHeaders,
-                method: state.httpMethodType.rawValue,
+                headers: requestState.httpHeaders,
+                method: requestState.httpMethodType.rawValue,
                 url: url,
-                timeout: state.timeout),
+                timeout: requestState.timeout),
             formatter: .init(
-                format: state.formatType,
-                length: state.maxLengthValue),
+                format: formState.formatType,
+                length: formState.maxLengthValue),
             rules: .init(
-                parseRules: state.parseRules,
-                type: state.typeRule,
-                value: state.parseConfigurationValue,
-                caseSensitive: state.caseSensitive),
+                parseRules: formState.parseRules,
+                type: formState.typeRule,
+                value: formState.parseConfigurationValue,
+                caseSensitive: formState.caseSensitive),
             created: Date(),
             updated: nil,
             author: nil,

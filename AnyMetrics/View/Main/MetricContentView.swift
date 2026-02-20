@@ -85,8 +85,7 @@ struct MetricContentView: View {
     
     var body: some View {
         ZStack(alignment: .center, content: {
-            Circle()
-                .fill(circleGradient())
+            glassCircle()
             Text(metric.title)
                 .foregroundColor(Constants.textColor)
                 .font(Constants.fontTitle)
@@ -102,6 +101,38 @@ struct MetricContentView: View {
                 .padding(Constants.paramsInset)
                 .offset(y: Constants.labelOffset)
         })
+        .contentShape(Circle())
+    }
+
+    @ViewBuilder
+    private func glassCircle() -> some View {
+        if #available(iOS 16.0, *) {
+            Circle()
+                .fill(circleGradient())
+                .overlay(
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.45)
+                )
+                .overlay(
+                    Circle()
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(0.7),
+                                    .white.opacity(0.15)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
+        } else {
+            Circle()
+                .fill(circleGradient())
+        }
     }
 
     @ViewBuilder

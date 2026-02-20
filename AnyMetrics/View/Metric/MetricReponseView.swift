@@ -7,7 +7,7 @@ fileprivate enum Constants {
     static let imageRefresh = Image(systemName: "arrow.clockwise")
     static let zero: CGFloat = 0
     static let faqSize: CGFloat = 20
-    static let responsPadding = EdgeInsets(top: -50, leading: 20, bottom: 20, trailing: 20) //CGFloat = 20
+    static let responsPadding = EdgeInsets(top: -50, leading: 20, bottom: 20, trailing: 20)
     static let lengthLabelInset = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
     static let lengthLabelBackground = AnyMetricsAsset.Assets.secondaryText.swiftUIColor.opacity(0.5)
     static let lengthLabelCorner: CGFloat = 20
@@ -20,7 +20,7 @@ fileprivate enum Constants {
     static let createNewIcon: CGFloat = 16
     static let buttonBackground = AnyMetricsAsset.Assets.baseText.swiftUIColor
     static let buttonTextColor = AnyMetricsAsset.Assets.addMetricTint.swiftUIColor
-    static let requestButtonInset =  EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
+    static let requestButtonInset = EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
     static let requestButtonCorner: CGFloat = 24
     static let mainButtonCorner: CGFloat = 40
     static let opacityEnable: CGFloat = 1
@@ -39,10 +39,12 @@ struct MetricResponseView: View {
 
     @EnvironmentObject
     var viewState: ViewState<MetricFormView.Interactor>
+    @EnvironmentObject
+    var requestViewState: ViewState<RequestFormView.Interactor>
     var action: (Metric) -> Void
 
     private var typeCode: CodeView.CodeType {
-        switch viewState.state.typeMetric {
+        switch requestViewState.state.typeMetric {
         case .web:
             return .html
         case .json, .checkStatus:
@@ -55,17 +57,17 @@ struct MetricResponseView: View {
             ZStack(alignment: .bottomTrailing) {
                 VStack {
                     VStack(alignment: .center) {
-                        if viewState.state.response.isEmpty {
+                        if requestViewState.state.response.isEmpty {
                             VStack {
                                 Button {
-                                    self.viewState.trigger(.makeRequest)
+                                    self.requestViewState.trigger(.makeRequest)
                                 } label: {
                                     HStack {
                                         Constants.requestImage
                                             .resizable()
                                             .renderingMode(.template)
                                             .foregroundColor(Constants.buttonBackground)
-                                            .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                                            .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
                                             .aspectRatio(contentMode: .fit)
                                         Text(AnyMetricsStrings.Addmetric.Button.makeRequest)
                                             .font(Constants.mainButtonFont)
@@ -85,7 +87,7 @@ struct MetricResponseView: View {
                         } else {
                             CodeView(
                                 code: Binding(
-                                    get: { viewState.state.response },
+                                    get: { requestViewState.state.response },
                                     set: { _ in }
                                 ),
                                 codeType: .constant(self.typeCode))
@@ -97,7 +99,7 @@ struct MetricResponseView: View {
                                     maxHeight: .infinity)
                         }
                     }
-                    .background(viewState.state.response.isEmpty ? .clear : Color(uiColor: .systemBackground))
+                    .background(requestViewState.state.response.isEmpty ? .clear : Color(uiColor: .systemBackground))
                     .frame(
                         width: geomentry.size.width,
                         height: geomentry.size.height / 2.5,
@@ -111,13 +113,13 @@ struct MetricResponseView: View {
                             HStack(alignment: .center, spacing: Constants.zero) {
                                 TextField(
                                     getRulesPlaceholder(),
-                                    text: binding(for: \.parseRules, set: MetricFormView.VAction.setParseRules))
+                                    text: formBinding(for: \.parseRules, set: MetricFormView.VAction.setParseRules))
                                 .disableAutocorrection(true)
                             }
 
                             Picker(
                                 AnyMetricsStrings.Addmetric.Field.typeParseRuleTitle,
-                                selection: binding(for: \.typeRule, set: MetricFormView.VAction.setTypeRule)) {
+                                selection: formBinding(for: \.typeRule, set: MetricFormView.VAction.setTypeRule)) {
                                     ForEach(ParseRules.RuleType.allCases, id: \.self) { item in
                                     Text(item.localizedName).tag(item)
                                 }
@@ -126,12 +128,12 @@ struct MetricResponseView: View {
                             if viewState.state.typeRule != .none {
                                 HStack(alignment: .center, spacing: Constants.zero) {
                                     TextField(AnyMetricsStrings.Addmetric.Field.ruleTypePlaceholder,
-                                        text: binding(for: \.parseConfigurationValue, set: MetricFormView.VAction.setParseConfigurationValue))
+                                        text: formBinding(for: \.parseConfigurationValue, set: MetricFormView.VAction.setParseConfigurationValue))
                                     .disableAutocorrection(true)
                                 }
 
                                 HStack(alignment: .center, spacing: Constants.zero) {
-                                    Toggle(AnyMetricsStrings.Addmetric.Field.caseSensitive, isOn: binding(for: \.caseSensitive, set: MetricFormView.VAction.setCaseSensitive))
+                                    Toggle(AnyMetricsStrings.Addmetric.Field.caseSensitive, isOn: formBinding(for: \.caseSensitive, set: MetricFormView.VAction.setCaseSensitive))
                                 }
                             }
 
@@ -152,7 +154,7 @@ struct MetricResponseView: View {
                             Section {
                                 Picker(
                                     AnyMetricsStrings.Addmetric.Field.valueType,
-                                    selection: binding(for: \.formatType, set: MetricFormView.VAction.setFormatType)) {
+                                    selection: formBinding(for: \.formatType, set: MetricFormView.VAction.setFormatType)) {
                                     ForEach(MetricFormatterType.allCases, id: \.self) { item in
                                         Text(item.localizedName).tag(item)
                                     }
@@ -161,7 +163,7 @@ struct MetricResponseView: View {
 
                                 if viewState.state.formatType == .none {
                                     HStack(alignment: .center, spacing: 0) {
-                                        Stepper(value: binding(for: \.maxLengthValue, set: MetricFormView.VAction.setMaxLengthValue), in:  0...Int.max) {
+                                        Stepper(value: formBinding(for: \.maxLengthValue, set: MetricFormView.VAction.setMaxLengthValue), in: 0...Int.max) {
                                             HStack {
                                                 Text(AnyMetricsStrings.Addmetric.Field.maxLength)
                                                 Spacer()
@@ -181,7 +183,7 @@ struct MetricResponseView: View {
                         }
 
 
-                        if viewState.state.canSetupResponse && !viewState.state.parseRules.isEmpty {
+                        if requestViewState.state.canSetupResponse && !viewState.state.parseRules.isEmpty {
                             Section {
                                 HStack(alignment: .top) {
                                     Text(AnyMetricsStrings.Addmetric.Field.value)
@@ -202,6 +204,7 @@ struct MetricResponseView: View {
                     NavigationLink(isActive: $showNext) {
                         MetricFormView.DisplayView(allowDismissed: $allowDismissed, action: action)
                             .environmentObject(viewState)
+                            .environmentObject(requestViewState)
                     } label: {
                         Button(action: {
                             showNext = true
@@ -227,11 +230,11 @@ struct MetricResponseView: View {
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if viewState.state.requestStatus == .loading {
+                    if requestViewState.state.requestStatus == .loading {
                         ProgressView()
                     } else {
                         Button {
-                            viewState.trigger(.makeRequest)
+                            requestViewState.trigger(.makeRequest)
                         } label: {
                             Constants.imageRefresh
                         }
@@ -240,6 +243,9 @@ struct MetricResponseView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Link(AnyMetricsStrings.Common.faq, destination: AppConfig.Urls.rules)
                 }
+            }
+            .onChange(of: requestViewState.state.response) { _ in
+                viewState.trigger(.updateValue())
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
@@ -250,7 +256,7 @@ struct MetricResponseView: View {
     }
 
     func getRulesPlaceholder() -> String {
-        if viewState.state.typeMetric == .json {
+        if requestViewState.state.typeMetric == .json {
             return AnyMetricsStrings.Addmetric.Field.jsonParseRulePlaceholder
         }
         return AnyMetricsStrings.Addmetric.Field.htmlParseRulePlaceholder
@@ -258,7 +264,7 @@ struct MetricResponseView: View {
 
     func getResultText() -> String {
         if viewState.state.result.isEmpty
-            && (viewState.state.typeMetric == .checkStatus
+            && (requestViewState.state.typeMetric == .checkStatus
                 || viewState.state.typeRule == .contains
                 || viewState.state.typeRule == .equal) {
             return String(describing: viewState.state.resultWithError)
@@ -269,7 +275,7 @@ struct MetricResponseView: View {
     func maxLength() -> String {
         if viewState.state.maxLengthValue == 0 {
             return Constants.infinityChar
-        }else {
+        } else {
             return String(viewState.state.maxLengthValue)
         }
     }
@@ -282,7 +288,7 @@ struct MetricResponseView: View {
         !viewState.state.parseRules.isEmpty && !viewState.state.hasParseRuleError
     }
 
-    private func binding<Value>(
+    private func formBinding<Value>(
         for keyPath: KeyPath<MetricFormView.VState, Value>,
         set action: @escaping (Value) -> MetricFormView.VAction
     ) -> Binding<Value> {
@@ -297,11 +303,13 @@ struct MetricResponseView: View {
 #if DEBUG
 struct MetricReponseView_Previews: PreviewProvider {
     static var previews: some View {
+        let requestInteractor = RequestFormView.Interactor()
         NavigationView {
-            MetricResponseView(allowDismissed: .constant(false),action: { _ in
-                
+            MetricResponseView(allowDismissed: .constant(false), action: { _ in
+
             })
-            .environmentObject(ViewState(MetricFormView.Interactor()))
+            .environmentObject(ViewState(MetricFormView.Interactor(requestInteractor: requestInteractor)))
+            .environmentObject(ViewState(requestInteractor))
             .preferredColorScheme(.light)
         }
     }

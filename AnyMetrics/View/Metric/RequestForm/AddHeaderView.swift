@@ -13,16 +13,49 @@ fileprivate enum Constants {
 
 struct AddHeaderView: View {
 
-    var action: (String, String) -> Void
+    enum Mode {
+        case add
+        case edit
+    }
 
-    @State 
-    var headerName: String = ""
-    @State 
-    var headerValue: String = ""
-    @State 
-    var showHeaderPicker: Bool = false
-    @Environment(\.presentationMode) 
+    let mode: Mode
+    var action: (String, String) -> Void
+    var onDelete: (() -> Void)?
+
+    @State
+    var headerName: String
+    @State
+    var headerValue: String
+    @Environment(\.presentationMode)
     var presentationMode: Binding<PresentationMode>
+
+    init(
+        mode: Mode = .add,
+        headerName: String = "",
+        headerValue: String = "",
+        onDelete: (() -> Void)? = nil,
+        action: @escaping (String, String) -> Void
+    ) {
+        self.mode = mode
+        self.action = action
+        self.onDelete = onDelete
+        _headerName = State(initialValue: headerName)
+        _headerValue = State(initialValue: headerValue)
+    }
+
+    private var isEditing: Bool { mode == .edit }
+
+    private var navigationTitle: String {
+        isEditing
+            ? AnyMetricsStrings.Httpheaders.Edit.title
+            : AnyMetricsStrings.Httpheaders.Add.title
+    }
+
+    private var actionButtonTitle: String {
+        isEditing
+            ? AnyMetricsStrings.Httpheaders.Edit.button
+            : AnyMetricsStrings.Httpheaders.Add.button
+    }
 
     var body: some View {
         NavigationView {
@@ -40,7 +73,6 @@ struct AddHeaderView: View {
                                 self.headerName = selectHeader
                             }
                         } label: {
-
                             Text(AnyMetricsStrings.Httpheaders.selectFromList)
                                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                             Constants.imageArrow
@@ -54,7 +86,6 @@ struct AddHeaderView: View {
                     }
                 } footer: {
                     VStack {
-
                         VStack {
                             if let examples = HTTP_HEADER_EXAMPLE[self.headerName] {
                                 NavigationLink {
@@ -80,7 +111,7 @@ struct AddHeaderView: View {
                                 presentationMode.wrappedValue.dismiss()
                             }, label: {
                                 Spacer()
-                                Text(AnyMetricsStrings.Httpheaders.Add.button)
+                                Text(actionButtonTitle)
                                     .font(Constants.font)
                                     .padding()
                                 Spacer()
@@ -94,12 +125,24 @@ struct AddHeaderView: View {
                         })
                         .padding(Constants.buttonInset)
                     }
-
                 }
             }
             .padding(Constants.formInset)
-            .navigationTitle(AnyMetricsStrings.Httpheaders.Add.title)
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .destructiveAction) {
+                    if isEditing, let onDelete {
+                        Button {
+                            onDelete()
+                            presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            Text(AnyMetricsStrings.Httpheaders.Actions.delete)
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+            }
             .listStyle(PlainListStyle())
         }
     }
@@ -113,8 +156,14 @@ struct AddHeaderView: View {
 #if DEBUG
 struct AddHeaderView_Previews: PreviewProvider {
     static var previews: some View {
-        AddHeaderView(action: { _, _ in})
-            .preferredColorScheme(.light)
+        Group {
+            AddHeaderView(mode: .add) { _, _ in }
+                .preferredColorScheme(.light)
+                .previewDisplayName("Add Mode")
+            AddHeaderView(mode: .edit, headerName: "Content-Type", headerValue: "application/json") { _, _ in }
+                .preferredColorScheme(.light)
+                .previewDisplayName("Edit Mode")
+        }
     }
 }
 #endif

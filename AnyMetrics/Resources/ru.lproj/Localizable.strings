@@ -38,6 +38,11 @@
 "httpheaders.select-from-list" = "Выберите заголвок из списка";
 "httpheaders.select-values-from-list" = "Выберите значение из списка";
 "httpheaders.value-information" = "HTTP-заголвок будет отправляться кажный раз при запросе метрики";
+"httpheaders.edit.title" = "Редактировать заголовок";
+"httpheaders.edit.button" = "Сохранить";
+"httpheaders.actions.title" = "Действие с заголовком";
+"httpheaders.actions.edit" = "Редактировать";
+"httpheaders.actions.delete" = "Удалить";
 
 // MARK: - Gallery
 

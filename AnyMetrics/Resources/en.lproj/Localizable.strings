@@ -38,6 +38,11 @@
 "httpheaders.select-from-list" = "Select HTTP-header from list";
 "httpheaders.select-values-from-list" = "Select value from list";
 "httpheaders.value-information" = "This HTTP-header and value will be send in every request for get metric value.";
+"httpheaders.edit.title" = "Edit Header";
+"httpheaders.edit.button" = "Save";
+"httpheaders.actions.title" = "Header Action";
+"httpheaders.actions.edit" = "Edit";
+"httpheaders.actions.delete" = "Delete";
 
 // MARK: - Gallery
 

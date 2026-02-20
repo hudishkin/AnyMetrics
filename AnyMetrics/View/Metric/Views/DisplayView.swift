@@ -3,13 +3,15 @@ import VVSI
 import AnyMetricsShared
 
 extension MetricFormView {
-    
+
     struct DisplayView: View {
 
         @Binding
         var allowDismissed: Bool
         @EnvironmentObject
         var viewState: ViewState<MetricFormView.Interactor>
+        @EnvironmentObject
+        var requestViewState: ViewState<RequestFormView.Interactor>
         var action: (Metric) -> Void
 
         var body: some View {
@@ -21,19 +23,24 @@ extension MetricFormView {
                             Text(AnyMetricsStrings.Addmetric.Field.title)
                             TextField(
                                 AnyMetricsStrings.Addmetric.Field.titlePlaceholder,
-                                text: binding(for: \.title, set: MetricFormView.VAction.setTitle))
+                                text: formBinding(for: \.title, set: MetricFormView.VAction.setTitle))
                             .multilineTextAlignment(.trailing)
                         }
                         HStack {
                             Text(AnyMetricsStrings.Addmetric.Field.paramMeasure)
                             TextField(
                                 AnyMetricsStrings.Addmetric.Field.paramMeasurePlaceholder,
-                                text: binding(for: \.measure, set: MetricFormView.VAction.setMeasure))
+                                text: formBinding(for: \.measure, set: MetricFormView.VAction.setMeasure))
                             .multilineTextAlignment(.trailing)
                         }
                     } header: {
                         HStack(alignment: .center) {
-                            MetricContentView(metric: .init(with: viewState.state) ?? Metric.empty())
+                            MetricContentView(
+                                metric: Metric(
+                                    formState: viewState.state,
+                                    requestState: requestViewState.state
+                                ) ?? Metric.empty()
+                            )
                                 .frame(
                                     width: Constants.metricViewSize,
                                     height: Constants.metricViewSize,
@@ -50,7 +57,10 @@ extension MetricFormView {
                 }
                 HStack(alignment: .center, spacing: Constants.zero, content: {
                     Button(action: {
-                        guard let metric = Metric(with: viewState.state) else { return }
+                        guard let metric = Metric(
+                            formState: viewState.state,
+                            requestState: requestViewState.state
+                        ) else { return }
                         action(metric)
 
                     }, label: {
@@ -82,10 +92,15 @@ extension MetricFormView {
         }
 
         func enableNextButton() -> Bool {
-            viewState.state.canAddMetric
+            let formState = viewState.state
+            let requestState = requestViewState.state
+            return !formState.measure.isEmpty
+                && !formState.title.isEmpty
+                && requestState.requestUrl.isValidURL
+                && (requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty)
         }
 
-        private func binding<Value>(
+        private func formBinding<Value>(
             for keyPath: KeyPath<MetricFormView.VState, Value>,
             set action: @escaping (Value) -> MetricFormView.VAction
         ) -> Binding<Value> {

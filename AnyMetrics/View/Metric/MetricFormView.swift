@@ -9,6 +9,8 @@ struct MetricFormView: View {
 
     @StateObject
     private var viewState: ViewState<Interactor>
+    @StateObject
+    private var requestViewState: ViewState<RequestFormView.Interactor>
     @State
     var showNext: Bool = false
     var action: (Metric) -> Void
@@ -19,23 +21,27 @@ struct MetricFormView: View {
         action: @escaping (Metric) -> Void
     ) {
         self._allowDismissed = allowDismissed
-        self._viewState = .init(wrappedValue: .init(.init(metric: metric)))
+        let requestInteractor = RequestFormView.Interactor(metric: metric)
+        self._requestViewState = .init(wrappedValue: .init(requestInteractor))
+        self._viewState = .init(wrappedValue: .init(.init(metric: metric, requestInteractor: requestInteractor)))
         self.action = action
     }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             RequestFormView()
-                .environmentObject(viewState)
+                .environmentObject(requestViewState)
             HStack(alignment: .center, spacing: Constants.zero, content: {
                 NavigationLink(isActive: $showNext) {
-                    switch viewState.state.typeMetric {
+                    switch requestViewState.state.typeMetric {
                     case .checkStatus:
                         DisplayView(allowDismissed: $allowDismissed, action: action)
                             .environmentObject(viewState)
+                            .environmentObject(requestViewState)
                     case .json, .web:
                         MetricResponseView(allowDismissed: $allowDismissed, action: action)
                             .environmentObject(viewState)
+                            .environmentObject(requestViewState)
                     }
                 } label: {
                     Button(action: {
@@ -70,7 +76,7 @@ struct MetricFormView: View {
     }
 
     func enableNextButton() -> Bool {
-        viewState.state.canSetupResponse
+        requestViewState.state.canSetupResponse
     }
 }
 
@@ -93,6 +99,7 @@ struct MetricFormView_Previews: PreviewProvider {
 
 struct MetricDispayView_Previews: PreviewProvider {
     static var previews: some View {
+        let requestInteractor = RequestFormView.Interactor()
         NavigationView {
             MetricFormView.DisplayView(
                 allowDismissed: .constant(false),
@@ -100,10 +107,10 @@ struct MetricDispayView_Previews: PreviewProvider {
 
                 }
             )
-            .environmentObject(ViewState(MetricFormView.Interactor()))
+            .environmentObject(ViewState(MetricFormView.Interactor(requestInteractor: requestInteractor)))
+            .environmentObject(ViewState(requestInteractor))
             .preferredColorScheme(.light)
         }
     }
 }
 #endif
-
