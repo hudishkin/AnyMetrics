@@ -15,13 +15,16 @@ public enum FetcherResult {
 }
 
 public enum Fetcher {
-    public static func fetch(for url: URL, method: String, headers: [String: String], timeout: Double, completion: @escaping (Data?, Error?) -> Void) {
+    public static func fetch(for url: URL, method: String, headers: [String: String], timeout: Double, requestBody: String? = nil, completion: @escaping (Data?, Error?) -> Void) {
         var request = URLRequest(url: url)
         for (k, v) in headers {
             request.setValue(v, forHTTPHeaderField: k)
         }
         request.httpMethod = method
         request.timeoutInterval = timeout
+        if let requestBody, !requestBody.isEmpty {
+            request.httpBody = requestBody.data(using: .utf8)
+        }
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(nil, error)
@@ -44,7 +47,8 @@ public enum Fetcher {
             for: requestData.url,
             method: requestData.method,
             headers: requestData.headers,
-            timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT) { data, error in
+            timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT,
+            requestBody: requestData.requestBody) { data, error in
                 if let error = error {
                     if metric.type == .checkStatus {
                         completion(.result(.status(false)))
@@ -67,9 +71,9 @@ public enum Fetcher {
             }
     }
 
-    public static func fetch(for url: URL, method: String, headers: [String: String], timeout: Double) -> Future<Data, Error> {
+    public static func fetch(for url: URL, method: String, headers: [String: String], timeout: Double, requestBody: String? = nil) -> Future<Data, Error> {
         Future { promise in
-            fetch(for: url, method: method, headers: headers, timeout: timeout) { data, error in
+            fetch(for: url, method: method, headers: headers, timeout: timeout, requestBody: requestBody) { data, error in
                 if let error = error {
                     return promise(.failure(error))
                 }
@@ -86,12 +90,13 @@ public enum Fetcher {
         method: String,
         headers: [String: String],
         timeout: Double,
+        requestBody: String? = nil,
         responseType: TypeMetric,
         rules: ParseRules,
         formatter: MetricValueFormatter
     ) -> Future<FetcherResult, Never> {
         Future { promise in
-            fetch(for: url, method: method, headers: headers, timeout: timeout) { data, error in
+            fetch(for: url, method: method, headers: headers, timeout: timeout, requestBody: requestBody) { data, error in
                 if let error = error {
                     return promise(.success(.error(error)))
                 }

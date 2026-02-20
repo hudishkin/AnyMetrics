@@ -60,12 +60,14 @@ public struct RequestData: Hashable, Sendable {
     public var method: String
     public var url: URL
     public var timeout: Double?
+    public var requestBody: String?
 
-    public init(headers: [String: String], method: String, url: URL, timeout: Double? = nil) {
+    public init(headers: [String: String], method: String, url: URL, timeout: Double? = nil, requestBody: String? = nil) {
         self.headers = headers
         self.method = method
         self.url = url
         self.timeout = timeout
+        self.requestBody = requestBody
     }
 }
 
@@ -96,6 +98,9 @@ public struct Metric: Hashable, Identifiable, Sendable {
     public var description: String?
     public var website: URL?
 
+    /// Widget refresh interval in seconds
+    public var interval: Int?
+
     public var hasResult: Bool {
         !result.isEmpty
     }
@@ -114,7 +119,8 @@ public struct Metric: Hashable, Identifiable, Sendable {
         updated: Date? = nil,
         author: String? = nil,
         description: String? = nil,
-        website: URL? = nil
+        website: URL? = nil,
+        interval: Int? = nil
     ) {
         self.id = id
         self.title = title
@@ -130,5 +136,6 @@ public struct Metric: Hashable, Identifiable, Sendable {
         self.author = author
         self.description = description
         self.website = website
+        self.interval = interval
     }
 }

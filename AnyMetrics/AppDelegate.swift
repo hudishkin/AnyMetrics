@@ -1,6 +1,8 @@
 import SwiftUI
 import FirebaseCore
 
+let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+
 class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(
@@ -8,25 +10,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
 
-        #if DEBUG
-        if ProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] != nil {
-            return true
-        }
-        #endif
+        guard !isPreview else { return true }
 
-        guard let bundleID = Bundle.main.bundleIdentifier, !bundleID.isEmpty else {
-            return true
-        }
-
-        guard
-            let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
-            let options = FirebaseOptions(contentsOfFile: path)
-        else {
-            return true
-        }
-
-        FirebaseApp.configure(options: options)
-
+        FirebaseApp.configure()
         return true
     }
 

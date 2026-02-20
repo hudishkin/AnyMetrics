@@ -8,6 +8,48 @@ enum FormStep: Hashable {
 
 enum HTTPMethodType: String, Equatable, CaseIterable {
     case POST, GET, HEAD, DELETE, PUT
+
+    var hasBody: Bool {
+        switch self {
+        case .POST, .PUT, .DELETE:
+            return true
+        case .GET, .HEAD:
+            return false
+        }
+    }
+}
+
+enum RefreshInterval: Int, CaseIterable, Identifiable {
+    case bySystem = 0
+    case minutes15 = 900
+    case minutes30 = 1800
+    case hour1 = 3600
+    case hours3 = 10800
+    case hours6 = 21600
+    case hours12 = 43200
+
+    var id: Int { rawValue }
+
+    var interval: Int? {
+        self == .bySystem ? nil : rawValue
+    }
+
+    var localizedString: String {
+        switch self {
+        case .bySystem:  return AnyMetricsStrings.Addmetric.Field.refreshIntervalBySystem
+        case .minutes15: return AnyMetricsStrings.Addmetric.Field.refreshInterval15min
+        case .minutes30: return AnyMetricsStrings.Addmetric.Field.refreshInterval30min
+        case .hour1:     return AnyMetricsStrings.Addmetric.Field.refreshInterval1h
+        case .hours3:    return AnyMetricsStrings.Addmetric.Field.refreshInterval3h
+        case .hours6:    return AnyMetricsStrings.Addmetric.Field.refreshInterval6h
+        case .hours12:   return AnyMetricsStrings.Addmetric.Field.refreshInterval12h
+        }
+    }
+
+    init(from seconds: Int?) {
+        guard let seconds else { self = .bySystem; return }
+        self = RefreshInterval(rawValue: seconds) ?? .bySystem
+    }
 }
 
 extension MetricFormView {
@@ -71,7 +113,10 @@ extension Metric {
                 headers: requestState.httpHeaders,
                 method: requestState.httpMethodType.rawValue,
                 url: url,
-                timeout: requestState.timeout),
+                timeout: requestState.timeout,
+                requestBody: requestState.httpMethodType.hasBody && !requestState.requestBody.isEmpty
+                    ? requestState.requestBody
+                    : nil),
             formatter: .init(
                 format: formState.formatType,
                 length: formState.maxLengthValue),
@@ -84,7 +129,8 @@ extension Metric {
             updated: nil,
             author: nil,
             description: nil,
-            website: nil
+            website: nil,
+            interval: requestState.refreshInterval.interval
         )
     }
 

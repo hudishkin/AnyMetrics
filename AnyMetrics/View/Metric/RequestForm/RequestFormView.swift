@@ -35,8 +35,28 @@ struct RequestFormView: View {
                         }
                     }
                     .pickerStyle(.automatic)
+
+                Picker(
+                    AnyMetricsStrings.Addmetric.Field.refreshInterval,
+                    selection: binding(for: \.refreshInterval, set: VAction.setRefreshInterval)) {
+                        ForEach(RefreshInterval.allCases) { item in
+                            Text(item.localizedString).tag(item)
+                        }
+                    }
+                    .pickerStyle(.automatic)
+
             } header: {
                 Text(AnyMetricsStrings.Addmetric.Section.requestSettings)
+            }
+            if viewState.state.httpMethodType.hasBody {
+                Section {
+                    TextEditor(text: binding(for: \.requestBody, set: VAction.setRequestBody))
+                        .frame(minHeight: Constants.requestBodyMinHeight)
+                        .font(Constants.responseFont)
+                        .disableAutocorrection(true)
+                } header: {
+                    Text(AnyMetricsStrings.Addmetric.Field.requestBody)
+                }
             }
             Section {
                 ForEach(viewState.state.httpHeaders.sorted(by: >), id: \.key) { item in
@@ -190,6 +210,7 @@ private extension RequestFormView {
         static let mainButtonFont = Font.body.weight(.semibold)
         static let createNewIcon: CGFloat = 16
         static let requestImage = AnyMetricsAsset.Assets.request.swiftUIImage
+        static let requestBodyMinHeight: CGFloat = 100
         static let opacityEnable: CGFloat = 1.0
         static let opacityDisable: CGFloat = 0.4
     }

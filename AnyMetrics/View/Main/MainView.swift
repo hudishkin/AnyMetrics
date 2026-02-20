@@ -90,7 +90,9 @@ struct MainView: View {
                 }
             }
         }
-        .sheet(item: $sheetType) { type in
+        .sheet(item: $sheetType, onDismiss: {
+            allowDismissed = true
+        }) { type in
             switch type {
             case .addMetrics:
                 GalleryView(allowDismissed: $allowDismissed)

@@ -84,6 +84,15 @@
 "addmetric.field.max-length" = "Cut if longer";
 "addmetric.field.case-sensitive" = "Case sensitive";
 "addmetric.field.value" = "Value";
+"addmetric.field.request-body" = "Request Body";
+"addmetric.field.refresh-interval" = "Refresh Interval";
+"addmetric.field.refresh-interval-by-system" = "By System";
+"addmetric.field.refresh-interval-15min" = "15 minutes";
+"addmetric.field.refresh-interval-30min" = "30 minutes";
+"addmetric.field.refresh-interval-1h" = "1 hour";
+"addmetric.field.refresh-interval-3h" = "3 hours";
+"addmetric.field.refresh-interval-6h" = "6 hours";
+"addmetric.field.refresh-interval-12h" = "12 hours";
 
 "addmetric.field.rule-type-contains-description" = "Specify the value that will be contained as a result of processing the response. For example: you want to check if a string contains the word \"error\"";
 "addmetric.field.rule-type-equal-description" = "Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value \"100\"";
