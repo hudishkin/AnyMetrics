@@ -40,8 +40,15 @@ struct Provider: IntentTimelineProvider {
             Fetcher.updateMetric(metric: metric) { newMetric in
                 store.addMetric(metric: newMetric)
                 let currentDate = Date()
-                entries.append(AMEntry(date: currentDate, configuration: configuration, metric: metric))
-                let timeline = Timeline(entries: entries, policy: .atEnd)
+                entries.append(AMEntry(date: currentDate, configuration: configuration, metric: newMetric))
+
+                let policy: TimelineReloadPolicy
+                if let interval = newMetric.interval, interval > 0 {
+                    policy = .after(currentDate.addingTimeInterval(TimeInterval(interval)))
+                } else {
+                    policy = .atEnd
+                }
+                let timeline = Timeline(entries: entries, policy: policy)
                 completion(timeline)
             }
         } else {
@@ -63,9 +70,20 @@ struct WidgetEntryView : View {
 
     var body: some View {
         ZStack {
-            Color("WidgetBackground")
             MetricContentView(metric: entry.metric)
                 .frame(width: 156, height: 156, alignment: .center)
+        }
+        .widgetBackground(Color("WidgetBackground"))
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func widgetBackground(_ color: Color) -> some View {
+        if #available(iOSApplicationExtension 17.0, *) {
+            containerBackground(color, for: .widget)
+        } else {
+            self
         }
     }
 }

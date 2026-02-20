@@ -18,7 +18,7 @@ fileprivate enum Constants {
             design: .default)
     }
     static let fontTitle: Font = {
-        Font.system(size: Bundle.isInWidget() ? 17 : 19, weight: .bold, design: .default)
+        Font.system(size: Bundle.isInWidget() ? 16 : 18, weight: .bold, design: .default)
     }()
     static let fontParam: Font = {
         Font.system(size: Bundle.isInWidget() ? 12 : 14, weight: .regular, design: .default)
@@ -32,9 +32,9 @@ fileprivate enum Constants {
         Bundle.isInWidget() ? 48 : 54
     }()
     static let spacing: CGFloat = 20
-    static let textColor = Color.primary
+    static let textColor = Color.black
     static let textErrorColor = Color.red
-    static let strokeColor = Color.primary
+    static let strokeColor = Color.black
     static let titleBackground = Color(uiColor: .secondarySystemGroupedBackground)
     static let secondaryText = Color.secondary
     static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
@@ -88,6 +88,7 @@ public struct MetricContentView: View {
                 .offset(y: -Constants.labelOffset)
                 .lineLimit(Constants.paramLines)
                 .padding(Constants.titlePaddingInset)
+                .multilineTextAlignment(.center)
             MetricValue()
             Text(metric.measure)
                 .font(Constants.fontParam)
@@ -144,7 +145,7 @@ public struct MetricContentView: View {
             return Constants.fontValue(size: 34)
         }
         if metric.result.count < 15 {
-            return Constants.fontValue(size: 24)
+            return Constants.fontValue(size: 21)
         }
         return Constants.fontValue(size: 19)
     }

@@ -24,6 +24,8 @@ extension RequestFormView {
                 state.httpMethodType = .init(rawValue: metric.request?.method ?? "") ?? .GET
                 state.typeMetric = metric.type
                 state.httpHeaders = metric.request?.headers ?? [:]
+                state.requestBody = metric.request?.requestBody ?? ""
+                state.refreshInterval = RefreshInterval(from: metric.interval)
                 state.canSetupResponse = true
                 self.initialState = state
             } else {
@@ -49,6 +51,14 @@ extension RequestFormView {
             case .setTypeMetric(let value):
                 Task { @MainActor in
                     await updater { $0.typeMetric = value }
+                }
+            case .setRequestBody(let value):
+                Task { @MainActor in
+                    await updater { $0.requestBody = value }
+                }
+            case .setRefreshInterval(let value):
+                Task { @MainActor in
+                    await updater { $0.refreshInterval = value }
                 }
             case .addHeader(let name, let value):
                 Task { @MainActor in
@@ -82,11 +92,13 @@ extension RequestFormView {
 
                 await updater { $0.requestStatus = .loading }
 
+                let body = currentState.httpMethodType.hasBody ? currentState.requestBody : nil
                 Fetcher.fetch(
                     for: url,
                     method: currentState.httpMethodType.rawValue,
                     headers: currentState.httpHeaders,
-                    timeout: currentState.timeout
+                    timeout: currentState.timeout,
+                    requestBody: body
                 )
                 .map { data -> ValueParser? in
                     if currentState.typeMetric == .json {

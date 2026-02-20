@@ -8,7 +8,7 @@ extension ParseRules: Codable {}
 
 public extension Metric {
     enum CodingKeys: String, CodingKey {
-        case id, title, measure, request, type, result, resultWithError, rules, created, updated, style, formatter, author, description, website
+        case id, title, measure, request, type, result, resultWithError, rules, created, updated, style, formatter, author, description, website, interval
     }
 
     init(from decoder: Decoder) throws {
@@ -27,6 +27,7 @@ public extension Metric {
         author = try container.decodeIfPresent(String.self, forKey: CodingKeys.author)
         description = try container.decodeIfPresent(String.self, forKey: CodingKeys.description)
         website = try container.decodeIfPresent(URL.self, forKey: CodingKeys.website)
+        interval = try? container.decodeIfPresent(Int.self, forKey: CodingKeys.interval)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -45,12 +46,13 @@ public extension Metric {
         try? container.encodeIfPresent(author, forKey: .author)
         try? container.encodeIfPresent(description, forKey: .description)
         try? container.encodeIfPresent(website, forKey: .website)
+        try? container.encodeIfPresent(interval, forKey: .interval)
     }
 }
 
 public extension RequestData {
     enum CodingKeys: String, CodingKey {
-        case headers, method, url, timeout
+        case headers, method, url, timeout, requestBody
     }
 
     init(from decoder: Decoder) throws {
@@ -59,6 +61,7 @@ public extension RequestData {
         method = try container.decode(String.self, forKey: .method)
         url = try container.decode(URL.self, forKey: .url)
         timeout = try? container.decodeIfPresent(Double.self, forKey: .timeout)
+        requestBody = try? container.decodeIfPresent(String.self, forKey: .requestBody)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -67,6 +70,7 @@ public extension RequestData {
         try container.encode(self.method, forKey: .method)
         try container.encode(self.url, forKey: .url)
         try? container.encodeIfPresent(self.timeout, forKey: .timeout)
+        try? container.encodeIfPresent(self.requestBody, forKey: .requestBody)
     }
 }
 

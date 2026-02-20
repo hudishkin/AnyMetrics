@@ -14,7 +14,9 @@ extension RequestFormView {
         var httpMethodType: HTTPMethodType = .GET
         var typeMetric: TypeMetric = .json
         var httpHeaders: [String: String] = [:]
+        var requestBody: String = ""
         var timeout: Double = DEFAULT_TIMEOUT
+        var refreshInterval: RefreshInterval = .bySystem
         var requestStatus: RequestStatus = .none
         var response: String = ""
         var errorMessage: String = ""
@@ -30,6 +32,8 @@ extension RequestFormView {
         case setRequestUrl(String)
         case setHTTPMethodType(HTTPMethodType)
         case setTypeMetric(TypeMetric)
+        case setRequestBody(String)
+        case setRefreshInterval(RefreshInterval)
         case addHeader(name: String, value: String)
         case removeHeader(name: String)
         case editHeader(oldName: String, newName: String, newValue: String)

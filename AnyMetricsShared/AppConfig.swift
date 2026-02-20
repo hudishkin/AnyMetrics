@@ -1,7 +1,7 @@
 import Foundation
 
 public enum AppConfig {
-    public static let emailForReport = "anymetrics.app@gmail.com"
+    public static let emailForReport = ""
     public static let group = "group.anymetrics.app"
     public static let metricsKey = "app.metrics"
 

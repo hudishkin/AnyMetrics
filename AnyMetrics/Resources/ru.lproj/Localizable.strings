@@ -84,6 +84,15 @@
 "addmetric.field.max-length" = "Обрезать если длинее";
 "addmetric.field.case-sensitive" = "Учитывать размер буквы?";
 "addmetric.field.value" = "Значение";
+"addmetric.field.request-body" = "Тело запроса";
+"addmetric.field.refresh-interval" = "Интервал обновления";
+"addmetric.field.refresh-interval-by-system" = "Системный";
+"addmetric.field.refresh-interval-15min" = "15 минут";
+"addmetric.field.refresh-interval-30min" = "30 минут";
+"addmetric.field.refresh-interval-1h" = "1 час";
+"addmetric.field.refresh-interval-3h" = "3 часа";
+"addmetric.field.refresh-interval-6h" = "6 часов";
+"addmetric.field.refresh-interval-12h" = "12 часов";
 
 "addmetric.field.rule-type-contains-description" = "Укажите значение, которое должно содержаться в результате обработки ответа. Например: вы хотите проверить содежится ли в строка слово \"ошибка\"";
 "addmetric.field.rule-type-equal-description" = "Укажите значение, которое должно совпадать с результатом обработки ответа. Например: вы хотите проверить совпадает ли ответ значению \"100\"";
