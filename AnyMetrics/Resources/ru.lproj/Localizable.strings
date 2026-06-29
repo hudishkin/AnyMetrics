@@ -109,6 +109,15 @@
 "addmetric.button.next" = "Далее";
 "addmetric.button.save" = "Сохранить";
 
+"addmetric.error.cannot-save" = "Не удалось создать метрику. Проверьте URL и обязательные поля и попробуйте снова.";
+
+"addmetric.field.widget-design" = "Дизайн виджета";
+"addmetric.design.glass-circle" = "Стекло";
+"addmetric.design.rounded-card" = "Карточка";
+"addmetric.design.minimal" = "Минимализм";
+"addmetric.design.ring" = "Кольцо";
+"addmetric.design.plain" = "Без заливки";
+
 "addmetric.text.no-response" = "Нет ответа";
 
 // MARK: - Import Metric

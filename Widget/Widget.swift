@@ -69,22 +69,9 @@ struct WidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
-        ZStack {
-            MetricContentView(metric: entry.metric)
-                .frame(width: 156, height: 156, alignment: .center)
-        }
-        .widgetBackground(Color("WidgetBackground"))
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func widgetBackground(_ color: Color) -> some View {
-        if #available(iOSApplicationExtension 17.0, *) {
-            containerBackground(color, for: .widget)
-        } else {
-            self
-        }
+        MetricContentView(metric: entry.metric)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(4)
     }
 }
 
@@ -102,6 +89,7 @@ struct AMWidget: Widget {
             .configurationDisplayName("Widgets")
             .description("Add widget to home screen with your metric")
             .supportedFamilies([.systemSmall])
+            .contentMarginsDisabled()
     }
 }
 

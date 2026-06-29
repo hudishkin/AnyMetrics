@@ -73,10 +73,8 @@ struct ImportMetricView: View {
             switch notification {
             case .showError(let error):
                 alertType = .error(error)
-            case .imported:
-                if let metric = viewState.state.validation.metric {
-                    onImported?(metric)
-                }
+            case .imported(let metric):
+                onImported?(metric)
                 presentationMode.wrappedValue.dismiss()
             }
         }

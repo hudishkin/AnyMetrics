@@ -40,7 +40,7 @@ extension ImportMetricView {
             case .importMetric:
                 Task { @MainActor in
                     guard let currentState = await state() else { return }
-                    self.performImport(state: currentState, updater: updater)
+                    self.performImport(state: currentState)
                 }
             }
         }
@@ -104,34 +104,14 @@ extension ImportMetricView {
             }
         }
 
-        private func performImport(state: VState, updater: @escaping StateUpdater<S>) {
-            guard var metric = state.validation.metric else {
+        private func performImport(state: VState) {
+            guard let metric = state.validation.metric else {
                 notifications.send(.showError(AnyMetricsStrings.Import.Error.noValidMetric))
                 return
             }
 
-            // Если метрика с таким id уже существует — создаём новый id
-            if metricStore.metrics[metric.id] != nil {
-                metric = Metric(
-                    id: UUID(),
-                    title: metric.title,
-                    measure: metric.measure,
-                    type: metric.type,
-                    result: metric.result,
-                    resultWithError: metric.resultWithError,
-                    request: metric.request,
-                    formatter: metric.formatter,
-                    rules: metric.rules,
-                    created: Date(),
-                    updated: nil,
-                    author: metric.author,
-                    description: metric.description,
-                    website: metric.website
-                )
-            }
-
-            metricStore.addMetric(metric: metric)
-            notifications.send(.imported)
+            let importedMetric = metric.duplicatingIfNeeded(in: metricStore.metrics)
+            notifications.send(.imported(importedMetric))
         }
 
         private func mapDecodingError(_ error: Error) -> String {

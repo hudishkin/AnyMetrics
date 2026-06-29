@@ -31,8 +31,15 @@ extension MetricFormView {
                 state.typeRule = metric.rules?.type ?? .none
                 state.formatType = metric.formatter?.format ?? .none
                 state.parseConfigurationValue = metric.rules?.value ?? ""
+                state.caseSensitive = metric.rules?.caseSensitive ?? false
+                state.result = metric.result
                 state.resultWithError = metric.resultWithError
                 state.isEdited = true
+                state.widgetDesign = metric.widgetDesign ?? .default
+                state.created = metric.created
+                state.author = metric.author
+                state.description = metric.description
+                state.website = metric.website
                 self.initialState = state
             } else {
                 let state = VState(id: UUID(), isNew: true)
@@ -92,6 +99,10 @@ extension MetricFormView {
                 Task { @MainActor in
                     await updater { $0.maxLengthValue = value }
                     await self.updateValue(state: state, updater: updater, length: value)
+                }
+            case .setWidgetDesign(let value):
+                Task { @MainActor in
+                    await updater { $0.widgetDesign = value }
                 }
             }
         }
@@ -165,6 +176,18 @@ extension ParseRules.RuleType {
         case .none: return AnyMetricsStrings.Addmetric.Field.ruleTypeNone
         case .equal: return AnyMetricsStrings.Addmetric.Field.ruleTypeEqual
         case .contains: return AnyMetricsStrings.Addmetric.Field.ruleTypeContains
+        }
+    }
+}
+
+extension WidgetDesign {
+    var localizedName: String {
+        switch self {
+        case .glassCircle: return AnyMetricsStrings.Addmetric.Design.glassCircle
+        case .roundedCard: return AnyMetricsStrings.Addmetric.Design.roundedCard
+        case .minimal: return AnyMetricsStrings.Addmetric.Design.minimal
+        case .ring: return AnyMetricsStrings.Addmetric.Design.ring
+        case .plain: return AnyMetricsStrings.Addmetric.Design.plain
         }
     }
 }

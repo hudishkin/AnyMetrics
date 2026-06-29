@@ -12,6 +12,7 @@ extension MainView {
         case onAppear
         // case openSheet(ActiveSheet)
         case addMetric(Metric)
+        case addMetricAndRefresh(Metric)
         case removeMetric(UUID)
         case refreshMetric(UUID)
         case refreshAllMetrics

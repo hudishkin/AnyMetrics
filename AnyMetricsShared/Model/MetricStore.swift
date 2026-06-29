@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 public typealias Metrics = [UUID: Metric]
 
@@ -13,36 +13,70 @@ extension Metrics: RawRepresentable {
     }
 
     public var rawValue: String {
-        guard let data = try? JSONEncoder().encode(self),
+        Self.encodeToJSON(self) ?? "{}"
+    }
+
+    fileprivate static func encodeToJSON(_ metrics: Metrics) -> String? {
+        guard let data = try? JSONEncoder().encode(metrics),
               let result = String(data: data, encoding: .utf8)
         else {
-            return "{}"
+            return nil
+        }
+        return result
+    }
+
+    fileprivate static func decodeFromJSON(_ json: String) -> Metrics? {
+        guard let data = json.data(using: .utf8),
+              let result = try? JSONDecoder().decode(Metrics.self, from: data)
+        else {
+            return nil
         }
         return result
     }
 }
 
 open class MetricStore {
-    @AppStorage(AppConfig.metricsKey, store: UserDefaults(suiteName: AppConfig.group))
-    public var metrics = Metrics()
+    private let defaults: UserDefaults?
+    private let key: String
 
-    public init() {}
+    public init(
+        defaults: UserDefaults? = UserDefaults(suiteName: AppConfig.group),
+        key: String = AppConfig.metricsKey
+    ) {
+        self.defaults = defaults
+        self.key = key
+    }
+
+    public var metrics: Metrics {
+        get {
+            guard let json = defaults?.string(forKey: key) else {
+                return [:]
+            }
+            return Metrics.decodeFromJSON(json) ?? [:]
+        }
+        set {
+            guard let json = Metrics.encodeToJSON(newValue) else {
+                return
+            }
+            defaults?.set(json, forKey: key)
+        }
+    }
 
     public func addMetric(metric: Metric) {
-        var localMetrics = self.metrics
+        var localMetrics = metrics
         localMetrics[metric.id] = metric
-        self.metrics = localMetrics
+        metrics = localMetrics
     }
 
     public func removeMetric(id: UUID) {
-        var localMetrics = self.metrics
+        var localMetrics = metrics
         localMetrics[id] = nil
-        self.metrics = localMetrics
+        metrics = localMetrics
     }
 
     @discardableResult
     public func removeAll() -> Self {
-        self.metrics = [:]
+        metrics = [:]
         return self
     }
 }

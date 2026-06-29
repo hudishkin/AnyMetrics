@@ -8,7 +8,7 @@ extension ParseRules: Codable {}
 
 public extension Metric {
     enum CodingKeys: String, CodingKey {
-        case id, title, measure, request, type, result, resultWithError, rules, created, updated, style, formatter, author, description, website, interval
+        case id, title, measure, request, type, result, resultWithError, rules, created, updated, style, formatter, author, description, website, interval, widgetDesign
     }
 
     init(from decoder: Decoder) throws {
@@ -28,6 +28,7 @@ public extension Metric {
         description = try container.decodeIfPresent(String.self, forKey: CodingKeys.description)
         website = try container.decodeIfPresent(URL.self, forKey: CodingKeys.website)
         interval = try? container.decodeIfPresent(Int.self, forKey: CodingKeys.interval)
+        widgetDesign = try? container.decodeIfPresent(WidgetDesign.self, forKey: CodingKeys.widgetDesign)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -47,6 +48,7 @@ public extension Metric {
         try? container.encodeIfPresent(description, forKey: .description)
         try? container.encodeIfPresent(website, forKey: .website)
         try? container.encodeIfPresent(interval, forKey: .interval)
+        try? container.encodeIfPresent(widgetDesign, forKey: .widgetDesign)
     }
 }
 

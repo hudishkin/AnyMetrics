@@ -30,37 +30,59 @@ extension MainView {
         ) {
             switch action {
             case .onAppear, .refreshAllMetrics, .syncMetrics:
-                Task {
+                Task { @MainActor in
                     guard let state = await state() else { return }
 
-                    updateMetrics(state: state) {[weak self] metrics in
-                        self?.metricStore.metrics = metrics
-
-                        WidgetCenter.shared.reloadAllTimelines()
+                    updateMetrics(state: state) { [weak self] updatedMetrics in
+                        guard let self else { return }
+                        Task { @MainActor in
+                            var merged = self.metricStore.metrics
+                            for (id, metric) in updatedMetrics {
+                                merged[id] = metric
+                            }
+                            self.metricStore.metrics = merged
+                            await updater {
+                                $0.metrics = merged
+                            }
+                            WidgetCenter.shared.reloadAllTimelines()
+                        }
                     }
                 }
             case .addMetric(let metric):
+                metricStore.addMetric(metric: metric)
                 Task { @MainActor in
-                    metricStore.addMetric(metric: metric)
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
+
+            case .addMetricAndRefresh(let metric):
+                metricStore.addMetric(metric: metric)
+                let metricID = metric.id
+                Task { @MainActor in
+                    await updater {
+                        $0.metrics = self.metricStore.metrics
+                    }
+                    WidgetCenter.shared.reloadAllTimelines()
+                    self.refreshStoredMetric(id: metricID, updater: updater)
                 }
 
             case .removeMetric(let id):
+                metricStore.removeMetric(id: id)
                 Task { @MainActor in
-                    metricStore.removeMetric(id: id)
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
                 }
             case .refreshMetric(let id):
                 Task { @MainActor in
-                    guard let state = await state(), let metric = state.metrics[id] else { return }
+                    guard let state = await state() else { return }
+                    guard let metric = state.metrics[id] ?? metricStore.metrics[id] else { return }
 
                     updateMetric(metric: metric) {[weak self] metric in
                         guard let self else { return }
-                        
+
                         self.metricStore.addMetric(metric: metric)
 
                         Task {
@@ -68,6 +90,22 @@ extension MainView {
                                 $0.metrics = self.metricStore.metrics
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        private func refreshStoredMetric(id: UUID, updater: @escaping StateUpdater<S>) {
+            guard let metric = metricStore.metrics[id] else { return }
+
+            updateMetric(metric: metric) { [weak self] refreshed in
+                guard let self else { return }
+
+                self.metricStore.addMetric(metric: refreshed)
+
+                Task { @MainActor in
+                    await updater {
+                        $0.metrics = self.metricStore.metrics
                     }
                 }
             }

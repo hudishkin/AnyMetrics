@@ -72,6 +72,11 @@ extension MetricFormView {
         var resultWithError: Bool = true
         var isEdited: Bool = false
         var hasParseRuleError: Bool = false
+        var widgetDesign: WidgetDesign = .default
+        var created: Date = Date()
+        var author: String?
+        var description: String?
+        var website: URL?
     }
 
     enum VAction: ActionProtocol {
@@ -85,6 +90,7 @@ extension MetricFormView {
         case setParseRules(String)
         case setFormatType(MetricFormatterType)
         case setMaxLengthValue(Int)
+        case setWidgetDesign(WidgetDesign)
     }
 
     enum VNotification: NotificationProtocol {
@@ -94,13 +100,20 @@ extension MetricFormView {
 
 extension Metric {
 
+    static func canSave(from formState: MetricFormView.VState, requestState: RequestFormView.VState) -> Bool {
+        guard !formState.title.isEmpty,
+              requestState.requestUrl.requestURL != nil,
+              requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty
+        else {
+            return false
+        }
+        return true
+    }
+
     init?(formState: MetricFormView.VState, requestState: RequestFormView.VState) {
-        guard !formState.measure.isEmpty,
-              !formState.title.isEmpty,
-              requestState.requestUrl.isValidURL,
-              (requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty)
+        guard Self.canSave(from: formState, requestState: requestState),
+              let url = requestState.requestUrl.requestURL
         else { return nil }
-        guard let url = URL(string: requestState.requestUrl) else { return nil }
 
         self.init(
             id: formState.id,
@@ -125,12 +138,13 @@ extension Metric {
                 type: formState.typeRule,
                 value: formState.parseConfigurationValue,
                 caseSensitive: formState.caseSensitive),
-            created: Date(),
-            updated: nil,
-            author: nil,
-            description: nil,
-            website: nil,
-            interval: requestState.refreshInterval.interval
+            created: formState.created,
+            updated: formState.isNew ? nil : Date(),
+            author: formState.author,
+            description: formState.description,
+            website: formState.website,
+            interval: requestState.refreshInterval.interval,
+            widgetDesign: formState.widgetDesign
         )
     }
 

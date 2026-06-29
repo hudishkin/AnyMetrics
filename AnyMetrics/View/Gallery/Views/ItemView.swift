@@ -7,7 +7,7 @@ extension GalleryView {
         var metric: Metric
         var addMetric: (Metric) -> Void
         var removeMetric: (UUID) -> Void
-        @State var alreadyAdded: Bool
+        var alreadyAdded: Bool
 
         var body: some View {
             ZStack(alignment: .topTrailing ) {
@@ -43,7 +43,6 @@ extension GalleryView {
                 .cornerRadius(Constants.itemCorner)
                 if alreadyAdded {
                     Button {
-                        alreadyAdded = false
                         removeMetric(metric.id)
 
                     } label: {
@@ -58,7 +57,6 @@ extension GalleryView {
                 } else {
 
                     Button {
-                        alreadyAdded = true
                         addMetric(metric)
                     } label: {
                         AnyMetricsAsset.Assets.plus.swiftUIImage

@@ -1,30 +1,38 @@
 # AnyMetrics | [RU](README_ru.md)
 
-**Turn any API or website into a home screen widget.**
+[![Download on the App Store](appstore.png)](https://apps.apple.com/us/app/anymetrics/id1609900961)
 
-AnyMetrics lets you send requests to any HTTP endpoint — REST API, JSON service, or web page — and display the result as a widget on your iPhone. No coding required.
+**Any HTTP endpoint → a widget on your iPhone home screen.**
+
+AnyMetrics sends requests to REST APIs, JSON services, or web pages and displays the result in a home screen widget. Configure everything in the app — no code required.
+
+iOS 15+ · Free · No ads · Open source · English & Russian
 
 ![Preview](preview.png)
 
+## How it works
+
+1. **Set up a request** — URL, HTTP method, headers, timeout
+2. **Extract a value** — JSON path, HTML selector, or HTTP status code
+3. **Add a widget** — data refreshes on your home screen
+
+## What you can monitor
+
+- Server uptime and API availability
+- CI/CD stats from GitHub, GitLab, or Jenkins
+- Response times, error rates, deployment status
+- Download counts, repo stars, or any endpoint data
+
 ## Features
 
-- **Custom API requests** — any HTTP method, custom headers, configurable timeout
-- **JSON parsing** — powerful dot-path rules with filters, aggregates, and selectors
-- **HTML parsing** — extract text from web pages using CSS selectors
-- **HTTP status monitoring** — check endpoint availability (2xx = success)
-- **Home screen widgets** — display live data in compact WidgetKit widgets
+- **Custom HTTP requests** — any method, headers, configurable timeout
+- **JSON parsing** — dot-path rules with filters, aggregates, and selectors
+- **HTML parsing** — extract text via CSS selectors (`Document.querySelector` syntax)
+- **HTTP status checks** — endpoint health at a glance (2xx = OK)
+- **Home screen widgets** — compact WidgetKit widgets with live data
 - **Value formatting** — currency, length trimming, and more
-- **Gallery** — browse ready-made metrics and add them with one tap
+- **Gallery** — ready-made metrics, one tap to add
 - **Import / Export** — share metrics as JSON with your team
-- **Free, no ads, no subscription, open source**
-
-## Use Cases
-
-- Monitor server uptime and API availability
-- Track CI/CD build stats from GitHub, GitLab, or Jenkins
-- Display response times, error rates, or any endpoint data
-- Keep an eye on deployment status and service health
-- Show download stats, repository stars, or usage metrics
 
 ## Parsing Rules
 
@@ -34,7 +42,7 @@ Navigate through JSON using dot-separated paths.
 
 #### Basic navigation
 
-``` json
+```json
 {
   "data": {
     "items": ["apple", "google", "facebook"]
@@ -51,7 +59,7 @@ Navigate through JSON using dot-separated paths.
 
 Apply operations across all elements of an array.
 
-``` json
+```json
 {
   "users": [
     { "name": "Alice", "age": 25 },
@@ -80,7 +88,7 @@ Apply operations across all elements of an array.
 
 Filter array elements before applying other operations. Syntax: `*[field<op>value]`
 
-``` json
+```json
 {
   "servers": [
     { "name": "s1", "status": "online", "cpu": 45 },
@@ -113,28 +121,20 @@ Use format like `Document.querySelector(selector)`
 
 Example: `div a.link`
 
-## Requirements
+## Links
 
-- iOS 15.0+
-- Xcode 15+
-- [Tuist](https://tuist.io)
+- [App Store](https://apps.apple.com/us/app/anymetrics/id1609900961)
+- [Gallery Repository](https://github.com/hudishkin/AnyMetricsGallery) — community-contributed metrics
 
-## Getting Started
+## For developers
+
+**Requirements:** iOS 15.0+, Xcode 15+, [Tuist](https://tuist.io)
 
 ```bash
 tuist install
 tuist generate
 ```
 
-## Links
-
-- [Gallery Repository](https://github.com/hudishkin/AnyMetricsGallery) — community-contributed metrics
-- [App Store](https://apps.apple.com/us/app/anymetrics/id1609900961)
-
 ## License
 
 Open source.
-
-______
-
-[![AppStore](appstore.png)](https://apps.apple.com/us/app/anymetrics/id1609900961)

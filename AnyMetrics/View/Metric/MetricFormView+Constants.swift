@@ -37,5 +37,6 @@ extension MetricFormView {
         static let metricViewSize: CGFloat = 200
         static let metricViewCorner: CGFloat = 42
         static let metricViewPadding: CGFloat = -10
+        static let designCarouselHeight: CGFloat = 320
     }
 }

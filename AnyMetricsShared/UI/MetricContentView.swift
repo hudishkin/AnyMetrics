@@ -1,75 +1,5 @@
 import SwiftUI
 
-fileprivate enum Constants {
-    static let titleInset = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
-    static let lineWidth: CGFloat = 1
-    static let cornerParam: CGFloat = { Bundle.isInWidget() ? 12 : 20 }()
-    static let fontValue: Font = {
-        Font.system(
-            size: Bundle.isInWidget() ? 28 : 34,
-            weight: .heavy,
-            design: .default)
-    }()
-
-    static func fontValue(size: CGFloat) -> Font {
-        Font.system(
-            size: size,
-            weight: (size < 25 ? .regular : .light),
-            design: .default)
-    }
-    static let fontTitle: Font = {
-        Font.system(size: Bundle.isInWidget() ? 16 : 18, weight: .bold, design: .default)
-    }()
-    static let fontParam: Font = {
-        Font.system(size: Bundle.isInWidget() ? 12 : 14, weight: .regular, design: .default)
-    }()
-    static let paramsInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
-    static let valueFrameHeight: CGFloat = {
-        Bundle.isInWidget() ? 29 : 40
-    }()
-
-    static let labelOffset: CGFloat = {
-        Bundle.isInWidget() ? 48 : 54
-    }()
-    static let spacing: CGFloat = 20
-    static let textColor = Color.black
-    static let textErrorColor = Color.red
-    static let strokeColor = Color.black
-    static let titleBackground = Color(uiColor: .secondarySystemGroupedBackground)
-    static let secondaryText = Color.secondary
-    static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
-
-    static let titlePaddingInset = EdgeInsets(top: 0, leading: 30, bottom: 0, trailing: 30)
-
-    static let defaultCircleGradient: LinearGradient = {
-        let colors = [
-            Color(red: 0.961, green: 0.835, blue: 0.808),
-            Color(red: 0.98, green: 0.89, blue: 0.714),
-            Color(red: 0.911, green: 0.992, blue: 0.847),
-            Color(red: 0.886, green: 0.949, blue: 0.973)
-        ]
-        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
-    }()
-
-    static let goodCircleGradient: LinearGradient = {
-        let colors = [
-            Color(red: 0.873, green: 0.962, blue: 0.802),
-            Color(red: 0.709, green: 0.871, blue: 0.577)
-        ]
-        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
-    }()
-
-    static let badCircleGradient: LinearGradient = {
-        let colors = [
-            Color(red: 1, green: 0.908, blue: 0.887),
-            Color(red: 0.917, green: 0.716, blue: 0.672)
-        ]
-        return LinearGradient(gradient: Gradient(colors: colors), startPoint: UnitPoint.topTrailing, endPoint: UnitPoint.bottomLeading)
-    }()
-
-    static let paramLines: Int = 2
-}
-
 public struct MetricContentView: View {
 
     public var metric: Metric
@@ -77,77 +7,13 @@ public struct MetricContentView: View {
     public init(metric: Metric) {
         self.metric = metric
     }
-    
+
     public var body: some View {
-        ZStack(alignment: .center, content: {
-            Circle()
-                .fill(circleGradient())
-            Text(metric.title)
-                .foregroundColor(Constants.textColor)
-                .font(Constants.fontTitle)
-                .offset(y: -Constants.labelOffset)
-                .lineLimit(Constants.paramLines)
-                .padding(Constants.titlePaddingInset)
-                .multilineTextAlignment(.center)
-            MetricValue()
-            Text(metric.measure)
-                .font(Constants.fontParam)
-                .lineLimit(Constants.paramLines)
-                .multilineTextAlignment(.center)
-                .foregroundColor(Constants.textColor)
-                .padding(Constants.paramsInset)
-                .offset(y: Constants.labelOffset)
-        })
-    }
-
-    @ViewBuilder
-    func MetricValue() -> some View {
-        if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
-            Text(metric.resultWithError ? "Bad" : "Good")
-            .frame(height: Constants.valueFrameHeight, alignment: .center)
-                .font(Constants.fontValue)
-                .multilineTextAlignment(.center)
-                .foregroundColor(Constants.textColor)
-                .padding(Constants.valuePaddingInset)
-        } else {
-            Text(metric.result)
-                .multilineTextAlignment(.center)
-                .lineLimit(Constants.paramLines)
-                .frame(height: Constants.valueFrameHeight, alignment: .center)
-                .font(dynamicFont())
-                .foregroundColor(metric.resultWithError ? Constants.textErrorColor : Constants.textColor)
-                .padding(Constants.valuePaddingInset)
-        }
-    }
-
-    private func circleGradient() -> LinearGradient {
-        if metric.type != .checkStatus && ((metric.rules?.type ?? ParseRules.RuleType.none) == .none) {
-            return Constants.defaultCircleGradient
-        }
-        if metric.resultWithError {
-            return Constants.badCircleGradient
-        }
-        return Constants.goodCircleGradient
-    }
-
-
-    private func dynamicFont() -> Font {
-        if metric.result.count < 4 {
-            return Constants.fontValue(size: 42)
-        }
-        if metric.result.count < 6 {
-            return Constants.fontValue(size: 40)
-        }
-        if metric.result.count < 10 {
-            if Bundle.isInWidget() {
-                return Constants.fontValue(size: 30)
-            }
-            return Constants.fontValue(size: 34)
-        }
-        if metric.result.count < 15 {
-            return Constants.fontValue(size: 21)
-        }
-        return Constants.fontValue(size: 19)
+        MetricWidgetDesignView(
+            metric: metric,
+            palette: .preview,
+            useGlassEffect: false
+        )
     }
 }
 

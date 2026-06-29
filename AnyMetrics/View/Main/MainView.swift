@@ -106,7 +106,7 @@ struct MainView: View {
                         allowDismissed: $allowDismissed,
                         metric: metric,
                         action: { updatedMetric in
-                            viewState.trigger(.addMetric(updatedMetric))
+                            viewState.trigger(.addMetricAndRefresh(updatedMetric))
                             sheetType = nil
                         }
                     )

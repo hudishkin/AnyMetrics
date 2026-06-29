@@ -88,7 +88,7 @@ extension RequestFormView {
         ) {
             Task { @MainActor in
                 guard let currentState = await state(),
-                      let url = URL(string: currentState.requestUrl) else { return }
+                      let url = currentState.requestUrl.requestURL else { return }
 
                 await updater { $0.requestStatus = .loading }
 

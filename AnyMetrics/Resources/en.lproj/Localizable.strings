@@ -109,6 +109,15 @@
 "addmetric.button.next" = "Next";
 "addmetric.button.save" = "Save";
 
+"addmetric.error.cannot-save" = "Could not create the metric. Check the URL and required fields, then try again.";
+
+"addmetric.field.widget-design" = "Widget design";
+"addmetric.design.glass-circle" = "Glass";
+"addmetric.design.rounded-card" = "Card";
+"addmetric.design.minimal" = "Minimal";
+"addmetric.design.ring" = "Ring";
+"addmetric.design.plain" = "Plain";
+
 "addmetric.text.no-response" = "No response";
 
 // MARK: - Import Metric

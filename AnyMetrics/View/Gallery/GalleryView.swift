@@ -36,9 +36,8 @@ struct GalleryView: View {
                     NavigationLink(isActive: $showAddMenu) {
                         MetricFormView(
                             allowDismissed: $allowDismissed,
-                            action: { _ in
-                                showAddMenu.toggle()
-                                presentationMode.wrappedValue.dismiss()
+                            action: { metric in
+                                addCustomMetric(metric)
                             }
                         )
                         .navigationTitle(AnyMetricsStrings.Addmetric.titleNew)
@@ -58,9 +57,7 @@ struct GalleryView: View {
                     NavigationLink(isActive: $showImportMenu) {
                         ImportMetricView(onImported: { metric in
                             showImportMenu = false
-                            mainState.trigger(.addMetric(metric))
-                            mainState.trigger(.refreshMetric(metric.id))
-                            presentationMode.wrappedValue.dismiss()
+                            saveMetric(metric, dismissGallery: true)
                         })
                         .navigationTitle(AnyMetricsStrings.Import.title)
                         .navigationBarTitleDisplayMode(.inline)
@@ -84,9 +81,7 @@ struct GalleryView: View {
                                     ItemView(
                                         metric: metric,
                                         addMetric: { m in
-                                            ImpactHelper.success()
-                                            mainState.trigger(.addMetric(m))
-                                            mainState.trigger(.refreshMetric(m.id))
+                                            saveMetric(m)
                                         }, removeMetric: { uuid in
                                             mainState.trigger(.removeMetric(uuid))
                                         }, alreadyAdded: mainState.state.metrics[metric.id] != nil)
@@ -140,6 +135,19 @@ struct GalleryView: View {
         })
         .onAppear {
             viewState.trigger(.onAppear)
+        }
+    }
+
+    private func addCustomMetric(_ metric: Metric) {
+        showAddMenu = false
+        saveMetric(metric, dismissGallery: true)
+    }
+
+    private func saveMetric(_ metric: Metric, dismissGallery: Bool = false) {
+        ImpactHelper.success()
+        mainState.trigger(.addMetricAndRefresh(metric))
+        if dismissGallery {
+            presentationMode.wrappedValue.dismiss()
         }
     }
 

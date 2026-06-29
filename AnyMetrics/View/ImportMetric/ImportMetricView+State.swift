@@ -39,7 +39,7 @@ extension ImportMetricView {
 
     enum VNotification: NotificationProtocol {
         case showError(String)
-        case imported
+        case imported(Metric)
     }
 
 }

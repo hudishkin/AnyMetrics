@@ -101,6 +101,9 @@ public struct Metric: Hashable, Identifiable, Sendable {
     /// Widget refresh interval in seconds
     public var interval: Int?
 
+    /// Widget visual layout
+    public var widgetDesign: WidgetDesign?
+
     public var hasResult: Bool {
         !result.isEmpty
     }
@@ -120,7 +123,8 @@ public struct Metric: Hashable, Identifiable, Sendable {
         author: String? = nil,
         description: String? = nil,
         website: URL? = nil,
-        interval: Int? = nil
+        interval: Int? = nil,
+        widgetDesign: WidgetDesign? = nil
     ) {
         self.id = id
         self.title = title
@@ -137,5 +141,29 @@ public struct Metric: Hashable, Identifiable, Sendable {
         self.description = description
         self.website = website
         self.interval = interval
+        self.widgetDesign = widgetDesign
+    }
+
+    /// Returns a copy with a new ID when a metric with the same ID already exists.
+    public func duplicatingIfNeeded(in existingMetrics: Metrics) -> Metric {
+        guard existingMetrics[id] != nil else { return self }
+        return Metric(
+            id: UUID(),
+            title: title,
+            measure: measure,
+            type: type,
+            result: result,
+            resultWithError: resultWithError,
+            request: request,
+            formatter: formatter,
+            rules: rules,
+            created: Date(),
+            updated: nil,
+            author: author,
+            description: description,
+            website: website,
+            interval: interval,
+            widgetDesign: widgetDesign
+        )
     }
 }
