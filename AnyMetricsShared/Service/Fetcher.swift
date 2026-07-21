@@ -5,7 +5,9 @@ public let DEFAULT_TIMEOUT: Double = 30
 public let MAX_VALUE_LENGTH = 5
 
 public enum FetcherError: Error {
-    case error, invalidData
+    case httpError(statusCode: Int)
+    case invalidData
+    case parseFailed
 }
 
 public enum FetcherResult {
@@ -34,8 +36,10 @@ public enum Fetcher {
                 if (200..<300).contains(response.statusCode) {
                     return completion(data, nil)
                 }
+                completion(nil, FetcherError.httpError(statusCode: response.statusCode))
+                return
             }
-            completion(nil, FetcherError.error)
+            completion(nil, FetcherError.invalidData)
         }
         task.resume()
     }
@@ -66,7 +70,7 @@ public enum Fetcher {
                     let result = try parser.parse(data)
                     completion(.result(result))
                 } catch {
-                    completion(.error(error))
+                    completion(.error(FetcherError.parseFailed))
                 }
             }
     }
@@ -80,7 +84,7 @@ public enum Fetcher {
                 if let data = data {
                     return promise(.success(data))
                 }
-                promise(.failure(FetcherError.error))
+                promise(.failure(FetcherError.invalidData))
             }
         }
     }
@@ -114,7 +118,7 @@ public enum Fetcher {
                     let result = try parser.parse(data)
                     promise(.success(.result(result)))
                 } catch {
-                    promise(.success(.error(error)))
+                    promise(.success(.error(FetcherError.parseFailed)))
                 }
             }
         }
@@ -131,7 +135,9 @@ public enum Fetcher {
                     newMetric.result = ""
                 case .value(let valueString):
                     newMetric.result = valueString
+                    newMetric.resultWithError = false
                 }
+                newMetric.updated = Date()
             case .error:
                 newMetric.resultWithError = true
             case .none:

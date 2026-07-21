@@ -6,60 +6,102 @@ import SwiftUI
 public struct MetricWidgetPalette {
     public var textColor: Color
     public var textErrorColor: Color
+    public var textSuccessColor: Color
     public var secondaryText: Color
     public var statusGoodLabel: String
     public var statusBadLabel: String
+    public var emptyLabel: String
+    public var errorLabel: String
 
     public init(
         textColor: Color,
         textErrorColor: Color,
+        textSuccessColor: Color = Color(red: 0.16, green: 0.52, blue: 0.30),
         secondaryText: Color,
         statusGoodLabel: String = "Good",
-        statusBadLabel: String = "Bad"
+        statusBadLabel: String = "Bad",
+        emptyLabel: String = "N/A",
+        errorLabel: String = "Error"
     ) {
         self.textColor = textColor
         self.textErrorColor = textErrorColor
+        self.textSuccessColor = textSuccessColor
         self.secondaryText = secondaryText
         self.statusGoodLabel = statusGoodLabel
         self.statusBadLabel = statusBadLabel
+        self.emptyLabel = emptyLabel
+        self.errorLabel = errorLabel
     }
 
     public static let preview = MetricWidgetPalette(
         textColor: .black,
         textErrorColor: .red,
+        textSuccessColor: Color(red: 0.16, green: 0.52, blue: 0.30),
         secondaryText: .secondary
     )
+
+    public static func widget(bundle: Bundle = Bundle(for: MetricStore.self)) -> MetricWidgetPalette {
+        MetricWidgetPalette(
+            textColor: Color("metricText", bundle: bundle),
+            textErrorColor: Color("red", bundle: bundle),
+            secondaryText: Color("secondaryText", bundle: bundle),
+            statusGoodLabel: NSLocalizedString("metric.value.good", bundle: bundle, comment: ""),
+            statusBadLabel: NSLocalizedString("metric.value.bad", bundle: bundle, comment: ""),
+            emptyLabel: NSLocalizedString("metric.value.empty", bundle: bundle, comment: ""),
+            errorLabel: NSLocalizedString("metric.value.error", bundle: bundle, comment: "")
+        )
+    }
 }
 
 fileprivate enum DesignConstants {
-    static let fontValue: Font = {
-        Font.system(
-            size: Bundle.isInWidget() ? 28 : 34,
-            weight: .heavy,
-            design: .default)
-    }()
-
-    static func fontValue(size: CGFloat) -> Font {
+    static func fontValue(size: CGFloat, monospaced: Bool) -> Font {
         Font.system(
             size: size,
-            weight: size < 25 ? .regular : .light,
-            design: .default)
+            weight: size < 22 ? .medium : .semibold,
+            design: monospaced ? .monospaced : .rounded)
     }
 
     static let fontTitle: Font = {
-        Font.system(size: Bundle.isInWidget() ? 16 : 18, weight: .bold, design: .default)
+        Font.system(size: Bundle.isInWidget() ? 15 : 16, weight: .semibold, design: .default)
     }()
 
     static let fontParam: Font = {
-        Font.system(size: Bundle.isInWidget() ? 11 : 13, weight: .regular, design: .default)
+        Font.system(size: Bundle.isInWidget() ? 11 : 12, weight: .medium, design: .default)
     }()
 
-    static let paramsInset = EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24)
-    static let valueFrameHeight: CGFloat = Bundle.isInWidget() ? 29 : 40
-    static let labelOffset: CGFloat = Bundle.isInWidget() ? 48 : 54
-    static let cardLabelOffset: CGFloat = Bundle.isInWidget() ? 36 : 48
-    static let valuePaddingInset = EdgeInsets(top: 0, leading: 0, bottom: 4, trailing: 0)
-    static let titlePaddingInset = EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24)
+    static let paramsInset: EdgeInsets = {
+        Bundle.isInWidget()
+            ? EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
+            : EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+    }()
+
+    static let valueFrameHeight: CGFloat = Bundle.isInWidget() ? 28 : 42
+    static let labelOffset: CGFloat = Bundle.isInWidget() ? 40 : 52
+    static let cardLabelOffset: CGFloat = Bundle.isInWidget() ? 32 : 46
+    static let valuePaddingInset = EdgeInsets(top: 0, leading: 8, bottom: 2, trailing: 8)
+    static let titlePaddingInset: EdgeInsets = {
+        Bundle.isInWidget()
+            ? EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
+            : EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+    }()
+    static let plainContentPadding = EdgeInsets(
+        top: Bundle.isInWidget() ? 14 : 18,
+        leading: Bundle.isInWidget() ? 16 : 18,
+        bottom: Bundle.isInWidget() ? 12 : 14,
+        trailing: Bundle.isInWidget() ? 16 : 18
+    )
+    static let plainMeasureFont: Font = .system(
+        size: Bundle.isInWidget() ? 12 : 13,
+        weight: .medium,
+        design: .default
+    )
+    static let updatedFont: Font = .system(
+        size: Bundle.isInWidget() ? 10 : 11,
+        weight: .medium,
+        design: .default
+    )
+    static let captionStackSpacing: CGFloat = 2
+    static let plainFooterTopPadding: CGFloat = 6
     static let paramLines = 2
     static let ringLineWidth: CGFloat = Bundle.isInWidget() ? 6 : 8
     static let widgetCardInset: CGFloat = 2
@@ -76,6 +118,15 @@ fileprivate enum DesignConstants {
             return 36
         }
         return 24
+    }
+
+    static let plainShadowRadius: CGFloat = 12
+    static let plainShadowY: CGFloat = 4
+
+    static func appShadowColor(for colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark
+            ? Color.black.opacity(0.55)
+            : Color.black.opacity(0.1)
     }
 
     static let defaultCircleGradient = LinearGradient(
@@ -106,6 +157,9 @@ fileprivate enum DesignConstants {
         startPoint: .topTrailing,
         endPoint: .bottomLeading
     )
+
+    /// Darker red for contrast on light pastel fills.
+    static let onPastelErrorColor = Color(red: 0.78, green: 0.16, blue: 0.16)
 }
 
 public struct MetricWidgetDesignView: View {
@@ -113,19 +167,30 @@ public struct MetricWidgetDesignView: View {
     public let metric: Metric
     public let palette: MetricWidgetPalette
     public let useGlassEffect: Bool
+    public let updatedAt: Date?
 
     public init(
         metric: Metric,
         palette: MetricWidgetPalette,
-        useGlassEffect: Bool = false
+        useGlassEffect: Bool = false,
+        updatedAt: Date? = nil
     ) {
         self.metric = metric
         self.palette = palette
         self.useGlassEffect = useGlassEffect
+        self.updatedAt = updatedAt ?? metric.updated
     }
 
     private var design: WidgetDesign {
         metric.widgetDesign ?? .default
+    }
+
+    private var effectiveGlassEffect: Bool {
+        useGlassEffect && !Bundle.isInWidget()
+    }
+
+    private var updatedLabel: String? {
+        MetricDisplayHelpers.relativeUpdatedString(for: updatedAt)
     }
 
     public var body: some View {
@@ -141,10 +206,6 @@ public struct MetricWidgetDesignView: View {
             glassCircleLayout
         case .roundedCard:
             roundedCardLayout
-        case .minimal:
-            minimalLayout
-        case .ring:
-            ringLayout
         case .plain:
             plainLayout
         }
@@ -152,14 +213,15 @@ public struct MetricWidgetDesignView: View {
 
     private var glassCircleLayout: some View {
         ZStack(alignment: .center) {
-            backgroundCircle(useGlass: useGlassEffect)
+            backgroundCircle(useGlass: effectiveGlassEffect)
             titleText
                 .offset(y: -DesignConstants.labelOffset)
             valueText
-            measureText
+            centeredBottomCaption
                 .offset(y: DesignConstants.labelOffset)
         }
         .contentShape(Circle())
+        .modifier(AppMetricShadowModifier())
     }
 
     private var roundedCardLayout: some View {
@@ -168,6 +230,7 @@ public struct MetricWidgetDesignView: View {
             cardTextContent
         }
         .modifier(CardClipModifier())
+        .modifier(AppMetricShadowModifier())
     }
 
     private var cardTextContent: some View {
@@ -175,19 +238,97 @@ public struct MetricWidgetDesignView: View {
             titleText
                 .offset(y: -DesignConstants.cardLabelOffset)
             valueText
-            measureText
+            centeredBottomCaption
                 .offset(y: DesignConstants.cardLabelOffset)
         }
     }
 
     private var plainLayout: some View {
-        ZStack {
-            titleText
-                .offset(y: -DesignConstants.labelOffset)
-            valueText
-            measureText
-                .offset(y: DesignConstants.labelOffset)
+        VStack(alignment: .leading, spacing: 0) {
+            Text(metric.title)
+                .font(DesignConstants.fontTitle)
+                .foregroundColor(Color.primary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Spacer(minLength: 0)
+
+            plainValueText
+            plainFooterRow
         }
+        .padding(DesignConstants.plainContentPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .modifier(PlainSurfaceModifier())
+    }
+
+    @ViewBuilder
+    private var plainFooterRow: some View {
+        let showUpdatedTime = updatedLabel != nil
+
+        if !metric.measure.isEmpty || showUpdatedTime {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if !metric.measure.isEmpty {
+                    Text(metric.measure)
+                        .font(DesignConstants.plainMeasureFont)
+                        .foregroundColor(Color.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+
+                Spacer(minLength: 0)
+
+                if showUpdatedTime, let updatedLabel {
+                    Text(updatedLabel)
+                        .font(DesignConstants.updatedFont)
+                        .foregroundColor(Color.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .padding(.top, DesignConstants.plainFooterTopPadding)
+        }
+    }
+
+    /// Pastel fills stay light in every color scheme — secondary must stay dark for contrast.
+    private var coloredSecondaryText: Color {
+        Color(white: 0.32)
+    }
+
+    @ViewBuilder
+    private var centeredBottomCaption: some View {
+        let showUpdatedTime = updatedLabel != nil
+
+        if !metric.measure.isEmpty || showUpdatedTime {
+            VStack(spacing: DesignConstants.captionStackSpacing) {
+                if !metric.measure.isEmpty {
+                    Text(metric.measure)
+                        .font(DesignConstants.fontParam)
+                        .lineLimit(DesignConstants.paramLines)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(coloredSecondaryText)
+                }
+
+                if showUpdatedTime, let updatedLabel {
+                    Text(updatedLabel)
+                        .font(DesignConstants.updatedFont)
+                        .foregroundColor(coloredSecondaryText.opacity(0.85))
+                        .lineLimit(1)
+                }
+            }
+            .multilineTextAlignment(.center)
+            .padding(DesignConstants.paramsInset)
+        }
+    }
+
+    private var plainValueText: some View {
+        Text(displayValue)
+            .font(plainValueFont())
+            .foregroundColor(valueColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var cardBackgroundFill: some View {
@@ -199,48 +340,6 @@ public struct MetricWidgetDesignView: View {
         )
         .fill(backgroundGradient())
         .padding(Bundle.isInWidget() ? DesignConstants.widgetCardInset : 0)
-    }
-
-    private var minimalLayout: some View {
-        ZStack {
-            Circle()
-                .fill(backgroundGradient().opacity(0.35))
-            VStack(spacing: 8) {
-                titleText
-                    .font(DesignConstants.fontParam.weight(.semibold))
-                    .foregroundColor(palette.secondaryText)
-                valueText
-                    .font(dynamicFont().weight(.medium))
-                measureText
-                    .font(DesignConstants.fontParam)
-                    .foregroundColor(palette.secondaryText)
-            }
-            .padding(.horizontal, 20)
-        }
-    }
-
-    private var ringLayout: some View {
-        ZStack {
-            Circle()
-                .stroke(
-                    backgroundGradient(),
-                    style: StrokeStyle(
-                        lineWidth: DesignConstants.ringLineWidth,
-                        lineCap: .round
-                    )
-                )
-                .padding(10)
-            VStack(spacing: 4) {
-                titleText
-                    .font(DesignConstants.fontParam.weight(.semibold))
-                valueText
-                    .font(dynamicFont().weight(.semibold))
-                measureText
-                    .font(DesignConstants.fontParam)
-                    .foregroundColor(palette.secondaryText)
-            }
-            .padding(.horizontal, 24)
-        }
     }
 
     @ViewBuilder
@@ -267,7 +366,6 @@ public struct MetricWidgetDesignView: View {
                             lineWidth: 1.5
                         )
                 )
-                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
         } else {
             Circle()
                 .fill(backgroundGradient())
@@ -283,47 +381,59 @@ public struct MetricWidgetDesignView: View {
             .padding(DesignConstants.titlePaddingInset)
     }
 
-    @ViewBuilder
-    private var measureText: some View {
-        if !metric.measure.isEmpty {
-            Text(metric.measure)
-                .font(DesignConstants.fontParam)
-                .lineLimit(DesignConstants.paramLines)
-                .multilineTextAlignment(.center)
-                .foregroundColor(palette.textColor)
-                .padding(DesignConstants.paramsInset)
-        }
-    }
-
-    @ViewBuilder
     private var valueText: some View {
-        if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
-            Text(metric.resultWithError ? statusBadLabel : statusGoodLabel)
-                .frame(height: DesignConstants.valueFrameHeight, alignment: .center)
-                .font(DesignConstants.fontValue)
-                .multilineTextAlignment(.center)
-                .foregroundColor(palette.textColor)
-                .padding(DesignConstants.valuePaddingInset)
-        } else {
-            Text(displayResult)
-                .multilineTextAlignment(.center)
-                .lineLimit(DesignConstants.paramLines)
-                .frame(height: DesignConstants.valueFrameHeight, alignment: .center)
-                .font(dynamicFont())
-                .foregroundColor(metric.resultWithError ? palette.textErrorColor : palette.textColor)
-                .padding(DesignConstants.valuePaddingInset)
-        }
+        Text(displayValue)
+            .multilineTextAlignment(.center)
+            .lineLimit(isStatusMetric ? 1 : DesignConstants.paramLines)
+            .minimumScaleFactor(0.5)
+            .frame(height: DesignConstants.valueFrameHeight, alignment: .center)
+            .font(dynamicFont())
+            .foregroundColor(valueColor)
+            .padding(DesignConstants.valuePaddingInset)
     }
 
-    private var displayResult: String {
-        metric.result.isEmpty ? "—" : metric.result
+    private var isStatusMetric: Bool {
+        metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
+    }
+
+    private var displayValue: String {
+        MetricDisplayHelpers.valueString(
+            for: metric,
+            goodLabel: statusGoodLabel,
+            badLabel: statusBadLabel,
+            emptyLabel: palette.emptyLabel,
+            errorLabel: palette.errorLabel
+        )
+    }
+
+    private var valueColor: Color {
+        if isStatusMetric {
+            return metric.resultWithError ? errorTextColor : palette.textSuccessColor
+        }
+        if showsValueError {
+            return errorTextColor
+        }
+        return design == .plain ? Color.primary : palette.textColor
+    }
+
+    /// Error styling only when there is no retained value to show.
+    private var showsValueError: Bool {
+        metric.resultWithError && metric.result.isEmpty
+    }
+
+    /// Pastel surfaces need a darker red than the theme accent.
+    private var errorTextColor: Color {
+        design == .plain ? palette.textErrorColor : DesignConstants.onPastelErrorColor
     }
 
     private var statusBadLabel: String { palette.statusBadLabel }
     private var statusGoodLabel: String { palette.statusGoodLabel }
 
     private func backgroundGradient() -> LinearGradient {
-        if metric.type != .checkStatus && ((metric.rules?.type ?? ParseRules.RuleType.none) == .none) {
+        if !isStatusMetric {
+            if showsValueError {
+                return DesignConstants.badCircleGradient
+            }
             return DesignConstants.defaultCircleGradient
         }
         if metric.resultWithError {
@@ -333,27 +443,114 @@ public struct MetricWidgetDesignView: View {
     }
 
     private func dynamicFont() -> Font {
-        let value = displayResult
-        if value.count < 4 {
-            return DesignConstants.fontValue(size: 42)
+        let value = displayValue
+        let isWidget = Bundle.isInWidget()
+        let size: CGFloat
+        switch value.count {
+        case ..<4:
+            size = isWidget ? 26 : 40
+        case ..<6:
+            size = isWidget ? 22 : 34
+        case ..<10:
+            size = isWidget ? 18 : 28
+        case ..<15:
+            size = isWidget ? 15 : 22
+        default:
+            size = isWidget ? 13 : 17
         }
-        if value.count < 6 {
-            return DesignConstants.fontValue(size: 40)
+        return DesignConstants.fontValue(size: size, monospaced: !isStatusMetric)
+    }
+
+    private func plainValueFont() -> Font {
+        let value = displayValue
+        let isWidget = Bundle.isInWidget()
+        let size: CGFloat
+        switch value.count {
+        case ..<4:
+            size = isWidget ? 34 : 40
+        case ..<6:
+            size = isWidget ? 28 : 34
+        case ..<10:
+            size = isWidget ? 24 : 30
+        case ..<15:
+            size = isWidget ? 20 : 24
+        default:
+            size = isWidget ? 16 : 20
         }
-        if value.count < 10 {
-            return DesignConstants.fontValue(size: Bundle.isInWidget() ? 30 : 34)
+        return DesignConstants.fontValue(size: size, monospaced: !isStatusMetric)
+    }
+}
+
+private struct PlainSurfaceModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        if Bundle.isInWidget() {
+            content
+        } else {
+            content
+                .background {
+                    RoundedRectangle(
+                        cornerRadius: DesignConstants.appCardCornerRadius,
+                        style: .continuous
+                    )
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                    .overlay {
+                        RoundedRectangle(
+                            cornerRadius: DesignConstants.appCardCornerRadius,
+                            style: .continuous
+                        )
+                        .strokeBorder(borderColor, lineWidth: 1)
+                    }
+                }
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: DesignConstants.appCardCornerRadius,
+                        style: .continuous
+                    )
+                )
+                .shadow(
+                    color: DesignConstants.appShadowColor(for: colorScheme),
+                    radius: DesignConstants.plainShadowRadius,
+                    x: 0,
+                    y: DesignConstants.plainShadowY
+                )
         }
-        if value.count < 15 {
-            return DesignConstants.fontValue(size: 24)
+    }
+
+    private var borderColor: Color {
+        colorScheme == .dark
+            ? Color.white.opacity(0.1)
+            : Color.black.opacity(0.06)
+    }
+}
+
+private struct AppMetricShadowModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func body(content: Content) -> some View {
+        if Bundle.isInWidget() {
+            content
+        } else {
+            content.shadow(
+                color: DesignConstants.appShadowColor(for: colorScheme),
+                radius: DesignConstants.plainShadowRadius,
+                x: 0,
+                y: DesignConstants.plainShadowY
+            )
         }
-        return DesignConstants.fontValue(size: 19)
     }
 }
 
 private struct CardClipModifier: ViewModifier {
     func body(content: Content) -> some View {
         if Bundle.isInWidget() {
-            content
+            content.clipShape(
+                RoundedRectangle(
+                    cornerRadius: DesignConstants.widgetCardCornerRadius,
+                    style: .continuous
+                )
+            )
         } else {
             content
                 .clipShape(CardClipShape())
@@ -399,8 +596,22 @@ private struct CardClipShape: Shape {
 #if DEBUG
 struct MetricWidgetDesignView_Previews: PreviewProvider {
     static var previews: some View {
-        MetricWidgetDesignView(metric: Mocks.metricJson, palette: .preview, useGlassEffect: true)
+        Group {
+            MetricWidgetDesignView(metric: Mocks.metricJson, palette: .preview, useGlassEffect: true)
+                .frame(width: 200, height: 200)
+                .previewDisplayName("Glass Circle")
+
+            MetricWidgetDesignView(
+                metric: {
+                    var metric = Mocks.metricJson
+                    metric.widgetDesign = .plain
+                    return metric
+                }(),
+                palette: .preview
+            )
             .frame(width: 200, height: 200)
+            .previewDisplayName("Plain")
+        }
     }
 }
 #endif

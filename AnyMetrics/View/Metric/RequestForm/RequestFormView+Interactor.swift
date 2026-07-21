@@ -114,13 +114,14 @@ extension RequestFormView {
                     Task { @MainActor in
                         switch completion {
                         case .failure(let error):
+                            let message = ErrorMessageFormatter.message(for: error)
                             await updater {
                                 $0.requestStatus = .error
-                                $0.errorMessage = error.localizedDescription
+                                $0.errorMessage = message
                                 $0.hasRequestError = true
                                 $0.canSetupResponse = $0.typeMetric == .checkStatus
                             }
-                            self?.notifications.send(.error(error.localizedDescription))
+                            self?.notifications.send(.error(message))
                         case .finished:
                             await updater {
                                 $0.hasRequestError = false

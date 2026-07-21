@@ -18,8 +18,18 @@ extension MainView {
 
         init(di: DI = .shared) {
             self.metricStore = di.metricStore
-            
+            Self.installStarterMetricIfNeeded(store: metricStore)
             initialState = .init(metrics: metricStore.metrics)
+        }
+
+        private static func installStarterMetricIfNeeded(store: MetricStore) {
+            guard !AppSettings.hasInstalledStarterMetric else { return }
+
+            if store.metrics.isEmpty {
+                store.addMetric(metric: StarterMetric.make())
+            }
+
+            AppSettings.hasInstalledStarterMetric = true
         }
 
         @MainActor
@@ -49,15 +59,20 @@ extension MainView {
                     }
                 }
             case .addMetric(let metric):
+                let isNew = metricStore.metrics[metric.id] == nil
                 metricStore.addMetric(metric: metric)
                 Task { @MainActor in
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
                     WidgetCenter.shared.reloadAllTimelines()
+                    if isNew, !AppSettings.hideWidgetInstructions {
+                        self.notifications.send(.showWidgetInstructions(metric))
+                    }
                 }
 
             case .addMetricAndRefresh(let metric):
+                let isNew = metricStore.metrics[metric.id] == nil
                 metricStore.addMetric(metric: metric)
                 let metricID = metric.id
                 Task { @MainActor in
@@ -66,6 +81,9 @@ extension MainView {
                     }
                     WidgetCenter.shared.reloadAllTimelines()
                     self.refreshStoredMetric(id: metricID, updater: updater)
+                    if isNew, !AppSettings.hideWidgetInstructions {
+                        self.notifications.send(.showWidgetInstructions(metric))
+                    }
                 }
 
             case .removeMetric(let id):
@@ -74,6 +92,7 @@ extension MainView {
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
             case .refreshMetric(let id):
                 Task { @MainActor in
@@ -128,10 +147,10 @@ extension MainView {
                             m.result = ""
                             m.resultWithError = !success
                         }
+                        m.updated = Date()
                     case .error, .none:
                         m.resultWithError = true
                     }
-                    m.updated = Date()
                     updatedMetrics[m.id] = m
                     group.leave()
                 }
@@ -155,11 +174,11 @@ extension MainView {
                         metric.result = ""
                         metric.resultWithError = !success
                     }
+                    metric.updated = Date()
                 case .error, .none:
                     metric.resultWithError = true
                 }
 
-                metric.updated = Date()
                 DispatchQueue.main.async {
                     callback(metric)
                 }

@@ -21,11 +21,11 @@ struct Provider: IntentTimelineProvider {
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
-
-        if let metric = MetricStore().metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier }) {
-            let entry = AMEntry(date: Date(), configuration: configuration, metric: metric)
-            completion(entry)
-        }
+        let store = MetricStore()
+        let metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier })
+            ?? store.metrics.values.first
+            ?? Mocks.metricEmpty
+        completion(AMEntry(date: Date(), configuration: configuration, metric: metric))
     }
 
     func getTimeline(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
@@ -64,14 +64,29 @@ struct AMEntry: TimelineEntry {
     let metric: Metric
 }
 
-
-struct WidgetEntryView : View {
+struct WidgetEntryView: View {
     var entry: Provider.Entry
 
+    @Environment(\.widgetFamily)
+    private var family
+
     var body: some View {
-        MetricContentView(metric: entry.metric)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(4)
+        MetricWidgetAdaptiveView(
+            metric: entry.metric,
+            palette: .widget(),
+            layout: widgetLayout,
+            useGlassEffect: false,
+            updatedAt: entry.date
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .widgetContainerBackground(for: family)
+    }
+
+    private var widgetLayout: MetricWidgetLayout {
+        if #available(iOS 16.0, *) {
+            return MetricWidgetLayout.from(family: family)
+        }
+        return family == .systemMedium ? .medium : .small
     }
 }
 
@@ -88,17 +103,37 @@ struct AMWidget: Widget {
             }
             .configurationDisplayName("Widgets")
             .description("Add widget to home screen with your metric")
-            .supportedFamilies([.systemSmall])
+            .supportedFamilies(supportedFamilies)
             .contentMarginsDisabled()
+    }
+
+    private var supportedFamilies: [WidgetFamily] {
+        if #available(iOS 16.0, *) {
+            return [
+                .systemSmall,
+                .systemMedium,
+                .accessoryCircular,
+                .accessoryRectangular,
+                .accessoryInline
+            ]
+        }
+        return [.systemSmall, .systemMedium]
+    }
+}
+
+private extension View {
+    func widgetContainerBackground(for family: WidgetFamily) -> some View {
+        self
     }
 }
 
 #if DEBUG
 struct AMWidget_Previews: PreviewProvider {
     static var previews: some View {
-        WidgetEntryView(entry: AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Mocks.metricCheck))
-            .environment(\.sizeCategory, .small)
+        WidgetEntryView(entry: AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Mocks.metricJson))
+            .previewContext(WidgetPreviewContext(family: .systemSmall))
+        WidgetEntryView(entry: AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Mocks.metricJson))
+            .previewContext(WidgetPreviewContext(family: .systemMedium))
     }
 }
-
 #endif

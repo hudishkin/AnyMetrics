@@ -20,6 +20,14 @@ struct MainView: View {
     var allowDismissed = true
     @State
     var showActionMenu = false
+    @State
+    var showOnboarding = !AppSettings.hasCompletedOnboarding
+    @State
+    var widgetInstructionsMetric: Metric?
+#if DEBUG
+    @State
+    var showDevMenu = false
+#endif
 
     let columns = Constants.collumns
 
@@ -27,15 +35,30 @@ struct MainView: View {
         ZStack(alignment: .bottom) {
             ZStack(alignment: .top) {
                 // MARK: - Header
-                Button {
-                    sheetType = .info
-                } label: {
-                    Text(AnyMetricsStrings.appName)
-                        .font(Constants.fontTitle)
-                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                        .padding(Constants.titleInset)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(Constants.titleCorner)
+                HStack(spacing: 8) {
+                    Button {
+                        sheetType = .info
+                    } label: {
+                        Text(AnyMetricsStrings.appName)
+                            .font(Constants.fontTitle)
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                            .padding(Constants.titleInset)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(Constants.titleCorner)
+                    }
+
+#if DEBUG
+                    Button {
+                        showDevMenu = true
+                    } label: {
+                        Text("</>")
+                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                            .padding(Constants.titleInset)
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(Constants.titleCorner)
+                    }
+#endif
                 }
                 .padding(Constants.padding)
                 .zIndex(Constants.zIndexTitle)
@@ -52,6 +75,7 @@ struct MainView: View {
                             }, editMetric: { metric in
                                 sheetType = .editMetric(metric)
                             })
+                                .id("\(metric.id.uuidString)-\((metric.widgetDesign ?? .default).rawValue)")
                                 .frame(width: Constants.size,
                                        height: Constants.size)
 
@@ -78,17 +102,6 @@ struct MainView: View {
             .cornerRadius(Constants.addButtonCorner)
             .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
             .padding()
-
-            if viewState.state.metrics.isEmpty {
-
-                VStack {
-                    Spacer()
-                    Text(AnyMetricsStrings.Metric.placeholder)
-                        .font(Constants.fontPlaceholder)
-                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
-                    Spacer()
-                }
-            }
         }
         .sheet(item: $sheetType, onDismiss: {
             allowDismissed = true
@@ -120,6 +133,32 @@ struct MainView: View {
                 }
                 .interactiveDismiss(canDismissSheet: .constant(false))
                 .environmentObject(viewState)
+            }
+        }
+        .sheet(item: $widgetInstructionsMetric) { metric in
+            WidgetInstructionsView(metricTitle: metric.title) {
+                widgetInstructionsMetric = nil
+            }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView {
+                AppSettings.hasCompletedOnboarding = true
+                showOnboarding = false
+            }
+        }
+#if DEBUG
+        .sheet(isPresented: $showDevMenu) {
+            DevMenuView {
+                showOnboarding = true
+            }
+        }
+#endif
+        .onReceive(viewState.notifications) { notification in
+            switch notification {
+            case .showWidgetInstructions(let metric):
+                widgetInstructionsMetric = metric
+            case .error:
+                break
             }
         }
         .onAppear {

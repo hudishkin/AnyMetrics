@@ -11,9 +11,12 @@ struct MetricContentView: View {
             palette: .init(
                 textColor: Constants.textColor,
                 textErrorColor: Constants.textErrorColor,
+                textSuccessColor: Constants.textSuccessColor,
                 secondaryText: Constants.secondaryText,
                 statusGoodLabel: Constants.statusGoodLabel,
-                statusBadLabel: Constants.statusBadLabel
+                statusBadLabel: Constants.statusBadLabel,
+                emptyLabel: Constants.emptyLabel,
+                errorLabel: Constants.errorLabel
             ),
             useGlassEffect: (metric.widgetDesign ?? .default) == .glassCircle
         )
@@ -24,15 +27,21 @@ fileprivate enum Constants {
     #if WIDGET_EXTENSION
     static let textColor = WidgetExtensionAsset.metricText.swiftUIColor
     static let textErrorColor = WidgetExtensionAsset.red.swiftUIColor
+    static let textSuccessColor = Color(red: 0.16, green: 0.52, blue: 0.30)
     static let secondaryText = WidgetExtensionAsset.secondaryText.swiftUIColor
     static let statusGoodLabel = WidgetExtensionStrings.Metric.Value.good
     static let statusBadLabel = WidgetExtensionStrings.Metric.Value.bad
+    static let emptyLabel = NSLocalizedString("metric.value.empty", comment: "")
+    static let errorLabel = NSLocalizedString("metric.value.error", comment: "")
     #else
     static let textColor = AnyMetricsAsset.Assets.metricText.swiftUIColor
     static let textErrorColor = AnyMetricsAsset.Assets.red.swiftUIColor
+    static let textSuccessColor = Color(red: 0.16, green: 0.52, blue: 0.30)
     static let secondaryText = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
     static let statusGoodLabel = AnyMetricsStrings.Metric.Value.good
     static let statusBadLabel = AnyMetricsStrings.Metric.Value.bad
+    static let emptyLabel = NSLocalizedString("metric.value.empty", comment: "")
+    static let errorLabel = NSLocalizedString("metric.value.error", comment: "")
     #endif
 }
 

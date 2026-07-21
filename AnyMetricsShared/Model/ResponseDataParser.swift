@@ -30,7 +30,7 @@ public extension ParseRules {
 
 final class MetricResponseParser {
     enum ParserError: Error {
-        case parseError
+        case parseFailed
     }
 
     let type: TypeMetric
@@ -49,12 +49,12 @@ final class MetricResponseParser {
             return .status(true)
         case .json:
             guard let value = valueFromJSON(data, rules: rules.parseRules, formatter: formatter) else {
-                throw ParserError.parseError
+                throw ParserError.parseFailed
             }
             return rules.parse(value)
         case .web:
             guard let value = valueFromHTML(data, rules: rules.parseRules ?? "", formatter: formatter) else {
-                throw ParserError.parseError
+                throw ParserError.parseFailed
             }
             return rules.parse(value)
         }

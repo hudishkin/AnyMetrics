@@ -11,8 +11,8 @@ public struct MetricContentView: View {
     public var body: some View {
         MetricWidgetDesignView(
             metric: metric,
-            palette: .preview,
-            useGlassEffect: false
+            palette: .widget(),
+            useGlassEffect: (metric.widgetDesign ?? .default) == .glassCircle && !Bundle.isInWidget()
         )
     }
 }

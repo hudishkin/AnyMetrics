@@ -16,6 +16,9 @@
 
 "metric.value.good" = "Good";
 "metric.value.bad" = "Bad";
+"metric.value.empty" = "N/A";
+"metric.value.error" = "Error";
+"metric.updated.just-now" = "just now";
 "metric.add" = "Add";
 
 "metric.add.title" = "Add Metric";
@@ -103,6 +106,7 @@
 "addmetric.section.format-settings" = "Format settings";
 "addmetric.section.result" = "Result";
 
+
 "addmetric.button.add" = "Add metric";
 "addmetric.button.add-http-header" = "Add Header";
 "addmetric.button.make-request" = "Make request";
@@ -147,4 +151,51 @@
 "info.github-gallery-repo" = "Gallery repository";
 "info.version" = "Version: %@";
 "info.rate" = "Rate app";
+
+// MARK: - Onboarding
+
+"onboarding.skip" = "Skip";
+"onboarding.next" = "Continue";
+"onboarding.get-started" = "Let's go";
+"onboarding.page1.title" = "Any source —\na number on screen";
+"onboarding.page1.subtitle" = "API or website → widget. No code: just a link and the value you need.";
+"onboarding.page2.title" = "Ready-made\nor your own";
+"onboarding.page2.subtitle" = "Pick a metric from the gallery, or build your own in a few minutes.";
+"onboarding.page3.title" = "Always\nin sight";
+"onboarding.page3.subtitle" = "Widgets refresh on their own. Add your first metric and put it on the Home Screen.";
+
+// MARK: - Starter Metric
+
+"starter-metric.title" = "AnyMetrics";
+"starter-metric.measure" = "GitHub stars";
+
+// MARK: - Widget Guide
+
+"widget-guide.title" = "Add to Home Screen";
+"widget-guide.subtitle" = "Metric «%@» is saved. Add a widget to see it on your home screen.";
+"widget-guide.step1" = "Long press on the home screen";
+"widget-guide.step2" = "Tap + in the top corner";
+"widget-guide.step3" = "Search for AnyMetrics";
+"widget-guide.step4" = "Choose a widget and select your metric";
+"widget-guide.done" = "Got it";
+"widget-guide.dont-show-again" = "Don't show again";
+
+// MARK: - Errors
+
+"error.http-status" = "Server returned HTTP %d";
+"error.invalid-response" = "Invalid or empty response";
+"error.parse-failed" = "Could not parse value. Check your parsing rule: %@";
+"error.parse-failed-generic" = "Could not parse the response. Check your parsing rule";
+"error.timeout" = "Request timed out. Check the URL or try again";
+"error.no-connection" = "No internet connection";
+"error.invalid-url" = "Invalid URL";
+"error.host-not-found" = "Server not found. Check the URL";
+"error.ssl" = "Secure connection failed";
+"error.unknown" = "Something went wrong: %@";
+
+// MARK: - Dev Menu
+
+"dev-menu.title" = "Dev Menu";
+"dev-menu.show-onboarding" = "Show onboarding";
+"dev-menu.show-widget-instructions" = "Show widget instructions";
 

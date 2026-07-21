@@ -16,6 +16,9 @@
 
 "metric.value.good" = "Хорошо";
 "metric.value.bad" = "Не хорошо";
+"metric.value.empty" = "N/A";
+"metric.value.error" = "Ошибка";
+"metric.updated.just-now" = "только что";
 
 "metric.add" = "Добавить";
 "metric.add.title" = "Добавить метрику";
@@ -27,7 +30,7 @@
 "metric.actions.export" = "Экспорт";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.confirmDelete" = "Да, удалить";
-"metric.placeholder" = "Нажмите + и добвьте вашу первую метрику";
+"metric.placeholder" = "Нажмите + и добавьте вашу первую метрику";
 
 "httpheaders.select.title" = "Выберите HTTP заголовок";
 "httpheaders.select.value-title" = "Выберите значение";
@@ -147,3 +150,50 @@
 "info.github-gallery-repo" = "Репозиторий галереи";
 "info.version" = "Версия: %@";
 "info.rate" = "Отценить приложение";
+
+// MARK: - Onboarding
+
+"onboarding.skip" = "Пропустить";
+"onboarding.next" = "Дальше";
+"onboarding.get-started" = "Поехали";
+"onboarding.page1.title" = "Любой источник —\nцифра на экране";
+"onboarding.page1.subtitle" = "API или сайт → виджет. Без кода: ссылка и нужное значение.";
+"onboarding.page2.title" = "Готовое\nили своё";
+"onboarding.page2.subtitle" = "Возьмите метрику из галереи или соберите свою за пару минут.";
+"onboarding.page3.title" = "Всегда\nна виду";
+"onboarding.page3.subtitle" = "Виджет обновляется сам. Добавьте первую метрику и вынесите на домашний экран.";
+
+// MARK: - Starter Metric
+
+"starter-metric.title" = "AnyMetrics ⭐";
+"starter-metric.measure" = "Звёзды GitHub";
+
+// MARK: - Widget Guide
+
+"widget-guide.title" = "Добавить на домашний экран";
+"widget-guide.subtitle" = "Метрика «%@» сохранена. Добавьте виджет, чтобы видеть её на домашнем экране.";
+"widget-guide.step1" = "Долго нажмите на домашний экран";
+"widget-guide.step2" = "Нажмите + в верхнем углу";
+"widget-guide.step3" = "Найдите AnyMetrics";
+"widget-guide.step4" = "Выберите виджет и укажите вашу метрику";
+"widget-guide.done" = "Понятно";
+"widget-guide.dont-show-again" = "Не показывать больше";
+
+// MARK: - Errors
+
+"error.http-status" = "Сервер вернул HTTP %d";
+"error.invalid-response" = "Некорректный или пустой ответ";
+"error.parse-failed" = "Не удалось получить значение. Проверьте правило парсинга: %@";
+"error.parse-failed-generic" = "Не удалось разобрать ответ. Проверьте правило парсинга";
+"error.timeout" = "Превышено время ожидания. Проверьте URL или попробуйте снова";
+"error.no-connection" = "Нет подключения к интернету";
+"error.invalid-url" = "Некорректный URL";
+"error.host-not-found" = "Сервер не найден. Проверьте URL";
+"error.ssl" = "Ошибка защищённого соединения";
+"error.unknown" = "Что-то пошло не так: %@";
+
+// MARK: - Dev Menu
+
+"dev-menu.title" = "Dev меню";
+"dev-menu.show-onboarding" = "Показать онбординг";
+"dev-menu.show-widget-instructions" = "Показать инструкцию виджета";

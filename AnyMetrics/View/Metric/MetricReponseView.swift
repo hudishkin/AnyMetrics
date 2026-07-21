@@ -90,7 +90,13 @@ struct MetricResponseView: View {
                                     get: { requestViewState.state.response },
                                     set: { _ in }
                                 ),
-                                codeType: .constant(self.typeCode))
+                                codeType: .constant(self.typeCode),
+                                onSelectParseRule: requestViewState.state.typeMetric == .checkStatus
+                                    ? nil
+                                    : { parseRule in
+                                        viewState.trigger(.setParseRules(parseRule))
+                                    }
+                            )
                             .padding(.bottom, Constants.codeBottomPadding)
                             .frame(
                                     minWidth: 0,
@@ -115,6 +121,12 @@ struct MetricResponseView: View {
                                     getRulesPlaceholder(),
                                     text: formBinding(for: \.parseRules, set: MetricFormView.VAction.setParseRules))
                                 .disableAutocorrection(true)
+                            }
+
+                            if viewState.state.hasParseRuleError {
+                                Text(viewState.state.parseErrorMessage)
+                                    .font(.caption)
+                                    .foregroundColor(AnyMetricsAsset.Assets.red.swiftUIColor)
                             }
 
                             Picker(
@@ -150,6 +162,21 @@ struct MetricResponseView: View {
                             }
                         }
 
+                        if requestViewState.state.canSetupResponse && !viewState.state.parseRules.isEmpty {
+                            Section {
+                                HStack(alignment: .top) {
+                                    Text(AnyMetricsStrings.Addmetric.Field.value)
+                                    Spacer()
+                                    Text(getResultText())
+                                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
+                                        .lineLimit(1)
+                                }
+
+                            } header: {
+                                Text(AnyMetricsStrings.Addmetric.Section.result)
+                            }
+                        }
+
                         if viewState.state.typeRule == .none {
                             Section {
                                 Picker(
@@ -182,21 +209,6 @@ struct MetricResponseView: View {
                             }
                         }
 
-
-                        if requestViewState.state.canSetupResponse && !viewState.state.parseRules.isEmpty {
-                            Section {
-                                HStack(alignment: .top) {
-                                    Text(AnyMetricsStrings.Addmetric.Field.value)
-                                    Spacer()
-                                    Text(getResultText())
-                                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
-                                        .lineLimit(1)
-                                }
-
-                            } header: {
-                                Text(AnyMetricsStrings.Addmetric.Section.result)
-                            }
-                        }
                     }
                 }.padding(.bottom, Constants.paddingBottomForm)
 

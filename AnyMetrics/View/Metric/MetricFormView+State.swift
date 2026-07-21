@@ -72,6 +72,7 @@ extension MetricFormView {
         var resultWithError: Bool = true
         var isEdited: Bool = false
         var hasParseRuleError: Bool = false
+        var parseErrorMessage: String = ""
         var widgetDesign: WidgetDesign = .default
         var created: Date = Date()
         var author: String?

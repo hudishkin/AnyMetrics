@@ -21,5 +21,6 @@ extension MainView {
 
     enum VNotification: NotificationProtocol {
         case error(String)
+        case showWidgetInstructions(Metric)
     }
 }

@@ -31,6 +31,7 @@ struct MetricFormView: View {
         ZStack(alignment: .bottomTrailing) {
             RequestFormView()
                 .environmentObject(requestViewState)
+
             HStack(alignment: .center, spacing: Constants.zero, content: {
                 NavigationLink(isActive: $showNext) {
                     switch requestViewState.state.typeMetric {

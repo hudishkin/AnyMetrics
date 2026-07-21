@@ -28,7 +28,11 @@ public extension Metric {
         description = try container.decodeIfPresent(String.self, forKey: CodingKeys.description)
         website = try container.decodeIfPresent(URL.self, forKey: CodingKeys.website)
         interval = try? container.decodeIfPresent(Int.self, forKey: CodingKeys.interval)
-        widgetDesign = try? container.decodeIfPresent(WidgetDesign.self, forKey: CodingKeys.widgetDesign)
+        if let design = try? container.decodeIfPresent(WidgetDesign.self, forKey: CodingKeys.widgetDesign) {
+            widgetDesign = design
+        } else if let legacyDesign = try? container.decodeIfPresent(String.self, forKey: CodingKeys.widgetDesign) {
+            widgetDesign = WidgetDesign.migrated(fromLegacyRawValue: legacyDesign)
+        }
     }
 
     func encode(to encoder: Encoder) throws {

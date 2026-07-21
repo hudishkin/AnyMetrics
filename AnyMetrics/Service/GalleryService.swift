@@ -16,7 +16,9 @@ enum GalleryService {
         URLSession.shared.dataTaskPublisher(for: AppConfig.Urls.gallery)
             .tryMap {
                 if let httpResponse = $0.response as? HTTPURLResponse {
-                    if httpResponse.statusCode != 200 { throw FetcherError.error }
+                    if httpResponse.statusCode != 200 {
+                        throw FetcherError.httpError(statusCode: httpResponse.statusCode)
+                    }
                 }
                 return $0.data
             }

@@ -114,8 +114,13 @@ struct RequestFormView: View {
                     Spacer()
                     switch viewState.state.requestStatus {
                     case .error:
-                        Text(AnyMetricsStrings.Common.error)
-                            .foregroundColor(.red)
+                        Text(viewState.state.errorMessage.isEmpty
+                             ? AnyMetricsStrings.Common.error
+                             : viewState.state.errorMessage)
+                            .foregroundColor(AnyMetricsAsset.Assets.red.swiftUIColor)
+                            .font(.caption)
+                            .lineLimit(3)
+                            .multilineTextAlignment(.trailing)
                     case .loading:
                         ProgressView()
                     case .success:

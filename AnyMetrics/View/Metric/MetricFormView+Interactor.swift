@@ -139,12 +139,15 @@ extension MetricFormView {
                             $0.result = parsedValue
                         }
                         $0.hasParseRuleError = false
+                        $0.parseErrorMessage = ""
                     } else {
                         $0.result = value
                         $0.hasParseRuleError = false
+                        $0.parseErrorMessage = ""
                     }
                 } else {
                     $0.hasParseRuleError = true
+                    $0.parseErrorMessage = ErrorMessageFormatter.parseRuleMessage(for: rules)
                 }
             }
         }
@@ -185,8 +188,6 @@ extension WidgetDesign {
         switch self {
         case .glassCircle: return AnyMetricsStrings.Addmetric.Design.glassCircle
         case .roundedCard: return AnyMetricsStrings.Addmetric.Design.roundedCard
-        case .minimal: return AnyMetricsStrings.Addmetric.Design.minimal
-        case .ring: return AnyMetricsStrings.Addmetric.Design.ring
         case .plain: return AnyMetricsStrings.Addmetric.Design.plain
         }
     }

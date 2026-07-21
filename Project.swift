@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version = "2.2"
+let version = "2.3"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
 let teamId = "Q424U5CAPS"
@@ -115,9 +115,12 @@ let appTarget: Target = .target(
               exit 0
             fi
 
-            CRASHLYTICS_RUN="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+            CRASHLYTICS_RUN="$(SRCROOT)/Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
             if [ ! -f "${CRASHLYTICS_RUN}" ]; then
-              echo "Crashlytics run script is missing at ${CRASHLYTICS_RUN}, skipping."
+              CRASHLYTICS_RUN="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+            fi
+            if [ ! -f "${CRASHLYTICS_RUN}" ]; then
+              echo "Crashlytics run script is missing, skipping."
               exit 0
             fi
 
@@ -155,6 +158,7 @@ let appTarget: Target = .target(
             "SWIFT_VERSION": "5.0",
             "TARGETED_DEVICE_FAMILY": "1",
             "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks",
+            "OTHER_LDFLAGS": "$(inherited) -ObjC",
             "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics"
         ]
     )
