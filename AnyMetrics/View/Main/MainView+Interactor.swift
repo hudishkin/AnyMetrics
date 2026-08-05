@@ -139,15 +139,7 @@ extension MainView {
                 Fetcher.fetch(for: m) { result in
                     switch result {
                     case .result(let value):
-                        switch value {
-                        case .value(let valueString):
-                            m.result = valueString
-                            m.resultWithError = false
-                        case .status(let success):
-                            m.result = ""
-                            m.resultWithError = !success
-                        }
-                        m.updated = Date()
+                        m.apply(parseResult: value)
                     case .error, .none:
                         m.resultWithError = true
                     }
@@ -166,15 +158,7 @@ extension MainView {
             Fetcher.fetch(for: metric) { result in
                 switch result {
                 case .result(let value):
-                    switch value {
-                    case .value(let valueString):
-                        metric.result = valueString
-                        metric.resultWithError = false
-                    case .status(let success):
-                        metric.result = ""
-                        metric.resultWithError = !success
-                    }
-                    metric.updated = Date()
+                    metric.apply(parseResult: value)
                 case .error, .none:
                     metric.resultWithError = true
                 }

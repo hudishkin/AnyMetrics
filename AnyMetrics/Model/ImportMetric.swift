@@ -1,13 +1,31 @@
 import Foundation
 import AnyMetricsShared
 
+struct MetricExportOptions: Equatable, Sendable {
+    var includeRequest: Bool
+    var includeWidgetStyle: Bool
+
+    static let `default` = MetricExportOptions(includeRequest: true, includeWidgetStyle: true)
+
+    var canExport: Bool {
+        includeRequest || includeWidgetStyle
+    }
+}
+
+struct MetricExportIncludes: Codable, Equatable {
+    var request: Bool
+    var widgetStyle: Bool
+}
+
 struct MetricItemImportData {
 
-    static let VERSION_JSON = "0.1"
+    static let VERSION_JSON = "0.2"
+    static let supportedVersions: Set<String> = ["0.1", "0.2"]
 
     let version: String
     var author: String?
     var created: Date?
+    var includes: MetricExportIncludes?
     var payload: Metric?
 
     private init() {
@@ -21,54 +39,32 @@ struct MetricItemImportData {
         self.payload = payload
     }
 
-    /// Заголовки, которые содержат чувствительные данные и должны быть удалены при экспорте
-    private static let sensitiveHeaderPatterns: [String] = [
-        "authorization",
-        "proxy-authorization",
-        "cookie",
-        "set-cookie",
-        "x-api-key",
-        "x-auth-token",
-        "x-auth-key",
-        "x-csrf-token",
-        "x-csrftoken",
-        "x-access-token",
-        "x-apitoken",
-        "x-password",
-        "x-pswd",
-        "auth-key",
-        "auth-password",
-        "access-token",
-        "token",
-        "secretkey",
-        "api-key",
-        "bearer",
-    ]
-
-    static func exportData(for metric: Metric) -> MetricItemImportData {
+    static func exportData(for metric: Metric, options: MetricExportOptions = .default) throws -> MetricItemImportData {
         var sanitized = metric
 
-        // Очищаем result
         sanitized.result = ""
+        sanitized.resultImagePath = nil
         sanitized.resultWithError = false
 
-        // Фильтруем чувствительные заголовки
-        if let request = sanitized.request {
-            let filteredHeaders = request.headers.filter { key, _ in
-                let lowered = key.lowercased()
-                return !sensitiveHeaderPatterns.contains(where: { lowered == $0 || lowered.contains($0) })
-            }
-            sanitized.request = RequestData(
-                headers: filteredHeaders,
-                method: request.method,
-                url: request.url,
-                timeout: request.timeout
-            )
+        if !options.includeRequest {
+            sanitized.request = nil
+        }
+
+        if options.includeWidgetStyle {
+            let appearance = sanitized.widgetAppearance ?? .preset(sanitized.widgetDesign ?? .default)
+            sanitized.widgetAppearance = try appearance.preparingForExport()
+        } else {
+            sanitized.widgetAppearance = nil
+            sanitized.widgetDesign = nil
         }
 
         var data = MetricItemImportData()
         data.author = metric.author
         data.created = Date()
+        data.includes = MetricExportIncludes(
+            request: options.includeRequest,
+            widgetStyle: options.includeWidgetStyle
+        )
         data.payload = sanitized
         return data
     }

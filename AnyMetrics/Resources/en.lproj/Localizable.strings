@@ -30,6 +30,13 @@
 "metric.actions.export" = "Export";
 "metric.actions.sure" = "You sure?";
 "metric.actions.confirmDelete" = "Delete metric";
+"metric.export.title" = "Export";
+"metric.export.include-request" = "Export with Request";
+"metric.export.include-widget-style" = "Export with widget style";
+"metric.export.footer" = "Choose what to include in the JSON file. At least one option is required.";
+"metric.export.request-warning" = "You are exporting the full request with all data and parameters. If it uses an API key or other sensitive values, they will also be included in the export.";
+"metric.export.failed" = "Could not export the metric. Please try again.";
+"metric.export.image-unavailable" = "Could not include the widget background image in the export.";
 "metric.placeholder" = "Press + and add your first metric";
 
 "httpheaders.select.title" = "Select HTTP Header";
@@ -62,6 +69,9 @@
 "addmetric.title-value" = "Value Settings";
 "addmetric.title-display" = "Widget Settings";
 
+"addmetric.field.result-type" = "Result type";
+"addmetric.field.result-type-content" = "Content";
+"addmetric.field.result-type-image" = "Image";
 "addmetric.field.type-metric-json" = "Parse JSON";
 "addmetric.field.type-metric-web" = "Parse HTML";
 "addmetric.field.type-metric-checkstatus" = "Check HTTP Status (20x is success)";
@@ -121,6 +131,46 @@
 "addmetric.design.minimal" = "Minimal";
 "addmetric.design.ring" = "Ring";
 "addmetric.design.plain" = "Plain";
+"addmetric.design.preview" = "Preview";
+"addmetric.design.presets" = "Templates";
+"addmetric.design.background" = "Background";
+"addmetric.design.elements" = "Elements";
+"addmetric.design.drag-hint" = "Tap an element to select it, then drag. Pinch or use text size controls to zoom. Edit small and medium separately.";
+"addmetric.design.drag-hint-short" = "Drag to move · Pinch to resize";
+"addmetric.design.image-drag-hint-short" = "Drag to pan · Pinch to zoom";
+"addmetric.design.elements-footer" = "Tap a row to select. The switch shows or hides the element.";
+"addmetric.design.image-elements-footer" = "Drag to pan the image, pinch to zoom. Use as Background places it behind other elements.";
+"addmetric.design.font-scale" = "Text size";
+"addmetric.design.text-color" = "Text color";
+"addmetric.design.alignment" = "Alignment";
+"addmetric.design.reset-text-size" = "Reset text size";
+"addmetric.design.image-scale" = "Image zoom";
+"addmetric.design.reset-image-transform" = "Reset image position";
+"addmetric.design.selected-format" = "Selected: %@";
+"addmetric.design.copy-to-small" = "Copy to Small";
+"addmetric.design.copy-to-medium" = "Copy to Medium";
+"addmetric.design.size-small" = "Small";
+"addmetric.design.size-medium" = "Medium";
+"addmetric.design.bg-status-gradient" = "Status gradient";
+"addmetric.design.bg-system" = "System background";
+"addmetric.design.bg-solid" = "Solid color";
+"addmetric.design.bg-photo" = "Choose photo";
+"addmetric.design.bg-from-url" = "From URL";
+"addmetric.design.bg-url-placeholder" = "Image URL";
+"addmetric.design.bg-apply-url" = "Load";
+"addmetric.design.use-as-background" = "Use as Background";
+"addmetric.design.use-as-background-footer" = "The response image fills the widget. Background color and photo pickers are unavailable.";
+"addmetric.design.image-mode" = "Image mode";
+"addmetric.design.image-fill" = "Fill";
+"addmetric.design.image-fit" = "Fit";
+"addmetric.design.element-title" = "Title";
+"addmetric.design.element-value" = "Value";
+"addmetric.design.element-measure" = "Subtitle";
+"addmetric.design.element-updated" = "Updated time";
+"addmetric.design.customize" = "Customize layout";
+"addmetric.design.edit-style" = "Edit style";
+"addmetric.design.import-style" = "Import style";
+"addmetric.design.import-style-error" = "Could not load the style JSON. Check the file and try again.";
 
 "addmetric.text.no-response" = "No response";
 
@@ -128,13 +178,18 @@
 
 "import.title" = "Import from JSON";
 "import.button.title" = "Import";
-"import.placeholder" = "Paste metric JSON...";
+"import.choose-file" = "Choose file";
+"import.placeholder" = "Paste metric JSON or choose a file...";
 "import.validation.valid" = "JSON is valid";
 "import.validation.duplicate-id" = "A metric with this ID already exists — a new ID will be created";
 "import.info.title" = "Title";
 "import.info.measure" = "Measure";
 "import.info.type" = "Type";
+"import.info.widget-style" = "Widget style";
+"import.info.included" = "Included";
 "import.error.cannot-read" = "Cannot read text";
+"import.error.cannot-read-file" = "Cannot read the selected file";
+"import.error.unsupported-format" = "Unsupported export format";
 "import.error.no-valid-metric" = "No valid metric to import";
 "import.error.missing-field" = "Missing required field: %@";
 "import.error.wrong-type" = "Wrong data type: %@";

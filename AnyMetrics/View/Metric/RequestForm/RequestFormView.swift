@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import VVSI
 import AnyMetricsShared
 
@@ -28,13 +29,24 @@ struct RequestFormView: View {
                     .pickerStyle(.automatic)
 
                 Picker(
-                    AnyMetricsStrings.Addmetric.Field.typeMetric,
-                    selection: binding(for: \.typeMetric, set: VAction.setTypeMetric)) {
-                        ForEach(TypeMetric.allCases, id: \.self) { item in
+                    AnyMetricsStrings.Addmetric.Field.resultType,
+                    selection: binding(for: \.resultKind, set: VAction.setResultKind)) {
+                        ForEach(MetricResultKind.allCases, id: \.self) { item in
                             Text(item.localizedString).tag(item)
                         }
                     }
                     .pickerStyle(.automatic)
+
+                if viewState.state.resultKind == .content {
+                    Picker(
+                        AnyMetricsStrings.Addmetric.Field.typeMetric,
+                        selection: binding(for: \.typeMetric, set: VAction.setTypeMetric)) {
+                            ForEach(TypeMetric.allCases, id: \.self) { item in
+                                Text(item.localizedString).tag(item)
+                            }
+                        }
+                        .pickerStyle(.automatic)
+                }
 
                 Picker(
                     AnyMetricsStrings.Addmetric.Field.refreshInterval,
@@ -132,25 +144,36 @@ struct RequestFormView: View {
 
                 }
             } footer: {
-                VStack {
-                    Text(viewState.state.response)
-                        .font(Constants.responseFont)
-                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
-
-                }.frame(maxHeight: 300)
-                    .overlay(
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(uiColor: .systemGroupedBackground).opacity(0),
-                                        Color(uiColor: .systemGroupedBackground)
-                                    ],
-                                    startPoint: UnitPoint.top,
-                                    endPoint: UnitPoint.bottom
-                                )
+                Group {
+                    if viewState.state.resultKind == .image {
+                        if let data = viewState.state.responseImageData,
+                           let image = UIImage(data: data) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: Constants.imagePreviewMaxHeight)
+                                .clipShape(RoundedRectangle(cornerRadius: Constants.imagePreviewCorner, style: .continuous))
+                        }
+                    } else {
+                        Text(viewState.state.response)
+                            .font(Constants.responseFont)
+                            .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
+                            .frame(maxHeight: Constants.responseMaxHeight)
+                            .overlay(
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(uiColor: .systemGroupedBackground).opacity(0),
+                                                Color(uiColor: .systemGroupedBackground)
+                                            ],
+                                            startPoint: UnitPoint.top,
+                                            endPoint: UnitPoint.bottom
+                                        )
+                                    )
                             )
-                    )
+                    }
+                }
             }
         }
         .navigationTitle(AnyMetricsStrings.Addmetric.titleRequest)
@@ -218,5 +241,8 @@ private extension RequestFormView {
         static let requestBodyMinHeight: CGFloat = 100
         static let opacityEnable: CGFloat = 1.0
         static let opacityDisable: CGFloat = 0.4
+        static let responseMaxHeight: CGFloat = 300
+        static let imagePreviewMaxHeight: CGFloat = 220
+        static let imagePreviewCorner: CGFloat = 12
     }
 }

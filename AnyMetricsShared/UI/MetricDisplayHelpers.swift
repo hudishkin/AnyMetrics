@@ -10,6 +10,9 @@ public enum MetricDisplayHelpers {
         emptyLabel: String = "N/A",
         errorLabel: String = "Error"
     ) -> String {
+        if metric.resultKind == .image {
+            return metric.resultWithError ? errorLabel : emptyLabel
+        }
         if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
             return metric.resultWithError ? badLabel : goodLabel
         }

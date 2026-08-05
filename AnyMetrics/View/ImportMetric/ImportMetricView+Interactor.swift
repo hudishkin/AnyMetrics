@@ -70,9 +70,8 @@ extension ImportMetricView {
                 return
             }
 
-            // Пробуем как MetricItemImportData (обёртка с version/payload)
-            if let importData = try? parser.parse(data: data),
-               let metric = importData.payload {
+            switch parseMetric(from: data) {
+            case .success(let metric):
                 let isDuplicate = metricStore.metrics[metric.id] != nil
                 Task { @MainActor in
                     await updater {
@@ -80,20 +79,7 @@ extension ImportMetricView {
                         $0.duplicateIdFound = isDuplicate
                     }
                 }
-                return
-            }
-
-            // Пробуем как чистый Metric JSON
-            do {
-                let metric = try JSONDecoder().decode(Metric.self, from: data)
-                let isDuplicate = metricStore.metrics[metric.id] != nil
-                Task { @MainActor in
-                    await updater {
-                        $0.validation = .valid(metric)
-                        $0.duplicateIdFound = isDuplicate
-                    }
-                }
-            } catch {
+            case .failure(let error):
                 let message = mapDecodingError(error)
                 Task { @MainActor in
                     await updater {
@@ -104,17 +90,67 @@ extension ImportMetricView {
             }
         }
 
+        /// Supports:
+        /// - new envelope (`version` 0.1 / 0.2 + `payload`)
+        /// - legacy plain `Metric` JSON
+        private func parseMetric(from data: Data) -> Result<Metric, Error> {
+            if let importData = try? parser.parse(data: data),
+               let metric = importData.payload {
+                return .success(metric)
+            }
+
+            var lastError: Error = MetricItemImportDataError.invalidVersion
+            for decoder in Self.metricDecoders {
+                do {
+                    return .success(try decoder.decode(Metric.self, from: data))
+                } catch {
+                    lastError = error
+                }
+            }
+
+            return .failure(lastError)
+        }
+
+        private static var metricDecoders: [JSONDecoder] {
+            let iso8601 = JSONDecoder()
+            iso8601.dateDecodingStrategy = .iso8601
+
+            let formatted = JSONDecoder()
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+            dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+            formatted.dateDecodingStrategy = .formatted(dateFormatter)
+
+            let deferred = JSONDecoder()
+            deferred.dateDecodingStrategy = .deferredToDate
+
+            return [iso8601, formatted, deferred]
+        }
+
         private func performImport(state: VState) {
             guard let metric = state.validation.metric else {
                 notifications.send(.showError(AnyMetricsStrings.Import.Error.noValidMetric))
                 return
             }
 
-            let importedMetric = metric.duplicatingIfNeeded(in: metricStore.metrics)
+            var importedMetric = metric.duplicatingIfNeeded(in: metricStore.metrics)
+            importedMetric.result = ""
+            importedMetric.resultImagePath = nil
+            importedMetric.resultWithError = false
+            do {
+                try importedMetric.persistWidgetBackgroundImages()
+            } catch {
+                notifications.send(.showError(AnyMetricsStrings.Metric.Export.imageUnavailable))
+                return
+            }
             notifications.send(.imported(importedMetric))
         }
 
         private func mapDecodingError(_ error: Error) -> String {
+            if error is MetricItemImportDataError {
+                return AnyMetricsStrings.Import.Error.unsupportedFormat
+            }
             if let decodingError = error as? DecodingError {
                 switch decodingError {
                 case .keyNotFound(let key, _):

@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 
 public let DEFAULT_TIMEOUT: Double = 30
 public let MAX_VALUE_LENGTH = 5
@@ -54,11 +55,20 @@ public enum Fetcher {
             timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT,
             requestBody: requestData.requestBody) { data, error in
                 if let error = error {
-                    if metric.type == .checkStatus {
+                    if metric.type == .checkStatus && metric.resultKind == .content {
                         completion(.result(.status(false)))
                     } else {
                         completion(.error(error))
                     }
+                    return
+                }
+
+                if metric.resultKind == .image {
+                    guard let data, UIImage(data: data) != nil else {
+                        completion(.error(FetcherError.invalidData))
+                        return
+                    }
+                    completion(.result(.image(data)))
                     return
                 }
 
@@ -129,15 +139,7 @@ public enum Fetcher {
         Self.fetch(for: metric) { result in
             switch result {
             case .result(let value):
-                switch value {
-                case .status(let success):
-                    newMetric.resultWithError = !success
-                    newMetric.result = ""
-                case .value(let valueString):
-                    newMetric.result = valueString
-                    newMetric.resultWithError = false
-                }
-                newMetric.updated = Date()
+                newMetric.apply(parseResult: value)
             case .error:
                 newMetric.resultWithError = true
             case .none:

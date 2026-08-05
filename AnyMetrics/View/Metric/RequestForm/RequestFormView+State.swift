@@ -12,6 +12,7 @@ extension RequestFormView {
 
         var requestUrl: String = "http://jsonplaceholder.typicode.com/posts"
         var httpMethodType: HTTPMethodType = .GET
+        var resultKind: MetricResultKind = .content
         var typeMetric: TypeMetric = .json
         var httpHeaders: [String: String] = [:]
         var requestBody: String = ""
@@ -19,6 +20,7 @@ extension RequestFormView {
         var refreshInterval: RefreshInterval = .bySystem
         var requestStatus: RequestStatus = .none
         var response: String = ""
+        var responseImageData: Data?
         var errorMessage: String = ""
         var hasRequestError: Bool = false
         var canSetupResponse: Bool = false
@@ -31,6 +33,7 @@ extension RequestFormView {
     enum VAction: ActionProtocol {
         case setRequestUrl(String)
         case setHTTPMethodType(HTTPMethodType)
+        case setResultKind(MetricResultKind)
         case setTypeMetric(TypeMetric)
         case setRequestBody(String)
         case setRefreshInterval(RefreshInterval)

@@ -34,15 +34,21 @@ struct MetricFormView: View {
 
             HStack(alignment: .center, spacing: Constants.zero, content: {
                 NavigationLink(isActive: $showNext) {
-                    switch requestViewState.state.typeMetric {
-                    case .checkStatus:
+                    if requestViewState.state.resultKind == .image {
                         DisplayView(allowDismissed: $allowDismissed, action: action)
                             .environmentObject(viewState)
                             .environmentObject(requestViewState)
-                    case .json, .web:
-                        MetricResponseView(allowDismissed: $allowDismissed, action: action)
-                            .environmentObject(viewState)
-                            .environmentObject(requestViewState)
+                    } else {
+                        switch requestViewState.state.typeMetric {
+                        case .checkStatus:
+                            DisplayView(allowDismissed: $allowDismissed, action: action)
+                                .environmentObject(viewState)
+                                .environmentObject(requestViewState)
+                        case .json, .web:
+                            MetricResponseView(allowDismissed: $allowDismissed, action: action)
+                                .environmentObject(viewState)
+                                .environmentObject(requestViewState)
+                        }
                     }
                 } label: {
                     Button(action: {

@@ -30,6 +30,13 @@
 "metric.actions.export" = "Экспорт";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.confirmDelete" = "Да, удалить";
+"metric.export.title" = "Экспорт";
+"metric.export.include-request" = "Экспортировать запрос";
+"metric.export.include-widget-style" = "Экспортировать стиль виджета";
+"metric.export.footer" = "Выберите, что включить в JSON-файл. Нужен хотя бы один пункт.";
+"metric.export.request-warning" = "Вы экспортируете запрос полностью со всеми данными и параметрами. Если он использует API-key или другие важные параметры, они также будут добавлены в экспорт.";
+"metric.export.failed" = "Не удалось экспортировать метрику. Попробуйте ещё раз.";
+"metric.export.image-unavailable" = "Не удалось включить фоновое изображение виджета в экспорт.";
 "metric.placeholder" = "Нажмите + и добавьте вашу первую метрику";
 
 "httpheaders.select.title" = "Выберите HTTP заголовок";
@@ -62,6 +69,9 @@
 "addmetric.title-value" = "Настрока значения";
 "addmetric.title-display" = "Настройка виджета";
 
+"addmetric.field.result-type" = "Тип результата";
+"addmetric.field.result-type-content" = "Контент";
+"addmetric.field.result-type-image" = "Изображение";
 "addmetric.field.type-metric-json" = "Парсинг JSON";
 "addmetric.field.type-metric-web" = "Парсинг HTML";
 "addmetric.field.type-metric-checkstatus" = "Проверка HTTP статуса (20x - хорошо)";
@@ -120,6 +130,47 @@
 "addmetric.design.minimal" = "Минимализм";
 "addmetric.design.ring" = "Кольцо";
 "addmetric.design.plain" = "Без заливки";
+"addmetric.design.preview" = "Превью";
+"addmetric.design.presets" = "Шаблоны";
+"addmetric.design.background" = "Фон";
+"addmetric.design.elements" = "Элементы";
+"addmetric.design.drag-hint" = "Нажмите элемент, чтобы выбрать, затем перетащите. Pinch или ползунок меняют размер текста. Small и medium — отдельно.";
+"addmetric.design.drag-hint-short" = "Перетащите · Pinch для масштаба";
+"addmetric.design.image-drag-hint-short" = "Перетащите · Pinch для зума";
+"addmetric.design.elements-footer" = "Нажмите строку, чтобы выбрать. Переключатель показывает или скрывает элемент.";
+"addmetric.design.image-elements-footer" = "Перетаскивайте картинку и зумите жестом. Переключатель Use as Background ставит её на фон.";
+"addmetric.design.font-scale" = "Размер текста";
+"addmetric.design.text-color" = "Цвет текста";
+"addmetric.design.alignment" = "Выравнивание";
+"addmetric.design.reset-text-size" = "Сбросить размер текста";
+"addmetric.design.image-scale" = "Масштаб картинки";
+"addmetric.design.reset-image-transform" = "Сбросить позицию картинки";
+"addmetric.design.selected-format" = "Выбрано: %@";
+"addmetric.design.copy-to-small" = "Скопировать в маленький";
+"addmetric.design.copy-to-medium" = "Скопировать в средний";
+"addmetric.design.size-small" = "Маленький";
+"addmetric.design.size-medium" = "Средний";
+"addmetric.design.bg-status-gradient" = "Градиент по статусу";
+"addmetric.design.bg-system" = "Системный фон";
+"addmetric.design.bg-solid" = "Сплошной цвет";
+"addmetric.design.bg-photo" = "Выбрать фото";
+"addmetric.design.bg-from-url" = "По URL";
+"addmetric.design.bg-url-placeholder" = "URL картинки";
+"addmetric.design.bg-apply-url" = "Загрузить";
+"addmetric.design.use-as-background" = "Use as Background";
+"addmetric.design.use-as-background-footer" = "Картинка из ответа заполняет виджет. Цвет фона и выбор фото недоступны.";
+"addmetric.design.image-mode" = "Режим картинки";
+"addmetric.design.image-fill" = "Заполнить";
+"addmetric.design.image-fit" = "Вписать";
+"addmetric.design.element-title" = "Заголовок";
+"addmetric.design.element-value" = "Значение";
+"addmetric.design.element-measure" = "Подзаголовок";
+"addmetric.design.element-updated" = "Время обновления";
+"addmetric.design.customize" = "Настроить расположение";
+"addmetric.design.edit-style" = "Редактировать стиль";
+"addmetric.design.import-style" = "Импорт стиля";
+"addmetric.design.import-style-error" = "Не удалось загрузить JSON стиля. Проверьте файл и попробуйте снова.";
+
 
 "addmetric.text.no-response" = "Нет ответа";
 
@@ -127,13 +178,18 @@
 
 "import.title" = "Импорт из JSON";
 "import.button.title" = "Импортировать";
-"import.placeholder" = "Вставьте JSON метрики...";
+"import.choose-file" = "Выбрать файл";
+"import.placeholder" = "Вставьте JSON метрики или выберите файл...";
 "import.validation.valid" = "JSON валиден";
 "import.validation.duplicate-id" = "Метрика с таким ID уже существует — будет создан новый ID";
 "import.info.title" = "Название";
 "import.info.measure" = "Единица";
 "import.info.type" = "Тип";
+"import.info.widget-style" = "Стиль виджета";
+"import.info.included" = "Включён";
 "import.error.cannot-read" = "Невозможно прочитать текст";
+"import.error.cannot-read-file" = "Не удалось прочитать выбранный файл";
+"import.error.unsupported-format" = "Неподдерживаемый формат экспорта";
 "import.error.no-valid-metric" = "Нет валидной метрики для импорта";
 "import.error.missing-field" = "Отсутствует обязательное поле: %@";
 "import.error.wrong-type" = "Неверный тип данных: %@";

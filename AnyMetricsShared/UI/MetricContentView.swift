@@ -12,7 +12,7 @@ public struct MetricContentView: View {
         MetricWidgetDesignView(
             metric: metric,
             palette: .widget(),
-            useGlassEffect: (metric.widgetDesign ?? .default) == .glassCircle && !Bundle.isInWidget()
+            useGlassEffect: metric.resolvedAppearance.small.background.usesGlassEffect && !Bundle.isInWidget()
         )
     }
 }

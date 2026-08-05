@@ -55,7 +55,13 @@ open class MetricStore {
             return Metrics.decodeFromJSON(json) ?? [:]
         }
         set {
-            guard let json = Metrics.encodeToJSON(newValue) else {
+            var normalized = newValue
+            for id in normalized.keys {
+                guard var metric = normalized[id] else { continue }
+                try? metric.persistWidgetBackgroundImages()
+                normalized[id] = metric
+            }
+            guard let json = Metrics.encodeToJSON(normalized) else {
                 return
             }
             defaults?.set(json, forKey: key)
@@ -72,6 +78,8 @@ open class MetricStore {
         var localMetrics = metrics
         localMetrics[id] = nil
         metrics = localMetrics
+        WidgetBackgroundStore.shared.deleteAll(for: id)
+        MetricResultImageStore.shared.deleteAll(for: id)
     }
 
     @discardableResult

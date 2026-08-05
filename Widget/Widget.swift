@@ -22,9 +22,10 @@ struct Provider: IntentTimelineProvider {
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
         let store = MetricStore()
-        let metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier })
+        var metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier })
             ?? store.metrics.values.first
             ?? Mocks.metricEmpty
+        try? metric.persistWidgetBackgroundImages()
         completion(AMEntry(date: Date(), configuration: configuration, metric: metric))
     }
 
@@ -35,7 +36,11 @@ struct Provider: IntentTimelineProvider {
         if
             let id = configuration.dataSourceType?.identifier,
                 let uuid = UUID(uuidString: id),
-                let metric = store.metrics[uuid] {
+                var metric = store.metrics[uuid] {
+
+            // Convert any leftover import base64 into App Group files before render/fetch.
+            try? metric.persistWidgetBackgroundImages()
+            store.addMetric(metric: metric)
 
             Fetcher.updateMetric(metric: metric) { newMetric in
                 store.addMetric(metric: newMetric)

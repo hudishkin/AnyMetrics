@@ -33,6 +33,11 @@ public struct MetricValueFormatter: Hashable, Sendable {
 public enum ParseResult: Sendable {
     case value(String)
     case status(Bool)
+    case image(Data)
+}
+
+public enum MetricResultKind: String, Codable, CaseIterable, Sendable {
+    case content, image
 }
 
 public struct ParseRules: Hashable, Sendable {
@@ -81,8 +86,14 @@ public struct Metric: Hashable, Identifiable, Sendable {
     public var measure: String
     public var type: TypeMetric
 
+    /// How the HTTP response is interpreted: parsed text/status or raw image body.
+    public var resultKind: MetricResultKind = .content
+
     /// Store value after parse and format
     public var result: String = ""
+
+    /// Relative path in App Group for image result (`resultKind == .image`).
+    public var resultImagePath: String?
 
     /// Indicate if request finished with error
     public var resultWithError: Bool = false
@@ -101,11 +112,27 @@ public struct Metric: Hashable, Identifiable, Sendable {
     /// Widget refresh interval in seconds
     public var interval: Int?
 
-    /// Widget visual layout
+    /// Widget visual layout preset (legacy + quick pick). Prefer `widgetAppearance` when set.
     public var widgetDesign: WidgetDesign?
 
+    /// Full serializable widget look (per-size layout, background, visibility).
+    public var widgetAppearance: WidgetAppearance?
+
     public var hasResult: Bool {
-        !result.isEmpty
+        switch resultKind {
+        case .content:
+            return !result.isEmpty
+        case .image:
+            return resultImagePath != nil
+        }
+    }
+
+    /// Resolved appearance: custom spec or compiled preset from `widgetDesign`.
+    public var resolvedAppearance: WidgetAppearance {
+        if let widgetAppearance {
+            return widgetAppearance
+        }
+        return .preset(widgetDesign ?? .default)
     }
 
     public init(
@@ -113,7 +140,9 @@ public struct Metric: Hashable, Identifiable, Sendable {
         title: String,
         measure: String,
         type: TypeMetric,
+        resultKind: MetricResultKind = .content,
         result: String = "",
+        resultImagePath: String? = nil,
         resultWithError: Bool = false,
         request: RequestData? = nil,
         formatter: MetricValueFormatter? = nil,
@@ -124,13 +153,16 @@ public struct Metric: Hashable, Identifiable, Sendable {
         description: String? = nil,
         website: URL? = nil,
         interval: Int? = nil,
-        widgetDesign: WidgetDesign? = nil
+        widgetDesign: WidgetDesign? = nil,
+        widgetAppearance: WidgetAppearance? = nil
     ) {
         self.id = id
         self.title = title
         self.measure = measure
         self.type = type
+        self.resultKind = resultKind
         self.result = result
+        self.resultImagePath = resultImagePath
         self.resultWithError = resultWithError
         self.request = request
         self.formatter = formatter
@@ -142,17 +174,42 @@ public struct Metric: Hashable, Identifiable, Sendable {
         self.website = website
         self.interval = interval
         self.widgetDesign = widgetDesign
+        self.widgetAppearance = widgetAppearance
+    }
+
+    /// Applies a fetch/parse outcome to this metric (including image file persistence).
+    public mutating func apply(parseResult: ParseResult) {
+        switch parseResult {
+        case .value(let valueString):
+            result = valueString
+            resultWithError = false
+        case .status(let success):
+            result = ""
+            resultWithError = !success
+        case .image(let data):
+            do {
+                let path = try MetricResultImageStore.shared.save(data: data, metricId: id)
+                resultImagePath = path
+                result = ""
+                resultWithError = false
+            } catch {
+                resultWithError = true
+            }
+        }
+        updated = Date()
     }
 
     /// Returns a copy with a new ID when a metric with the same ID already exists.
     public func duplicatingIfNeeded(in existingMetrics: Metrics) -> Metric {
         guard existingMetrics[id] != nil else { return self }
-        return Metric(
+        var copy = Metric(
             id: UUID(),
             title: title,
             measure: measure,
             type: type,
+            resultKind: resultKind,
             result: result,
+            resultImagePath: nil,
             resultWithError: resultWithError,
             request: request,
             formatter: formatter,
@@ -163,7 +220,24 @@ public struct Metric: Hashable, Identifiable, Sendable {
             description: description,
             website: website,
             interval: interval,
-            widgetDesign: widgetDesign
+            widgetDesign: widgetDesign,
+            widgetAppearance: widgetAppearance
         )
+        try? copy.persistWidgetBackgroundImages()
+        if resultKind == .image, let path = resultImagePath,
+           let data = MetricResultImageStore.shared.loadData(relativePath: path) {
+            copy.resultImagePath = try? MetricResultImageStore.shared.save(data: data, metricId: copy.id)
+        }
+        return copy
+    }
+
+    /// Writes any inlined base64 widget backgrounds into the App Group container.
+    /// Widgets cannot reliably host large base64 payloads from UserDefaults.
+    public mutating func persistWidgetBackgroundImages(
+        store: WidgetBackgroundStore = .shared
+    ) throws {
+        guard var appearance = widgetAppearance, appearance.containsBase64Images else { return }
+        try appearance.materializeImportedImages(metricId: id, store: store)
+        widgetAppearance = appearance
     }
 }
