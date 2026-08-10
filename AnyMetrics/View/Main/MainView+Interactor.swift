@@ -139,17 +139,11 @@ extension MainView {
                 Fetcher.fetch(for: m) { result in
                     switch result {
                     case .result(let value):
-                        switch value {
-                        case .value(let valueString):
-                            m.result = valueString
-                            m.resultWithError = false
-                        case .status(let success):
-                            m.result = ""
-                            m.resultWithError = !success
-                        }
-                        m.updated = Date()
-                    case .error, .none:
-                        m.resultWithError = true
+                        m.apply(parseResult: value)
+                    case .error:
+                        m.markRefreshFailed()
+                    case .none:
+                        break
                     }
                     updatedMetrics[m.id] = m
                     group.leave()
@@ -166,17 +160,11 @@ extension MainView {
             Fetcher.fetch(for: metric) { result in
                 switch result {
                 case .result(let value):
-                    switch value {
-                    case .value(let valueString):
-                        metric.result = valueString
-                        metric.resultWithError = false
-                    case .status(let success):
-                        metric.result = ""
-                        metric.resultWithError = !success
-                    }
-                    metric.updated = Date()
-                case .error, .none:
-                    metric.resultWithError = true
+                    metric.apply(parseResult: value)
+                case .error:
+                    metric.markRefreshFailed()
+                case .none:
+                    break
                 }
 
                 DispatchQueue.main.async {

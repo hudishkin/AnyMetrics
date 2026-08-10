@@ -18,7 +18,7 @@ struct MetricContentView: View {
                 emptyLabel: Constants.emptyLabel,
                 errorLabel: Constants.errorLabel
             ),
-            useGlassEffect: (metric.widgetDesign ?? .default) == .glassCircle
+            useGlassEffect: metric.resolvedAppearance.small.background.usesGlassEffect
         )
     }
 }

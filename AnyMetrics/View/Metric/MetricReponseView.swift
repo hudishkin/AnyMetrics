@@ -36,6 +36,8 @@ struct MetricResponseView: View {
     var allowDismissed: Bool
     @State
     var showNext = false
+    @State
+    private var dismissLockWorkItem: DispatchWorkItem?
 
     @EnvironmentObject
     var viewState: ViewState<MetricFormView.Interactor>
@@ -260,9 +262,16 @@ struct MetricResponseView: View {
                 viewState.trigger(.updateValue())
             }
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                dismissLockWorkItem?.cancel()
+                let work = DispatchWorkItem {
                     allowDismissed = false
                 }
+                dismissLockWorkItem = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: work)
+            }
+            .onDisappear {
+                dismissLockWorkItem?.cancel()
+                dismissLockWorkItem = nil
             }
         }
     }

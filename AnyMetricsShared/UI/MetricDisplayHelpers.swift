@@ -10,13 +10,29 @@ public enum MetricDisplayHelpers {
         emptyLabel: String = "N/A",
         errorLabel: String = "Error"
     ) -> String {
+        if metric.resultKind == .image {
+            if let path = metric.resultImagePath {
+                if MetricResultImageStore.shared.loadImage(relativePath: path) != nil {
+                    return emptyLabel
+                }
+                // Path recorded but file missing/corrupt.
+                return errorLabel
+            }
+            return (metric.refreshFailed || metric.resultWithError) ? errorLabel : emptyLabel
+        }
         if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
+            // Status Bad/Good from last successful evaluation — not from transport failures.
             return metric.resultWithError ? badLabel : goodLabel
         }
         if metric.result.isEmpty {
-            return metric.resultWithError ? errorLabel : emptyLabel
+            return (metric.refreshFailed || metric.resultWithError) ? errorLabel : emptyLabel
         }
         return metric.result
+    }
+
+    /// Refresh failed while a previous value/status/image is still shown (tint `updated` red).
+    public static func showsStaleUpdate(for metric: Metric) -> Bool {
+        metric.refreshFailed
     }
 
     public static func relativeUpdatedString(

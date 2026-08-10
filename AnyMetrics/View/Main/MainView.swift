@@ -24,6 +24,12 @@ struct MainView: View {
     var showOnboarding = !AppSettings.hasCompletedOnboarding
     @State
     var widgetInstructionsMetric: Metric?
+    @State
+    var exportMetric: Metric?
+    @State
+    var exportFileURL: URL?
+    @State
+    var exportErrorMessage: String?
 #if DEBUG
     @State
     var showDevMenu = false
@@ -68,17 +74,22 @@ struct MainView: View {
                     Spacer(minLength: Constants.topPadding)
                     LazyVGrid(columns: columns, spacing: Constants.spacing) {
                         ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
-                            MetricView(metric: metric, refreshMetric: { uuid in
-                                viewState.trigger(.refreshMetric(uuid))
-                            }, deletehMetric: { uuid in
-                                viewState.trigger(.removeMetric(uuid))
-                            }, editMetric: { metric in
-                                sheetType = .editMetric(metric)
-                            })
-                                .id("\(metric.id.uuidString)-\((metric.widgetDesign ?? .default).rawValue)")
-                                .frame(width: Constants.size,
-                                       height: Constants.size)
-
+                            MetricView(
+                                metric: metric,
+                                refreshMetric: { uuid in
+                                    viewState.trigger(.refreshMetric(uuid))
+                                },
+                                deletehMetric: { uuid in
+                                    viewState.trigger(.removeMetric(uuid))
+                                },
+                                editMetric: { metric in
+                                    sheetType = .editMetric(metric)
+                                },
+                                exportMetric: { metric in
+                                    exportMetric = metric
+                                }
+                            )
+                            .frame(width: Constants.size, height: Constants.size)
                         }
                     }
 
@@ -140,6 +151,24 @@ struct MainView: View {
                 widgetInstructionsMetric = nil
             }
         }
+        .sheet(item: $exportMetric, onDismiss: {
+            presentExportShareSheetIfNeeded()
+        }) { metric in
+            MetricExportOptionsView(metric: metric) { fileURL in
+                exportFileURL = fileURL
+                exportMetric = nil
+            }
+        }
+        .alert(AnyMetricsStrings.Common.error, isPresented: Binding(
+            get: { exportErrorMessage != nil },
+            set: { if !$0 { exportErrorMessage = nil } }
+        )) {
+            Button(AnyMetricsStrings.Common.ok, role: .cancel) {
+                exportErrorMessage = nil
+            }
+        } message: {
+            Text(exportErrorMessage ?? "")
+        }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView {
                 AppSettings.hasCompletedOnboarding = true
@@ -165,6 +194,23 @@ struct MainView: View {
             viewState.trigger(.onAppear)
         }
 
+    }
+
+    private func presentExportShareSheetIfNeeded() {
+        guard let fileURL = exportFileURL else { return }
+        MetricSharePresenter.present(fileURL: fileURL) { presented in
+            cleanupExportFile()
+            if !presented {
+                exportErrorMessage = AnyMetricsStrings.Metric.Export.failed
+            }
+        }
+    }
+
+    private func cleanupExportFile() {
+        if let url = exportFileURL {
+            try? FileManager.default.removeItem(at: url)
+            exportFileURL = nil
+        }
     }
 }
 

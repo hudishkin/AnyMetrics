@@ -3,16 +3,21 @@ import SwiftUI
 public struct MetricContentView: View {
 
     public var metric: Metric
+    public var matchWidgetMetrics: Bool
 
-    public init(metric: Metric) {
+    public init(metric: Metric, matchWidgetMetrics: Bool = false) {
         self.metric = metric
+        self.matchWidgetMetrics = matchWidgetMetrics
     }
 
     public var body: some View {
         MetricWidgetDesignView(
             metric: metric,
             palette: .widget(),
-            useGlassEffect: (metric.widgetDesign ?? .default) == .glassCircle && !Bundle.isInWidget()
+            useGlassEffect: metric.resolvedAppearance.small.background.usesGlassEffect
+                && !matchWidgetMetrics
+                && !Bundle.isInWidget(),
+            matchWidgetMetrics: matchWidgetMetrics
         )
     }
 }

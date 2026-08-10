@@ -1,8 +1,6 @@
 import Foundation
 import AnyMetricsShared
 
-// TODO: - Пока не используется
-
 enum MetricItemImportDataError: Error {
     case invalidVersion
 }
@@ -10,17 +8,18 @@ enum MetricItemImportDataError: Error {
 extension MetricItemImportData: Codable {
 
     enum CodingKeys: String, CodingKey {
-        case version, author, created, payload
+        case version, author, created, includes, payload
     }
-    
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         version = try container.decode(String.self, forKey: CodingKeys.version)
-        if Self.VERSION_JSON != version {
+        guard Self.supportedVersions.contains(version) else {
             throw MetricItemImportDataError.invalidVersion
         }
         author = try? container.decodeIfPresent(String.self, forKey: CodingKeys.author)
         created = try? container.decodeIfPresent(Date.self, forKey: CodingKeys.created)
+        includes = try? container.decodeIfPresent(MetricExportIncludes.self, forKey: CodingKeys.includes)
         payload = try container.decode(Metric.self, forKey: CodingKeys.payload)
     }
 
@@ -29,6 +28,7 @@ extension MetricItemImportData: Codable {
         try container.encode(version, forKey: .version)
         try container.encodeIfPresent(author, forKey: .author)
         try container.encodeIfPresent(created, forKey: .created)
+        try container.encodeIfPresent(includes, forKey: .includes)
         try container.encode(payload, forKey: .payload)
     }
 

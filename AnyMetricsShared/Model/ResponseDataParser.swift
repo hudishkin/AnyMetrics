@@ -14,17 +14,17 @@ public extension ParseRules {
             return .value(value)
         case .equal:
             guard let eqString = self.value else { return .status(false) }
-            if self.value == value ||
-                (!self.caseSensitive && (eqString.lowercased() == value.lowercased())) {
-                return .status(true)
-            }
+            let matches = caseSensitive
+                ? eqString == value
+                : eqString.lowercased() == value.lowercased()
+            return .status(matches)
         case .contains:
             guard let containsString = self.value, !containsString.isEmpty else { return .status(false) }
-            if (self.caseSensitive && value.localizedStandardContains(containsString)) || value.lowercased().contains(containsString.lowercased()) {
-                return .status(true)
-            }
+            let matches = caseSensitive
+                ? value.contains(containsString)
+                : value.lowercased().contains(containsString.lowercased())
+            return .status(matches)
         }
-        return .status(false)
     }
 }
 

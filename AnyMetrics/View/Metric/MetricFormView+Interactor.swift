@@ -36,6 +36,13 @@ extension MetricFormView {
                 state.resultWithError = metric.resultWithError
                 state.isEdited = true
                 state.widgetDesign = metric.widgetDesign ?? .default
+                state.widgetAppearance = metric.widgetAppearance ?? .preset(metric.widgetDesign ?? .default)
+                if state.widgetAppearance.isCustom || state.widgetAppearance.matchingWidgetDesign == nil {
+                    var custom = state.widgetAppearance
+                    custom.presetId = WidgetAppearancePreset.custom.rawValue
+                    state.widgetAppearance = custom
+                    state.savedCustomAppearance = custom
+                }
                 state.created = metric.created
                 state.author = metric.author
                 state.description = metric.description
@@ -102,7 +109,24 @@ extension MetricFormView {
                 }
             case .setWidgetDesign(let value):
                 Task { @MainActor in
-                    await updater { $0.widgetDesign = value }
+                    await updater {
+                        $0.widgetDesign = value
+                        $0.widgetAppearance = .preset(value)
+                    }
+                }
+            case .setWidgetAppearance(let value):
+                Task { @MainActor in
+                    await updater {
+                        $0.widgetAppearance = value
+                        if value.isCustom || value.matchingWidgetDesign == nil {
+                            var custom = value
+                            custom.presetId = WidgetAppearancePreset.custom.rawValue
+                            $0.widgetAppearance = custom
+                            $0.savedCustomAppearance = custom
+                        } else if let matched = value.matchingWidgetDesign {
+                            $0.widgetDesign = matched
+                        }
+                    }
                 }
             }
         }
@@ -137,6 +161,8 @@ extension MetricFormView {
                             $0.result = String(describing: status)
                         case .value(let parsedValue):
                             $0.result = parsedValue
+                        case .image:
+                            break
                         }
                         $0.hasParseRuleError = false
                         $0.parseErrorMessage = ""
@@ -160,6 +186,15 @@ extension TypeMetric {
         case .json: return AnyMetricsStrings.Addmetric.Field.typeMetricJson
         case .web: return AnyMetricsStrings.Addmetric.Field.typeMetricWeb
         case .checkStatus: return AnyMetricsStrings.Addmetric.Field.typeMetricCheckstatus
+        }
+    }
+}
+
+extension MetricResultKind {
+    var localizedString: String {
+        switch self {
+        case .content: return AnyMetricsStrings.Addmetric.Field.resultTypeContent
+        case .image: return AnyMetricsStrings.Addmetric.Field.resultTypeImage
         }
     }
 }

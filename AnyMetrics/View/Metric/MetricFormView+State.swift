@@ -74,6 +74,9 @@ extension MetricFormView {
         var hasParseRuleError: Bool = false
         var parseErrorMessage: String = ""
         var widgetDesign: WidgetDesign = .default
+        var widgetAppearance: WidgetAppearance = .preset(.default)
+        /// Last edited/imported custom look; kept when browsing presets so it can be reselected.
+        var savedCustomAppearance: WidgetAppearance?
         var created: Date = Date()
         var author: String?
         var description: String?
@@ -92,6 +95,7 @@ extension MetricFormView {
         case setFormatType(MetricFormatterType)
         case setMaxLengthValue(Int)
         case setWidgetDesign(WidgetDesign)
+        case setWidgetAppearance(WidgetAppearance)
     }
 
     enum VNotification: NotificationProtocol {
@@ -102,13 +106,28 @@ extension MetricFormView {
 extension Metric {
 
     static func canSave(from formState: MetricFormView.VState, requestState: RequestFormView.VState) -> Bool {
-        guard !formState.title.isEmpty,
-              requestState.requestUrl.requestURL != nil,
-              requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty
-        else {
+        guard requestState.requestUrl.requestURL != nil else {
             return false
         }
-        return true
+        let title = formState.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else {
+            return false
+        }
+        if requestState.resultKind == .image {
+            return true
+        }
+        return requestState.typeMetric == .checkStatus || !formState.parseRules.isEmpty
+    }
+
+    /// Suggested title from the request URL host (e.g. `api.example.com`).
+    static func defaultTitle(from requestUrl: String) -> String? {
+        guard var host = requestUrl.requestURL?.host else { return nil }
+        host = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !host.isEmpty else { return nil }
+        if host.hasPrefix("www.") {
+            return String(host.dropFirst(4))
+        }
+        return host
     }
 
     init?(formState: MetricFormView.VState, requestState: RequestFormView.VState) {
@@ -116,13 +135,34 @@ extension Metric {
               let url = requestState.requestUrl.requestURL
         else { return nil }
 
+        let title = formState.title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var imagePath: String?
+        if requestState.resultKind == .image, let data = requestState.responseImageData {
+            imagePath = try? MetricResultImageStore.shared.save(data: data, metricId: formState.id)
+        }
+
+        var appearance = formState.widgetAppearance
+        // Default image metrics to result-as-background, but never override a custom
+        // design (e.g. photo/URL fill or "use as background" turned off in the editor).
+        if requestState.resultKind == .image,
+           !appearance.isCustom,
+           !appearance.small.background.usesResultImageAsBackground,
+           !appearance.medium.background.usesResultImageAsBackground {
+            appearance.applyImageResultPresentation()
+        }
+
         self.init(
             id: formState.id,
-            title: formState.title,
+            title: title,
             measure: formState.measure,
             type: requestState.typeMetric,
-            result: formState.result,
-            resultWithError: formState.resultWithError,
+            resultKind: requestState.resultKind,
+            result: requestState.resultKind == .image ? "" : formState.result,
+            resultImagePath: imagePath,
+            resultWithError: requestState.resultKind == .image
+                ? imagePath == nil
+                : formState.resultWithError,
             request: RequestData(
                 headers: requestState.httpHeaders,
                 method: requestState.httpMethodType.rawValue,
@@ -145,7 +185,8 @@ extension Metric {
             description: formState.description,
             website: formState.website,
             interval: requestState.refreshInterval.interval,
-            widgetDesign: formState.widgetDesign
+            widgetDesign: appearance.matchingWidgetDesign ?? formState.widgetDesign,
+            widgetAppearance: appearance
         )
     }
 

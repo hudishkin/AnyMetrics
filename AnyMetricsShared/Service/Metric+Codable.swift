@@ -8,17 +8,20 @@ extension ParseRules: Codable {}
 
 public extension Metric {
     enum CodingKeys: String, CodingKey {
-        case id, title, measure, request, type, result, resultWithError, rules, created, updated, style, formatter, author, description, website, interval, widgetDesign
+        case id, title, measure, request, type, resultKind, result, resultImagePath, resultWithError, refreshFailed, rules, created, updated, style, formatter, author, description, website, interval, widgetDesign, widgetAppearance
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = (try? container.decodeIfPresent(UUID.self, forKey: CodingKeys.id)) ?? UUID()
+        resultKind = (try? container.decodeIfPresent(MetricResultKind.self, forKey: .resultKind)) ?? .content
         result = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.result)) ?? ""
+        resultImagePath = try? container.decodeIfPresent(String.self, forKey: .resultImagePath)
         resultWithError = (try? container.decodeIfPresent(Bool.self, forKey: CodingKeys.resultWithError)) ?? false
+        refreshFailed = (try? container.decodeIfPresent(Bool.self, forKey: .refreshFailed)) ?? false
         title = try container.decode(String.self, forKey: CodingKeys.title)
         measure = try container.decode(String.self, forKey: CodingKeys.measure)
-        request = try container.decode(RequestData.self, forKey: CodingKeys.request)
+        request = try container.decodeIfPresent(RequestData.self, forKey: CodingKeys.request)
         type = try container.decode(TypeMetric.self, forKey: CodingKeys.type)
         rules = try? container.decodeIfPresent(ParseRules.self, forKey: CodingKeys.rules)
         created = (try? container.decodeIfPresent(Date.self, forKey: CodingKeys.created)) ?? Date()
@@ -33,16 +36,20 @@ public extension Metric {
         } else if let legacyDesign = try? container.decodeIfPresent(String.self, forKey: CodingKeys.widgetDesign) {
             widgetDesign = WidgetDesign.migrated(fromLegacyRawValue: legacyDesign)
         }
+        widgetAppearance = try? container.decodeIfPresent(WidgetAppearance.self, forKey: .widgetAppearance)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
+        try container.encode(resultKind, forKey: .resultKind)
         try container.encode(result, forKey: .result)
+        try container.encodeIfPresent(resultImagePath, forKey: .resultImagePath)
         try container.encode(resultWithError, forKey: .resultWithError)
+        try container.encode(refreshFailed, forKey: .refreshFailed)
         try container.encode(measure, forKey: .measure)
-        try container.encode(request, forKey: .request)
+        try container.encodeIfPresent(request, forKey: .request)
         try container.encode(type, forKey: .type)
         try? container.encodeIfPresent(rules, forKey: .rules)
         try container.encode(created, forKey: .created)
@@ -52,7 +59,8 @@ public extension Metric {
         try? container.encodeIfPresent(description, forKey: .description)
         try? container.encodeIfPresent(website, forKey: .website)
         try? container.encodeIfPresent(interval, forKey: .interval)
-        try? container.encodeIfPresent(widgetDesign, forKey: .widgetDesign)
+        try container.encodeIfPresent(widgetDesign, forKey: .widgetDesign)
+        try container.encodeIfPresent(widgetAppearance, forKey: .widgetAppearance)
     }
 }
 
