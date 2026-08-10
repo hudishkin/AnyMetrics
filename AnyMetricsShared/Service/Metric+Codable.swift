@@ -8,7 +8,7 @@ extension ParseRules: Codable {}
 
 public extension Metric {
     enum CodingKeys: String, CodingKey {
-        case id, title, measure, request, type, resultKind, result, resultImagePath, resultWithError, rules, created, updated, style, formatter, author, description, website, interval, widgetDesign, widgetAppearance
+        case id, title, measure, request, type, resultKind, result, resultImagePath, resultWithError, refreshFailed, rules, created, updated, style, formatter, author, description, website, interval, widgetDesign, widgetAppearance
     }
 
     init(from decoder: Decoder) throws {
@@ -18,6 +18,7 @@ public extension Metric {
         result = (try? container.decodeIfPresent(String.self, forKey: CodingKeys.result)) ?? ""
         resultImagePath = try? container.decodeIfPresent(String.self, forKey: .resultImagePath)
         resultWithError = (try? container.decodeIfPresent(Bool.self, forKey: CodingKeys.resultWithError)) ?? false
+        refreshFailed = (try? container.decodeIfPresent(Bool.self, forKey: .refreshFailed)) ?? false
         title = try container.decode(String.self, forKey: CodingKeys.title)
         measure = try container.decode(String.self, forKey: CodingKeys.measure)
         request = try container.decodeIfPresent(RequestData.self, forKey: CodingKeys.request)
@@ -46,6 +47,7 @@ public extension Metric {
         try container.encode(result, forKey: .result)
         try container.encodeIfPresent(resultImagePath, forKey: .resultImagePath)
         try container.encode(resultWithError, forKey: .resultWithError)
+        try container.encode(refreshFailed, forKey: .refreshFailed)
         try container.encode(measure, forKey: .measure)
         try container.encodeIfPresent(request, forKey: .request)
         try container.encode(type, forKey: .type)

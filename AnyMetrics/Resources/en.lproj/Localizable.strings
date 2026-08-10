@@ -216,8 +216,10 @@
 "onboarding.page1.subtitle" = "API or website → widget. No code: just a link and the value you need.";
 "onboarding.page2.title" = "Ready-made\nor your own";
 "onboarding.page2.subtitle" = "Pick a metric from the gallery, or build your own in a few minutes.";
-"onboarding.page3.title" = "Always\nin sight";
-"onboarding.page3.subtitle" = "Widgets refresh on their own. Add your first metric and put it on the Home Screen.";
+"onboarding.page3.title" = "Custom\nwidgets";
+"onboarding.page3.subtitle" = "Pick a template or design your own — layout, colors, and background photo.";
+"onboarding.page4.title" = "Always\nin sight";
+"onboarding.page4.subtitle" = "Widgets refresh on their own. Add your first metric and put it on the Home Screen.";
 
 // MARK: - Starter Metric
 

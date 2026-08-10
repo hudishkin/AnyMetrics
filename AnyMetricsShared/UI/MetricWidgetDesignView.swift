@@ -59,22 +59,28 @@ public struct MetricWidgetDesignView: View {
     public let metric: Metric
     public let palette: MetricWidgetPalette
     public let useGlassEffect: Bool
+    public let matchWidgetMetrics: Bool
     public let updatedAt: Date?
 
     public init(
         metric: Metric,
         palette: MetricWidgetPalette,
         useGlassEffect: Bool = false,
+        matchWidgetMetrics: Bool = false,
         updatedAt: Date? = nil
     ) {
         self.metric = metric
         self.palette = palette
         self.useGlassEffect = useGlassEffect
+        self.matchWidgetMetrics = matchWidgetMetrics
         self.updatedAt = updatedAt ?? metric.updated
     }
 
     private var effectiveGlassEffect: Bool {
-        useGlassEffect && !Bundle.isInWidget()
+        // Preview with matchWidgetMetrics keeps glass off for HS fidelity of non-glass presets;
+        // real widgets (and app list cells) honor the flag.
+        if matchWidgetMetrics && !Bundle.isInWidget() { return false }
+        return useGlassEffect
     }
 
     public var body: some View {
@@ -84,6 +90,7 @@ public struct MetricWidgetDesignView: View {
             palette: palette,
             sizeKey: .small,
             useGlassEffect: effectiveGlassEffect,
+            matchWidgetMetrics: matchWidgetMetrics,
             updatedAt: updatedAt
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)

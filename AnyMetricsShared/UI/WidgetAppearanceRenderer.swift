@@ -7,6 +7,8 @@ public struct WidgetAppearanceRenderer: View {
     public let palette: MetricWidgetPalette
     public let sizeKey: WidgetSizeKey
     public let useGlassEffect: Bool
+    /// When true, use Home Screen widget metrics (fonts, radius, surface) even inside the app.
+    public let matchWidgetMetrics: Bool
     public let updatedAt: Date?
     public let isEditing: Bool
     public let selectedKind: WidgetElementKind?
@@ -27,6 +29,7 @@ public struct WidgetAppearanceRenderer: View {
         palette: MetricWidgetPalette,
         sizeKey: WidgetSizeKey,
         useGlassEffect: Bool = false,
+        matchWidgetMetrics: Bool = false,
         updatedAt: Date? = nil,
         isEditing: Bool = false,
         selectedKind: WidgetElementKind? = nil,
@@ -42,6 +45,7 @@ public struct WidgetAppearanceRenderer: View {
         self.palette = palette
         self.sizeKey = sizeKey
         self.useGlassEffect = useGlassEffect
+        self.matchWidgetMetrics = matchWidgetMetrics
         self.updatedAt = updatedAt ?? metric.updated
         self.isEditing = isEditing
         self.selectedKind = selectedKind
@@ -53,11 +57,22 @@ public struct WidgetAppearanceRenderer: View {
         self.onFittedSizes = onFittedSizes
     }
 
+    private var usesWidgetChrome: Bool {
+        matchWidgetMetrics || Bundle.isInWidget()
+    }
+
+    /// Result image as full-bleed background when the appearance flag is on.
+    /// Otherwise `fill` is used (photo / URL / solid / gradient), and the result stays in the value slot.
+    private var resultBackgroundImage: UIImage? {
+        guard appearance.background.usesResultImageAsBackground,
+              metric.resultKind == .image,
+              let path = metric.resultImagePath
+        else { return nil }
+        return MetricResultImageStore.shared.loadImage(relativePath: path)
+    }
+
     private var usesResultImageAsBackground: Bool {
-        appearance.background.usesResultImageAsBackground
-            && metric.resultKind == .image
-            && !metric.resultWithError
-            && metric.resultImagePath != nil
+        resultBackgroundImage != nil
     }
 
     private var allowsBackgroundPan: Bool {
@@ -102,15 +117,44 @@ public struct WidgetAppearanceRenderer: View {
                 onBackgroundDragEnd: { onBackgroundDragEnd?() }
             ))
         }
-        .modifier(AppearanceSurfaceModifier(shape: appearance.background.shape))
+        .modifier(AppearanceSurfaceModifier(
+            shape: appearance.background.shape,
+            useWidgetSurface: Bundle.isInWidget(),
+            clearContainerBackground: needsClearWidgetBackground
+        ))
+    }
+
+    /// Circle / glass / translucent solid need a clear container so Home Screen wallpaper shows through.
+    private var needsClearWidgetBackground: Bool {
+        guard Bundle.isInWidget() else { return false }
+        if appearance.background.shape == .circle { return true }
+        if appearance.background.usesGlassEffect { return true }
+        if case .solid(let color) = appearance.background.fill {
+            return colorSpecHasAlpha(color)
+        }
+        return false
+    }
+
+    private func colorSpecHasAlpha(_ spec: WidgetColorSpec) -> Bool {
+        switch spec {
+        case .hex(let hex):
+            var cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            if cleaned.hasPrefix("#") { cleaned.removeFirst() }
+            guard cleaned.count == 8, let value = UInt64(cleaned, radix: 16) else { return false }
+            return ((value & 0xFF000000) >> 24) < 255
+        case .adaptiveHex(let light, let dark):
+            return colorSpecHasAlpha(.hex(light)) || colorSpecHasAlpha(.hex(dark))
+        case .adaptive:
+            return false
+        }
     }
 
     /// Value slot with a result image: drag pans image content instead of moving the frame.
     private var resultImagePanKinds: Set<WidgetElementKind> {
         guard metric.resultKind == .image,
-              !metric.resultWithError,
-              metric.resultImagePath != nil,
-              !usesResultImageAsBackground
+              !usesResultImageAsBackground,
+              let path = metric.resultImagePath,
+              MetricResultImageStore.shared.loadImage(relativePath: path) != nil
         else { return [] }
         return [.value]
     }
@@ -151,7 +195,6 @@ public struct WidgetAppearanceRenderer: View {
         let editPad: CGFloat = isEditing ? 4 : 0
         let showsResultImage = element.kind == .value
             && metric.resultKind == .image
-            && !metric.resultWithError
             && !usesResultImageAsBackground
         let slotW = max(rect.width - editPad * 2, 8)
         let slotH = max(rect.height - editPad * 2, 8)
@@ -221,7 +264,7 @@ public struct WidgetAppearanceRenderer: View {
         let oy = CGFloat(offsetY) * slotHeight * 0.5
         return Image(uiImage: uiImage)
             .resizable()
-            .scaledToFit()
+            .scaledToFill()
             .scaleEffect(s)
             .offset(x: ox, y: oy)
             .frame(width: slotWidth, height: slotHeight)
@@ -258,7 +301,7 @@ public struct WidgetAppearanceRenderer: View {
 
     private func font(for element: WidgetElementSpec, text: String) -> Font {
         let scale = CGFloat(element.resolvedFontScale)
-        let inWidget = Bundle.isInWidget()
+        let inWidget = usesWidgetChrome
         switch element.kind {
         case .title:
             let base: CGFloat = inWidget ? (sizeKey == .medium ? 16 : 15) : (sizeKey == .medium ? 17 : 16)
@@ -275,7 +318,7 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private func valueFont(for text: String, scale: CGFloat) -> Font {
-        let inWidget = Bundle.isInWidget()
+        let inWidget = usesWidgetChrome
         let isStatus = isStatusMetric
         let base: CGFloat
         if sizeKey == .medium {
@@ -312,10 +355,18 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private var showsValueError: Bool {
-        metric.resultWithError && metric.result.isEmpty
+        // Empty content with failed refresh (not a status Bad).
+        metric.refreshFailed && metric.result.isEmpty && metric.resultKind != .image && !isStatusMetric
+    }
+
+    private var showsStaleUpdate: Bool {
+        MetricDisplayHelpers.showsStaleUpdate(for: metric)
     }
 
     private func resolveColor(_ spec: WidgetColorSpec, for kind: WidgetElementKind) -> Color {
+        if kind == .updated && showsStaleUpdate {
+            return palette.textErrorColor
+        }
         switch spec {
         case .hex(let hex):
             return Color(hex: hex) ?? palette.textColor
@@ -329,7 +380,7 @@ public struct WidgetAppearanceRenderer: View {
 
     private func adaptiveColor(_ token: WidgetAdaptiveColor, for kind: WidgetElementKind) -> Color {
         let onStatusGradient = appearance.background.fill == .statusGradient
-        let onDarkGradient = onStatusGradient && colorScheme == .dark && sizeKey == .medium
+        let onDarkGradient = onStatusGradient && colorScheme == .dark
 
         switch token {
         case .primary:
@@ -428,11 +479,12 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private var effectiveGlass: Bool {
-        useGlassEffect && appearance.background.usesGlassEffect && !Bundle.isInWidget()
+        // Glass needs a clear container (see needsClearWidgetBackground).
+        useGlassEffect && appearance.background.usesGlassEffect
     }
 
     private var cornerRadius: CGFloat {
-        if Bundle.isInWidget() {
+        if usesWidgetChrome {
             if #available(iOS 26.0, *) { return 20 }
             return 16
         }
@@ -442,9 +494,7 @@ public struct WidgetAppearanceRenderer: View {
 
     @ViewBuilder
     private var fillView: some View {
-        if usesResultImageAsBackground,
-           let path = metric.resultImagePath,
-           let uiImage = MetricResultImageStore.shared.loadImage(relativePath: path) {
+        if let uiImage = resultBackgroundImage {
             transformedBackgroundImage(uiImage)
         } else {
             switch appearance.background.fill {
@@ -625,14 +675,19 @@ enum WidgetStatusGradients {
     static func gradient(for metric: Metric, colorScheme: ColorScheme, sizeKey: WidgetSizeKey) -> LinearGradient {
         let isDark = colorScheme == .dark
         let hasStatus = metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
-        let showsError = metric.resultWithError && metric.result.isEmpty
+        // Empty + failed refresh (not status Bad); stale refresh keeps previous gradient.
+        let showsError = metric.refreshFailed && metric.result.isEmpty
+            && metric.resultKind != .image && !hasStatus
 
         if sizeKey == .small {
             if hasStatus {
-                return metric.resultWithError ? smallBad : smallGood
+                if metric.resultWithError {
+                    return isDark ? smallDarkBad : smallBad
+                }
+                return isDark ? smallDarkGood : smallGood
             }
-            if showsError { return smallBad }
-            return smallDefault
+            if showsError { return isDark ? smallDarkBad : smallBad }
+            return isDark ? smallDarkDefault : smallDefault
         }
 
         if hasStatus {
@@ -658,6 +713,16 @@ enum WidgetStatusGradients {
         endPoint: .bottomLeading
     )
 
+    private static let smallDarkDefault = LinearGradient(
+        colors: [
+            Color(red: 0.18, green: 0.12, blue: 0.10),
+            Color(red: 0.08, green: 0.22, blue: 0.14),
+            Color(red: 0.28, green: 0.10, blue: 0.08)
+        ],
+        startPoint: .topTrailing,
+        endPoint: .bottomLeading
+    )
+
     private static let smallGood = LinearGradient(
         colors: [
             Color(red: 0.873, green: 0.962, blue: 0.802),
@@ -667,10 +732,28 @@ enum WidgetStatusGradients {
         endPoint: .bottomLeading
     )
 
+    private static let smallDarkGood = LinearGradient(
+        colors: [
+            Color(red: 0.10, green: 0.22, blue: 0.12),
+            Color(red: 0.14, green: 0.28, blue: 0.16)
+        ],
+        startPoint: .topTrailing,
+        endPoint: .bottomLeading
+    )
+
     private static let smallBad = LinearGradient(
         colors: [
             Color(red: 1, green: 0.908, blue: 0.887),
             Color(red: 0.917, green: 0.716, blue: 0.672)
+        ],
+        startPoint: .topTrailing,
+        endPoint: .bottomLeading
+    )
+
+    private static let smallDarkBad = LinearGradient(
+        colors: [
+            Color(red: 0.24, green: 0.12, blue: 0.10),
+            Color(red: 0.32, green: 0.14, blue: 0.12)
         ],
         startPoint: .topTrailing,
         endPoint: .bottomLeading
@@ -735,11 +818,13 @@ enum WidgetStatusGradients {
 
 private struct AppearanceSurfaceModifier: ViewModifier {
     let shape: WidgetSurfaceShape
+    let useWidgetSurface: Bool
+    let clearContainerBackground: Bool
 
     @Environment(\.colorScheme) private var colorScheme
 
     func body(content: Content) -> some View {
-        if Bundle.isInWidget() {
+        if useWidgetSurface {
             widgetSurface(content)
         } else {
             appSurface(content)
@@ -748,8 +833,13 @@ private struct AppearanceSurfaceModifier: ViewModifier {
 
     @ViewBuilder
     private func widgetSurface(_ content: Content) -> some View {
+        // iOS 17+: `containerBackground` must live on the Widget entry root
+        // (`WidgetEntryView`); nesting it here is ignored and triggers
+        // "Please adopt containerBackground API" on the Home Screen.
         if #available(iOS 17.0, *) {
-            content.containerBackground(Color("WidgetBackground"), for: .widget)
+            content
+        } else if clearContainerBackground {
+            content
         } else {
             content.background(Color("WidgetBackground"))
         }

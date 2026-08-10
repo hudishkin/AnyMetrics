@@ -45,9 +45,15 @@ struct OnboardingView: View {
             ),
             Page(
                 id: 2,
-                image: AnyMetricsAsset.Assets.step3.swiftUIImage,
+                image: AnyMetricsAsset.Assets.step4.swiftUIImage,
                 title: AnyMetricsStrings.Onboarding.Page3.title,
                 subtitle: AnyMetricsStrings.Onboarding.Page3.subtitle
+            ),
+            Page(
+                id: 3,
+                image: AnyMetricsAsset.Assets.step3.swiftUIImage,
+                title: AnyMetricsStrings.Onboarding.Page4.title,
+                subtitle: AnyMetricsStrings.Onboarding.Page4.subtitle
             )
         ]
     }

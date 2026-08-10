@@ -19,6 +19,10 @@ extension MetricFormView {
         private var styleImportError: String?
         @State
         private var editorDraft: WidgetAppearance = .preset(.default)
+        @State
+        private var previewImagePath: String?
+        @State
+        private var dismissLockWorkItem: DispatchWorkItem?
         @EnvironmentObject
         var viewState: ViewState<MetricFormView.Interactor>
         @EnvironmentObject
@@ -143,9 +147,15 @@ extension MetricFormView {
             }
             .onAppear {
                 applyDefaultTitleIfNeeded()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    allowDismissed = false
-                }
+                refreshPreviewImagePath()
+                scheduleDismissLock()
+            }
+            .onDisappear {
+                dismissLockWorkItem?.cancel()
+                dismissLockWorkItem = nil
+            }
+            .onChange(of: requestViewState.state.responseImageData) { _ in
+                refreshPreviewImagePath()
             }
         }
 
@@ -174,6 +184,7 @@ extension MetricFormView {
                     }
                 }
             }
+            .navigationViewStyle(.stack)
         }
 
         private enum DesignCarouselItem: Hashable {
@@ -200,7 +211,6 @@ extension MetricFormView {
                         .tag(DesignCarouselItem.preset(design))
                     }
                 }
-                .id(viewState.state.savedCustomAppearance == nil ? "presets" : "with-custom")
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .frame(height: Constants.designCarouselHeight)
             }
@@ -211,7 +221,12 @@ extension MetricFormView {
 
         private func designCarouselPage(metric: Metric) -> some View {
             VStack(spacing: 12) {
-                MetricContentView(metric: metric)
+                MetricWidgetDesignView(
+                    metric: metric,
+                    palette: .widget(),
+                    useGlassEffect: false,
+                    matchWidgetMetrics: true
+                )
                     .frame(
                         width: Constants.metricViewSize,
                         height: Constants.metricViewSize,
@@ -253,13 +268,11 @@ extension MetricFormView {
             let requestState = requestViewState.state
             let resolvedAppearance = appearance ?? formState.widgetAppearance
 
-            var imagePath: String?
             var resultWithError = formState.resultWithError
             var result = formState.result.isEmpty ? previewPlaceholderValue : formState.result
+            var imagePath: String?
             if requestState.resultKind == .image {
-                if let data = requestState.responseImageData {
-                    imagePath = try? MetricResultImageStore.shared.save(data: data, metricId: formState.id)
-                }
+                imagePath = previewImagePath
                 result = ""
                 resultWithError = imagePath == nil
             }
@@ -292,6 +305,28 @@ extension MetricFormView {
             default:
                 return "1,234"
             }
+        }
+
+        private func refreshPreviewImagePath() {
+            guard requestViewState.state.resultKind == .image,
+                  let data = requestViewState.state.responseImageData
+            else {
+                previewImagePath = nil
+                return
+            }
+            previewImagePath = try? MetricResultImageStore.shared.save(
+                data: data,
+                metricId: viewState.state.id
+            )
+        }
+
+        private func scheduleDismissLock() {
+            dismissLockWorkItem?.cancel()
+            let work = DispatchWorkItem {
+                allowDismissed = false
+            }
+            dismissLockWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: work)
         }
 
         private func handleStyleImport(_ result: Result<[URL], Error>) {

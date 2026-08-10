@@ -216,8 +216,10 @@
 "onboarding.page1.subtitle" = "API или сайт → виджет. Без кода: ссылка и нужное значение.";
 "onboarding.page2.title" = "Готовое\nили своё";
 "onboarding.page2.subtitle" = "Возьмите метрику из галереи или соберите свою за пару минут.";
-"onboarding.page3.title" = "Всегда\nна виду";
-"onboarding.page3.subtitle" = "Виджет обновляется сам. Добавьте первую метрику и вынесите на домашний экран.";
+"onboarding.page3.title" = "Кастомные\nвиджеты";
+"onboarding.page3.subtitle" = "Выберите шаблон или оформите сами — расположение, цвета и фото на фоне.";
+"onboarding.page4.title" = "Всегда\nна виду";
+"onboarding.page4.subtitle" = "Виджет обновляется сам. Добавьте первую метрику и вынесите на домашний экран.";
 
 // MARK: - Starter Metric
 

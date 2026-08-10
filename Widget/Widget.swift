@@ -13,52 +13,65 @@ import AnyMetricsShared
 
 struct Provider: IntentTimelineProvider {
 
+    private static var neutralPlaceholder: Metric {
+        Metric(
+            id: UUID(),
+            title: "",
+            measure: "",
+            type: .json,
+            result: "",
+            resultWithError: false
+        )
+    }
+
+    private func metric(for configuration: ConfigurationIntent, store: MetricStore) -> Metric? {
+        guard let id = configuration.dataSourceType?.identifier,
+              let uuid = UUID(uuidString: id)
+        else { return nil }
+        return store.metrics[uuid]
+    }
+
     func placeholder(in context: Context) -> AMEntry {
-        AMEntry(
-            date: Date(),
-            configuration: ConfigurationIntent(),
-            metric: MetricStore().metrics.values.first ?? Mocks.metricEmpty)
+        // No intent here — never flash an unrelated store metric.
+        AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Self.neutralPlaceholder)
     }
 
     func getSnapshot(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (AMEntry) -> ()) {
         let store = MetricStore()
-        var metric = store.metrics.values.first(where: { $0.id.uuidString == configuration.dataSourceType?.identifier })
-            ?? store.metrics.values.first
-            ?? Mocks.metricEmpty
-        try? metric.persistWidgetBackgroundImages()
-        completion(AMEntry(date: Date(), configuration: configuration, metric: metric))
+        let selected = metric(for: configuration, store: store)
+        // If a metric was selected but deleted, don't substitute another user's metric.
+        var resolved = selected ?? (configuration.dataSourceType == nil ? store.metrics.values.first : nil) ?? Self.neutralPlaceholder
+        Metric.materializeWidgetBackgrounds(resolved) { materialized in
+            completion(AMEntry(date: Date(), configuration: configuration, metric: materialized))
+        }
     }
 
     func getTimeline(for configuration: ConfigurationIntent, in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [AMEntry] = []
-
         let store = MetricStore()
-        if
-            let id = configuration.dataSourceType?.identifier,
-                let uuid = UUID(uuidString: id),
-                var metric = store.metrics[uuid] {
+        guard let metric = metric(for: configuration, store: store) else {
+            let entry = AMEntry(date: Date(), configuration: configuration, metric: Self.neutralPlaceholder)
+            completion(Timeline(entries: [entry], policy: .atEnd))
+            return
+        }
 
-            // Convert any leftover import base64 into App Group files before render/fetch.
-            try? metric.persistWidgetBackgroundImages()
-            store.addMetric(metric: metric)
+        Metric.materializeWidgetBackgrounds(metric) { materialized in
+            store.addMetric(metric: materialized)
 
-            Fetcher.updateMetric(metric: metric) { newMetric in
-                store.addMetric(metric: newMetric)
-                let currentDate = Date()
-                entries.append(AMEntry(date: currentDate, configuration: configuration, metric: newMetric))
+            Fetcher.updateMetric(metric: materialized) { newMetric in
+                Metric.materializeWidgetBackgrounds(newMetric) { resolved in
+                    store.addMetric(metric: resolved)
+                    let currentDate = Date()
+                    let entry = AMEntry(date: currentDate, configuration: configuration, metric: resolved)
 
-                let policy: TimelineReloadPolicy
-                if let interval = newMetric.interval, interval > 0 {
-                    policy = .after(currentDate.addingTimeInterval(TimeInterval(interval)))
-                } else {
-                    policy = .atEnd
+                    let policy: TimelineReloadPolicy
+                    if let interval = resolved.interval, interval > 0 {
+                        policy = .after(currentDate.addingTimeInterval(TimeInterval(interval)))
+                    } else {
+                        policy = .atEnd
+                    }
+                    completion(Timeline(entries: [entry], policy: policy))
                 }
-                let timeline = Timeline(entries: entries, policy: policy)
-                completion(timeline)
             }
-        } else {
-            let timeline = Timeline(entries: entries, policy: .atEnd)
-            completion(timeline)
         }
     }
 }
@@ -80,11 +93,11 @@ struct WidgetEntryView: View {
             metric: entry.metric,
             palette: .widget(),
             layout: widgetLayout,
-            useGlassEffect: false,
-            updatedAt: entry.date
+            useGlassEffect: glassEffect,
+            updatedAt: entry.metric.updated
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .widgetContainerBackground(for: family)
+        .widgetContainerBackground()
     }
 
     private var widgetLayout: MetricWidgetLayout {
@@ -92,6 +105,18 @@ struct WidgetEntryView: View {
             return MetricWidgetLayout.from(family: family)
         }
         return family == .systemMedium ? .medium : .small
+    }
+
+    private var glassEffect: Bool {
+        let appearance = entry.metric.resolvedAppearance
+        switch widgetLayout {
+        case .medium:
+            return appearance.medium.background.usesGlassEffect
+        case .small:
+            return appearance.small.background.usesGlassEffect
+        case .lockCircular, .lockRectangular, .lockInline:
+            return false
+        }
     }
 }
 
@@ -127,8 +152,16 @@ struct AMWidget: Widget {
 }
 
 private extension View {
-    func widgetContainerBackground(for family: WidgetFamily) -> some View {
-        self
+    /// Required on iOS 17+; without it Home Screen shows "Please adopt containerBackground API".
+    @ViewBuilder
+    func widgetContainerBackground() -> some View {
+        if #available(iOSApplicationExtension 17.0, iOS 17.0, *) {
+            // Clear: designed fills (gradient / photo / glass) draw in content;
+            // lock-screen accessories also expect a removable clear container.
+            containerBackground(.clear, for: .widget)
+        } else {
+            self
+        }
     }
 }
 

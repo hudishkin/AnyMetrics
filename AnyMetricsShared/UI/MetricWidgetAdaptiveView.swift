@@ -82,7 +82,8 @@ public struct MetricWidgetAdaptiveView: View {
                 appearance: metric.resolvedAppearance.medium,
                 palette: palette,
                 sizeKey: .medium,
-                useGlassEffect: false,
+                useGlassEffect: useGlassEffect,
+                matchWidgetMetrics: true,
                 updatedAt: updatedAt
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -109,55 +110,102 @@ public struct MetricWidgetAdaptiveView: View {
         metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
     }
 
+    private var resultImage: UIImage? {
+        guard metric.resultKind == .image,
+              let path = metric.resultImagePath
+        else { return nil }
+        return MetricResultImageStore.shared.loadImage(relativePath: path)
+    }
+
     private var valueColor: Color {
         if isStatusMetric {
             return metric.resultWithError ? palette.textErrorColor : palette.textSuccessColor
         }
-        if metric.resultWithError && metric.result.isEmpty {
+        if metric.refreshFailed && metric.result.isEmpty {
+            return palette.textErrorColor
+        }
+        if metric.resultKind == .image, resultImage == nil {
             return palette.textErrorColor
         }
         return palette.textColor
     }
 
     private var lockCircularLayout: some View {
-        Text(valueText)
-            .font(.system(size: 13, weight: .semibold, design: isStatusMetric ? .rounded : .monospaced))
-            .foregroundColor(valueColor)
-            .minimumScaleFactor(0.5)
-            .lineLimit(1)
-            .accentableOnLockScreen()
-    }
-
-    private var lockRectangularLayout: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            if !metric.title.isEmpty {
-                Text(metric.title)
-                    .font(.caption)
-                    .foregroundColor(palette.secondaryText)
-                    .lineLimit(1)
-            }
-            Text(valueText)
-                .font(.system(size: 17, weight: .semibold, design: isStatusMetric ? .rounded : .monospaced))
-                .foregroundColor(valueColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .accentableOnLockScreen()
-            if !metric.measure.isEmpty {
-                Text(metric.measure)
-                    .font(.caption2)
-                    .foregroundColor(palette.secondaryText)
+        Group {
+            if let image = resultImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(Circle())
+            } else {
+                Text(valueText)
+                    .font(.system(size: 13, weight: .semibold, design: isStatusMetric ? .rounded : .monospaced))
+                    .foregroundColor(valueColor)
+                    .minimumScaleFactor(0.5)
                     .lineLimit(1)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .accentableOnLockScreen()
+    }
+
+    private var lockRectangularLayout: some View {
+        HStack(spacing: 8) {
+            if let image = resultImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if !metric.title.isEmpty {
+                    Text(metric.title)
+                        .font(.caption)
+                        .foregroundColor(palette.secondaryText)
+                        .lineLimit(1)
+                }
+                if resultImage == nil {
+                    Text(valueText)
+                        .font(.system(size: 17, weight: .semibold, design: isStatusMetric ? .rounded : .monospaced))
+                        .foregroundColor(valueColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .accentableOnLockScreen()
+                } else if MetricDisplayHelpers.showsStaleUpdate(for: metric) {
+                    Text(palette.errorLabel)
+                        .font(.caption2)
+                        .foregroundColor(palette.textErrorColor)
+                        .lineLimit(1)
+                }
+                if !metric.measure.isEmpty {
+                    Text(metric.measure)
+                        .font(.caption2)
+                        .foregroundColor(palette.secondaryText)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
     }
 
     private var lockInlineLayout: some View {
-        Text(metric.title.isEmpty ? valueText : "\(metric.title): \(valueText)")
-            .foregroundColor(valueColor)
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-            .accentableOnLockScreen()
+        Group {
+            if metric.resultKind == .image {
+                if resultImage != nil {
+                    let label = metric.title.isEmpty ? "IMG" : "\(metric.title): IMG"
+                    Text(label)
+                } else {
+                    Text(metric.title.isEmpty ? valueText : "\(metric.title): \(valueText)")
+                        .foregroundColor(valueColor)
+                }
+            } else {
+                Text(metric.title.isEmpty ? valueText : "\(metric.title): \(valueText)")
+                    .foregroundColor(valueColor)
+            }
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .accentableOnLockScreen()
     }
 }
 

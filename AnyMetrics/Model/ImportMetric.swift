@@ -45,6 +45,7 @@ struct MetricItemImportData {
         sanitized.result = ""
         sanitized.resultImagePath = nil
         sanitized.resultWithError = false
+        sanitized.refreshFailed = false
 
         if !options.includeRequest {
             sanitized.request = nil

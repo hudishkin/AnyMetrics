@@ -140,8 +140,10 @@ extension MainView {
                     switch result {
                     case .result(let value):
                         m.apply(parseResult: value)
-                    case .error, .none:
-                        m.resultWithError = true
+                    case .error:
+                        m.markRefreshFailed()
+                    case .none:
+                        break
                     }
                     updatedMetrics[m.id] = m
                     group.leave()
@@ -159,8 +161,10 @@ extension MainView {
                 switch result {
                 case .result(let value):
                     metric.apply(parseResult: value)
-                case .error, .none:
-                    metric.resultWithError = true
+                case .error:
+                    metric.markRefreshFailed()
+                case .none:
+                    break
                 }
 
                 DispatchQueue.main.async {

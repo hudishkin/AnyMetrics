@@ -234,7 +234,7 @@ struct MetricExportOptionsView: View {
             switch storeError {
             case .imageUnavailableForExport:
                 return AnyMetricsStrings.Metric.Export.imageUnavailable
-            case .containerUnavailable, .encodingFailed, .invalidBase64:
+            case .containerUnavailable, .encodingFailed, .invalidBase64, .invalidURL, .downloadFailed:
                 break
             }
         }

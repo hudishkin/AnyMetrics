@@ -40,6 +40,13 @@ public struct WidgetAppearance: Hashable, Sendable, Codable {
         presetId = WidgetAppearancePreset.custom.rawValue
     }
 
+    /// Full-bleed result image; text overlays off until the user re-enables them.
+    public mutating func applyImageResultPresentation() {
+        small.applyImageResultPresentation()
+        medium.applyImageResultPresentation()
+        presetId = WidgetAppearancePreset.custom.rawValue
+    }
+
     public var isCustom: Bool {
         presetId == WidgetAppearancePreset.custom.rawValue
     }
@@ -80,6 +87,25 @@ public struct WidgetSizeAppearance: Hashable, Sendable, Codable {
         presetMarkedCustom()
     }
 
+    /// Result image fills the widget; title / measure / updated stay hidden until toggled on.
+    public mutating func applyImageResultPresentation() {
+        background.usesResultImageAsBackground = true
+        background.imageContentMode = .fill
+        background.imageScale = WidgetBackgroundSpec.defaultImageScale
+        background.imageOffsetX = 0
+        background.imageOffsetY = 0
+        for kind: WidgetElementKind in [.title, .measure, .updated] {
+            updateElement(kind: kind) { $0.isVisible = false }
+        }
+    }
+
+    public mutating func clearImageResultPresentation() {
+        background.usesResultImageAsBackground = false
+        for kind in WidgetElementKind.allCases {
+            updateElement(kind: kind) { $0.isVisible = true }
+        }
+    }
+
     private mutating func presetMarkedCustom() {
         // no-op at size level; root marks custom
     }
@@ -98,7 +124,8 @@ public struct WidgetBackgroundSpec: Hashable, Sendable, Codable {
     /// App-only glass overlay (circle designs).
     public var usesGlassEffect: Bool
     /// When `true` and the metric has an image result, that result is drawn as the background
-    /// instead of `fill` (manual color/photo/URL picks are ignored).
+    /// instead of `fill`. Outside the editor, image results always fill the widget; this flag
+    /// also gates text overlays (`isVisible`) and editor value-slot mode when `false`.
     public var usesResultImageAsBackground: Bool
     /// Extra zoom for background image (result or `fill == .image`).
     public var imageScale: Double

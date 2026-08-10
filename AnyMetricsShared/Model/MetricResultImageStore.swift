@@ -7,7 +7,6 @@ public final class MetricResultImageStore: @unchecked Sendable {
 
     public static let directoryName = "metric-results"
     public static let maxPixelDimension: CGFloat = 800
-    public static let jpegQuality: CGFloat = 0.72
 
     private let fileManager: FileManager
     private let groupIdentifier: String
@@ -56,16 +55,16 @@ public final class MetricResultImageStore: @unchecked Sendable {
 
     @discardableResult
     public func save(image: UIImage, metricId: UUID) throws -> String {
-        let prepared = WidgetBackgroundStore.downscaled(image, maxDimension: Self.maxPixelDimension)
-        guard let jpeg = prepared.jpegData(compressionQuality: Self.jpegQuality) else {
-            throw MetricResultImageStoreError.encodingFailed
-        }
+        let encoded = try WidgetBackgroundStore.encodedImage(image)
         guard let directory = directoryURL else {
             throw MetricResultImageStoreError.containerUnavailable
         }
-        let relative = "\(metricId.uuidString).jpg"
+        // Drop stale sibling extensions.
+        delete(relativePath: "\(metricId.uuidString).jpg")
+        delete(relativePath: "\(metricId.uuidString).png")
+        let relative = "\(metricId.uuidString).\(encoded.fileExtension)"
         let url = directory.appendingPathComponent(relative)
-        try jpeg.write(to: url, options: .atomic)
+        try encoded.data.write(to: url, options: .atomic)
         return relative
     }
 

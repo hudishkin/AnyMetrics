@@ -142,6 +142,16 @@ extension Metric {
             imagePath = try? MetricResultImageStore.shared.save(data: data, metricId: formState.id)
         }
 
+        var appearance = formState.widgetAppearance
+        // Default image metrics to result-as-background, but never override a custom
+        // design (e.g. photo/URL fill or "use as background" turned off in the editor).
+        if requestState.resultKind == .image,
+           !appearance.isCustom,
+           !appearance.small.background.usesResultImageAsBackground,
+           !appearance.medium.background.usesResultImageAsBackground {
+            appearance.applyImageResultPresentation()
+        }
+
         self.init(
             id: formState.id,
             title: title,
@@ -175,8 +185,8 @@ extension Metric {
             description: formState.description,
             website: formState.website,
             interval: requestState.refreshInterval.interval,
-            widgetDesign: formState.widgetAppearance.matchingWidgetDesign ?? formState.widgetDesign,
-            widgetAppearance: formState.widgetAppearance
+            widgetDesign: appearance.matchingWidgetDesign ?? formState.widgetDesign,
+            widgetAppearance: appearance
         )
     }
 

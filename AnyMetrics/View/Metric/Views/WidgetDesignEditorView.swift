@@ -52,6 +52,9 @@ struct WidgetDesignEditorView: View {
     @State private var solidColor = Color.blue.opacity(0.35)
     @State private var elementTextColor = Color.primary
     @State private var isSyncingControls = false
+    @State private var backgroundURLTask: URLSessionDataTask?
+    @State private var backgroundURLRequestID = UUID()
+    @State private var backgroundApplyError: String?
 
     private var palette: MetricWidgetPalette { .widget() }
 
@@ -70,14 +73,19 @@ struct WidgetDesignEditorView: View {
         metric.resultKind == .image
     }
 
+    private var canUseResultImageAsBackground: Bool {
+        guard isImageResult, let path = metric.resultImagePath else { return false }
+        return MetricResultImageStore.shared.loadImage(relativePath: path) != nil
+    }
+
     private var usesResultImageAsBackground: Bool {
-        sizeAppearance.background.usesResultImageAsBackground && isImageResult
+        sizeAppearance.background.usesResultImageAsBackground && canUseResultImageAsBackground
     }
 
     private var selectedShowsResultImage: Bool {
         selectedKind == .value
             && isImageResult
-            && !metric.resultWithError
+            && metric.resultImagePath != nil
             && !usesResultImageAsBackground
     }
 
@@ -88,7 +96,7 @@ struct WidgetDesignEditorView: View {
         case .system: return .system
         case .solid: return .solid
         case .image: return .image
-        case .gradient: return .statusGradient
+        case .gradient: return .customGradient
         }
     }
 
@@ -155,6 +163,10 @@ struct WidgetDesignEditorView: View {
                 )
         }
         .onAppear(perform: syncControlsFromAppearance)
+        .onDisappear {
+            backgroundURLTask?.cancel()
+            backgroundURLTask = nil
+        }
         .onChange(of: sizeKey) { _ in
             dragOrigins = [:]
             imagePanOrigins = [:]
@@ -170,6 +182,17 @@ struct WidgetDesignEditorView: View {
                 guard let image else { return }
                 applyBackgroundImage(image)
             }
+        }
+        .alert(
+            AnyMetricsStrings.Common.error,
+            isPresented: Binding(
+                get: { backgroundApplyError != nil },
+                set: { if !$0 { backgroundApplyError = nil } }
+            )
+        ) {
+            Button(AnyMetricsStrings.Common.ok, role: .cancel) {}
+        } message: {
+            Text(backgroundApplyError ?? "")
         }
     }
 
@@ -219,7 +242,8 @@ struct WidgetDesignEditorView: View {
             appearance: sizeAppearance,
             palette: palette,
             sizeKey: sizeKey,
-            useGlassEffect: sizeAppearance.background.usesGlassEffect,
+            useGlassEffect: false,
+            matchWidgetMetrics: true,
             updatedAt: metric.updated ?? Date().addingTimeInterval(-120),
             isEditing: true,
             selectedKind: selectedKind,
@@ -258,30 +282,30 @@ struct WidgetDesignEditorView: View {
     private var pinchToZoom: some Gesture {
         MagnificationGesture()
             .onChanged { magnification in
-                if usesResultImageAsBackground || (selectedKind == nil && showsBackgroundImageControls) {
-                    if pinchBaseScale == nil {
-                        pinchBaseScale = sizeAppearance.background.imageScale
+                if let selectedKind, !(usesResultImageAsBackground && selectedKind == .value) {
+                    if shouldZoomResultImage(kind: selectedKind) {
+                        if pinchBaseScale == nil {
+                            pinchBaseScale = sizeAppearance.element(kind: selectedKind)?.imageScale
+                                ?? WidgetElementSpec.defaultImageScale
+                        }
+                        let next = (pinchBaseScale ?? WidgetElementSpec.defaultImageScale) * Double(magnification)
+                        updateImageScale(kind: selectedKind, next)
+                    } else {
+                        if pinchBaseScale == nil {
+                            pinchBaseScale = sizeAppearance.element(kind: selectedKind)?.fontScale
+                                ?? WidgetElementSpec.defaultFontScale
+                        }
+                        let next = (pinchBaseScale ?? WidgetElementSpec.defaultFontScale) * Double(magnification)
+                        updateFontScale(kind: selectedKind, next)
                     }
-                    let next = (pinchBaseScale ?? WidgetBackgroundSpec.defaultImageScale) * Double(magnification)
-                    updateBackgroundImageScale(next)
                     return
                 }
-                guard let selectedKind else { return }
-                if shouldZoomResultImage(kind: selectedKind) {
-                    if pinchBaseScale == nil {
-                        pinchBaseScale = sizeAppearance.element(kind: selectedKind)?.imageScale
-                            ?? WidgetElementSpec.defaultImageScale
-                    }
-                    let next = (pinchBaseScale ?? WidgetElementSpec.defaultImageScale) * Double(magnification)
-                    updateImageScale(kind: selectedKind, next)
-                } else {
-                    if pinchBaseScale == nil {
-                        pinchBaseScale = sizeAppearance.element(kind: selectedKind)?.fontScale
-                            ?? WidgetElementSpec.defaultFontScale
-                    }
-                    let next = (pinchBaseScale ?? WidgetElementSpec.defaultFontScale) * Double(magnification)
-                    updateFontScale(kind: selectedKind, next)
+                guard showsBackgroundImageControls else { return }
+                if pinchBaseScale == nil {
+                    pinchBaseScale = sizeAppearance.background.imageScale
                 }
+                let next = (pinchBaseScale ?? WidgetBackgroundSpec.defaultImageScale) * Double(magnification)
+                updateBackgroundImageScale(next)
             }
             .onEnded { _ in
                 pinchBaseScale = nil
@@ -291,7 +315,7 @@ struct WidgetDesignEditorView: View {
     private func shouldZoomResultImage(kind: WidgetElementKind) -> Bool {
         kind == .value
             && isImageResult
-            && !metric.resultWithError
+            && metric.resultImagePath != nil
             && !usesResultImageAsBackground
     }
 
@@ -373,15 +397,26 @@ struct WidgetDesignEditorView: View {
                     .foregroundColor(Constants.textColor)
             }
             .tint(Color.accentColor)
+            .disabled(!canUseResultImageAsBackground && !sizeAppearance.background.usesResultImageAsBackground)
         }
 
         if !usesResultImageAsBackground {
-            backgroundRow(
-                title: L10n.bgStatusGradient,
-                kind: .statusGradient,
-                systemImage: "circle.lefthalf.filled"
-            ) {
-                setFill(.statusGradient)
+            if currentBackgroundKind == .customGradient {
+                backgroundRow(
+                    title: L10n.bgStatusGradient,
+                    kind: .customGradient,
+                    systemImage: "circle.lefthalf.filled"
+                ) {
+                    // Keep imported custom gradient; don't replace with status gradient.
+                }
+            } else {
+                backgroundRow(
+                    title: L10n.bgStatusGradient,
+                    kind: .statusGradient,
+                    systemImage: "circle.lefthalf.filled"
+                ) {
+                    setFill(.statusGradient)
+                }
             }
 
             backgroundRow(
@@ -463,12 +498,10 @@ struct WidgetDesignEditorView: View {
             get: { sizeAppearance.background.usesResultImageAsBackground },
             set: { enabled in
                 mutateSize { size in
-                    size.background.usesResultImageAsBackground = enabled
                     if enabled {
-                        size.background.imageContentMode = .fill
-                        size.background.imageScale = WidgetBackgroundSpec.defaultImageScale
-                        size.background.imageOffsetX = 0
-                        size.background.imageOffsetY = 0
+                        size.applyImageResultPresentation()
+                    } else {
+                        size.clearImageResultPresentation()
                     }
                 }
                 if enabled {
@@ -721,6 +754,8 @@ struct WidgetDesignEditorView: View {
         if case .image(.url(let url)) = sizeAppearance.background.fill {
             backgroundURLText = url
             showURLField = true
+            // Legacy persisted URL fills: materialize to App Group file.
+            applyBackgroundURL(url)
         }
         if let selectedKind,
            let spec = sizeAppearance.element(kind: selectedKind)?.color {
@@ -825,10 +860,15 @@ struct WidgetDesignEditorView: View {
         var copy = appearance
         var source = copy.appearance(for: sizeKey)
         let targetKey: WidgetSizeKey = sizeKey == .small ? .medium : .small
-        if case .image(.file(let path)) = source.background.fill,
-           let image = WidgetBackgroundStore.shared.loadImage(relativePath: path),
-           let newPath = try? WidgetBackgroundStore.shared.saveImage(image, metricId: metricId, size: targetKey) {
-            source.background.fill = .image(.file(newPath))
+        if case .image(.file(let path)) = source.background.fill {
+            if let image = WidgetBackgroundStore.shared.loadImage(relativePath: path),
+               let newPath = try? WidgetBackgroundStore.shared.saveImage(image, metricId: metricId, size: targetKey) {
+                source.background.fill = .image(.file(newPath))
+            } else {
+                // Avoid sharing one file across sizes when copy fails.
+                source.background.fill = .system
+                backgroundApplyError = L10n.importStyleError
+            }
         }
         copy.setAppearance(source, for: targetKey)
         appearance = copy
@@ -836,6 +876,7 @@ struct WidgetDesignEditorView: View {
 
     private func applyBackgroundImage(_ image: UIImage) {
         guard let path = try? WidgetBackgroundStore.shared.saveImage(image, metricId: metricId, size: sizeKey) else {
+            backgroundApplyError = L10n.importStyleError
             return
         }
         mutateSize { size in
@@ -850,27 +891,36 @@ struct WidgetDesignEditorView: View {
 
     private func applyBackgroundURL(_ raw: String) {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: trimmed), url.scheme == "http" || url.scheme == "https" else {
-            mutateSize {
-                $0.background.usesResultImageAsBackground = false
-                $0.background.fill = .image(.url(trimmed))
-            }
+        guard let url = URL(string: trimmed),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https"
+        else {
+            backgroundApplyError = L10n.importStyleError
             return
         }
-        mutateSize {
-            $0.background.usesResultImageAsBackground = false
-            $0.background.fill = .image(.url(trimmed))
-        }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data, let image = UIImage(data: data) else { return }
+        backgroundURLTask?.cancel()
+        let requestID = UUID()
+        backgroundURLRequestID = requestID
+        let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+            guard let data, let image = UIImage(data: data) else {
+                DispatchQueue.main.async {
+                    guard backgroundURLRequestID == requestID else { return }
+                    backgroundApplyError = L10n.importStyleError
+                }
+                return
+            }
             DispatchQueue.main.async {
+                guard backgroundURLRequestID == requestID else { return }
                 applyBackgroundImage(image)
             }
-        }.resume()
+        }
+        backgroundURLTask = task
+        task.resume()
     }
 
     private enum BackgroundKind {
         case statusGradient
+        case customGradient
         case system
         case solid
         case image
@@ -926,13 +976,32 @@ private extension Color {
     var hexString: String {
         let ui = UIColor(self)
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        ui.getRed(&r, green: &g, blue: &b, alpha: &a)
+        if ui.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            return String(
+                format: "%02X%02X%02X%02X",
+                Int(round(a * 255)),
+                Int(round(r * 255)),
+                Int(round(g * 255)),
+                Int(round(b * 255))
+            )
+        }
+        guard let srgb = ui.cgColor.converted(
+            to: CGColorSpace(name: CGColorSpace.sRGB)!,
+            intent: .defaultIntent,
+            options: nil
+        ), let components = srgb.components, components.count >= 3 else {
+            return "FF000000"
+        }
+        let rr = components[0]
+        let gg = components[1]
+        let bb = components[2]
+        let aa = components.count > 3 ? components[3] : 1
         return String(
             format: "%02X%02X%02X%02X",
-            Int(round(a * 255)),
-            Int(round(r * 255)),
-            Int(round(g * 255)),
-            Int(round(b * 255))
+            Int(round(aa * 255)),
+            Int(round(rr * 255)),
+            Int(round(gg * 255)),
+            Int(round(bb * 255))
         )
     }
 

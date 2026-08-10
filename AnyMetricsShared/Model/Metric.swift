@@ -95,8 +95,11 @@ public struct Metric: Hashable, Identifiable, Sendable {
     /// Relative path in App Group for image result (`resultKind == .image`).
     public var resultImagePath: String?
 
-    /// Indicate if request finished with error
+    /// For status/rules: last evaluated Bad/Good. For content without rules: legacy error flag.
     public var resultWithError: Bool = false
+
+    /// Last refresh/transport/parse failed; previous `result` / status / image are kept.
+    public var refreshFailed: Bool = false
 
     public var request: RequestData?
     public var formatter: MetricValueFormatter?
@@ -144,6 +147,7 @@ public struct Metric: Hashable, Identifiable, Sendable {
         result: String = "",
         resultImagePath: String? = nil,
         resultWithError: Bool = false,
+        refreshFailed: Bool = false,
         request: RequestData? = nil,
         formatter: MetricValueFormatter? = nil,
         rules: ParseRules? = nil,
@@ -164,6 +168,7 @@ public struct Metric: Hashable, Identifiable, Sendable {
         self.result = result
         self.resultImagePath = resultImagePath
         self.resultWithError = resultWithError
+        self.refreshFailed = refreshFailed
         self.request = request
         self.formatter = formatter
         self.rules = rules
@@ -183,20 +188,29 @@ public struct Metric: Hashable, Identifiable, Sendable {
         case .value(let valueString):
             result = valueString
             resultWithError = false
+            refreshFailed = false
         case .status(let success):
             result = ""
             resultWithError = !success
+            refreshFailed = false
         case .image(let data):
             do {
                 let path = try MetricResultImageStore.shared.save(data: data, metricId: id)
                 resultImagePath = path
                 result = ""
                 resultWithError = false
+                refreshFailed = false
             } catch {
-                resultWithError = true
+                // Keep previous image if present; signal stale refresh.
+                refreshFailed = true
             }
         }
         updated = Date()
+    }
+
+    /// Marks a transport/parse failure without overwriting the last good value/status.
+    public mutating func markRefreshFailed() {
+        refreshFailed = true
     }
 
     /// Returns a copy with a new ID when a metric with the same ID already exists.
@@ -211,6 +225,7 @@ public struct Metric: Hashable, Identifiable, Sendable {
             result: result,
             resultImagePath: nil,
             resultWithError: resultWithError,
+            refreshFailed: false,
             request: request,
             formatter: formatter,
             rules: rules,
@@ -231,13 +246,34 @@ public struct Metric: Hashable, Identifiable, Sendable {
         return copy
     }
 
-    /// Writes any inlined base64 widget backgrounds into the App Group container.
-    /// Widgets cannot reliably host large base64 payloads from UserDefaults.
+    /// Writes inlined base64 widget backgrounds into the App Group container (sync).
+    /// URL backgrounds should use `materializeWidgetBackgrounds` (async) in the widget.
     public mutating func persistWidgetBackgroundImages(
         store: WidgetBackgroundStore = .shared
     ) throws {
-        guard var appearance = widgetAppearance, appearance.containsBase64Images else { return }
+        guard var appearance = widgetAppearance,
+              appearance.containsBase64Images || appearance.containsURLImages
+        else { return }
         try appearance.materializeImportedImages(metricId: id, store: store)
         widgetAppearance = appearance
+    }
+
+    /// Materializes base64 sync + URL backgrounds async (safe for WidgetKit timeline).
+    public static func materializeWidgetBackgrounds(
+        _ metric: Metric,
+        store: WidgetBackgroundStore = .shared,
+        completion: @escaping (Metric) -> Void
+    ) {
+        var copy = metric
+        guard var appearance = copy.widgetAppearance,
+              appearance.containsBase64Images || appearance.containsURLImages
+        else {
+            completion(copy)
+            return
+        }
+        appearance.materializeImportedImagesAsync(metricId: copy.id, store: store) { materialized in
+            copy.widgetAppearance = materialized
+            completion(copy)
+        }
     }
 }

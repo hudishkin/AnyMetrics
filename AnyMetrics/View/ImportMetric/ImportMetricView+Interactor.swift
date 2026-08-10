@@ -138,6 +138,7 @@ extension ImportMetricView {
             importedMetric.result = ""
             importedMetric.resultImagePath = nil
             importedMetric.resultWithError = false
+            importedMetric.refreshFailed = false
             do {
                 try importedMetric.persistWidgetBackgroundImages()
             } catch {

@@ -55,11 +55,8 @@ public enum Fetcher {
             timeout: metric.request?.timeout ?? DEFAULT_TIMEOUT,
             requestBody: requestData.requestBody) { data, error in
                 if let error = error {
-                    if metric.type == .checkStatus && metric.resultKind == .content {
-                        completion(.result(.status(false)))
-                    } else {
-                        completion(.error(error))
-                    }
+                    // Transport failures are not a real "Bad" status — keep previous value/status.
+                    completion(.error(error))
                     return
                 }
 
@@ -141,7 +138,7 @@ public enum Fetcher {
             case .result(let value):
                 newMetric.apply(parseResult: value)
             case .error:
-                newMetric.resultWithError = true
+                newMetric.markRefreshFailed()
             case .none:
                 break
             }
