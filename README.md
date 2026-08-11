@@ -1,44 +1,90 @@
-# AnyMetrics | [RU](README_ru.md)
+<p align="center">
+  <img src="preview.png" alt="AnyMetrics — HTTP endpoints as home screen widgets" width="720" />
+</p>
 
-[![Download on the App Store](appstore.png)](https://apps.apple.com/us/app/anymetrics/id1609900961)
+<h1 align="center">AnyMetrics</h1>
 
-**Any HTTP endpoint → a widget on your iPhone home screen.**
+<p align="center">
+  <strong>Any HTTP endpoint → a live widget on your iPhone.</strong>
+</p>
 
-AnyMetrics sends requests to REST APIs, JSON services, or web pages and displays the result in a home screen widget. Configure everything in the app — no code required.
+<p align="center">
+  Point AnyMetrics at a REST API, JSON service, or web page.<br />
+  Extract the value you care about. Pin it to your Home Screen.<br />
+  No code. No servers. No ads.
+</p>
 
-iOS 15+ · Free · No ads · Open source · English & Russian
+<p align="center">
+  <a href="https://apps.apple.com/us/app/anymetrics/id1609900961">
+    <img src="appstore.png" alt="Download on the App Store" height="40" />
+  </a>
+</p>
 
-![Preview](preview.png)
+<p align="center">
+  <img src="https://img.shields.io/badge/iOS-15%2B-black" alt="iOS 15+" />
+  <img src="https://img.shields.io/badge/price-Free-brightgreen" alt="Free" />
+  <img src="https://img.shields.io/badge/ads-None-lightgrey" alt="No ads" />
+  <img src="https://img.shields.io/badge/license-Open%20Source-blue" alt="Open source" />
+  <img src="https://img.shields.io/badge/languages-EN%20%7C%20RU-orange" alt="English & Russian" />
+</p>
+
+---
+
+## Why AnyMetrics?
+
+Your APIs already know what’s happening — uptime, deploys, stars, downloads, CI status.  
+AnyMetrics turns that into a glanceable Home Screen widget.
+
+| Without AnyMetrics | With AnyMetrics |
+|---|---|
+| Open dashboards, refresh pages, dig through JSON | One number, always on your Home Screen |
+| Custom scripts / scrapers / bots | Configure once in the app |
+| Another SaaS to pay for | Free, open source, runs on-device |
+
+---
 
 ## How it works
 
-1. **Set up a request** — URL, HTTP method, headers, timeout
-2. **Extract a value** — JSON path, HTML selector, or HTTP status code
-3. **Add a widget** — data refreshes on your home screen
+```
+1. Request   →  URL, method, headers, timeout
+2. Extract   →  JSON path, HTML selector, or HTTP status
+3. Widget    →  Pin it. It refreshes on your Home Screen.
+```
 
-## What you can monitor
+That’s it. Three steps from endpoint to widget.
 
-- Server uptime and API availability
-- CI/CD stats from GitHub, GitLab, or Jenkins
-- Response times, error rates, deployment status
-- Download counts, repo stars, or any endpoint data
+---
+
+## What people monitor
+
+- Server uptime & API health
+- CI/CD from GitHub, GitLab, Jenkins
+- Response times, error rates, deploy status
+- Download counts, repo stars, any JSON field
+- Scraped values from public HTML pages
+
+---
 
 ## Features
 
-- **Custom HTTP requests** — any method, headers, configurable timeout
-- **JSON parsing** — dot-path rules with filters, aggregates, and selectors
-- **HTML parsing** — extract text via CSS selectors (`Document.querySelector` syntax)
-- **HTTP status checks** — endpoint health at a glance (2xx = OK)
-- **Home screen widgets** — compact WidgetKit widgets with live data
-- **Value formatting** — currency, length trimming, and more
-- **Gallery** — ready-made metrics, one tap to add
-- **Import / Export** — share metrics as JSON with your team
+| | |
+|---|---|
+| **Custom HTTP** | Any method, headers, and timeout |
+| **JSON parsing** | Dot-paths with filters, aggregates, and selectors |
+| **HTML parsing** | CSS selectors (`Document.querySelector` style) |
+| **Status checks** | Endpoint health at a glance (`2xx` = OK) |
+| **Home Screen widgets** | Compact WidgetKit widgets with live data |
+| **Value formatting** | Currency, length trimming, and more |
+| **Gallery** | Ready-made metrics — one tap to add |
+| **Import / Export** | Share metrics as JSON with your team |
 
-## Parsing Rules
+---
+
+## Parsing rules
 
 ### JSON
 
-Navigate through JSON using dot-separated paths.
+Navigate with a **dot-separated path**.
 
 #### Basic navigation
 
@@ -50,14 +96,12 @@ Navigate through JSON using dot-separated paths.
 }
 ```
 
-| Rule | Result | Description |
+| Rule | Result | |
 |---|---|---|
-| `data.items.1` | `google` | Access array element by index |
+| `data.items.1` | `google` | Array index |
 | `data.items.0` | `apple` | First element |
 
-#### Aggregate operations
-
-Apply operations across all elements of an array.
+#### Aggregates
 
 ```json
 {
@@ -69,24 +113,24 @@ Apply operations across all elements of an array.
 }
 ```
 
-| Operator | Description | Example | Result |
+| Op | Meaning | Example | Result |
 |---|---|---|---|
 | `*+` | Sum | `users.*+.age` | `90` |
 | `*avg` | Average | `users.*avg.age` | `30` |
 | `*min` | Minimum | `users.*min.age` | `25` |
 | `*max` | Maximum | `users.*max.age` | `35` |
 
-#### Element selectors
+#### Selectors
 
-| Operator | Description | Example | Result |
+| Op | Meaning | Example | Result |
 |---|---|---|---|
 | `*first` | First element | `users.*first.name` | `Alice` |
 | `*last` | Last element | `users.*last.name` | `Charlie` |
-| `*count` | Number of elements | `users.*count` | `3` |
+| `*count` | Count | `users.*count` | `3` |
 
 #### Filters
 
-Filter array elements before applying other operations. Syntax: `*[field<op>value]`
+Syntax: `*[field<op>value]`
 
 ```json
 {
@@ -98,35 +142,43 @@ Filter array elements before applying other operations. Syntax: `*[field<op>valu
 }
 ```
 
-| Operator | Description | Example | Result |
+| Op | Meaning | Example | Result |
 |---|---|---|---|
 | `=` | Equal | `servers.*[status=online].*count` | `2` |
 | `!=` | Not equal | `servers.*[status!=offline].*count` | `2` |
-| `>` | Greater than | `servers.*[cpu>50].*count` | `2` |
-| `<` | Less than | `servers.*[cpu<80].*+.cpu` | `117` |
-| `>=` | Greater or equal | `servers.*[cpu>=72].*avg.cpu` | `81` |
-| `<=` | Less or equal | `servers.*[cpu<=45].*first.name` | `s1` |
+| `>` | Greater | `servers.*[cpu>50].*count` | `2` |
+| `<` | Less | `servers.*[cpu<80].*+.cpu` | `117` |
+| `>=` | ≥ | `servers.*[cpu>=72].*avg.cpu` | `81` |
+| `<=` | ≤ | `servers.*[cpu<=45].*first.name` | `s1` |
 
-#### Combining operations
+#### Chain them
 
-Filters, selectors and aggregates can be chained:
+Filters, selectors, and aggregates compose:
 
-- `servers.*[status=online].*avg.cpu` — average CPU of online servers → `58`
-- `servers.*[cpu>50].*last.name` — name of the last server with cpu > 50 → `s3`
-- `servers.*[status=online].*max.cpu` — max CPU among online servers → `72`
+```text
+servers.*[status=online].*avg.cpu   →  58
+servers.*[cpu>50].*last.name        →  s3
+servers.*[status=online].*max.cpu   →  72
+```
 
 ### HTML
 
-Use format like `Document.querySelector(selector)`
+Same idea as `Document.querySelector(selector)`.
 
-Example: `div a.link`
+```text
+div a.link
+```
+
+---
 
 ## Links
 
 - [App Store](https://apps.apple.com/us/app/anymetrics/id1609900961)
-- [Gallery Repository](https://github.com/hudishkin/AnyMetricsGallery) — community-contributed metrics
+- [Community Gallery](https://github.com/hudishkin/AnyMetricsGallery) — ready-made metrics from the community
 
-## For developers
+---
+
+## Build from source
 
 **Requirements:** iOS 15.0+, Xcode 15+, [Tuist](https://tuist.io)
 
@@ -135,6 +187,10 @@ tuist install
 tuist generate
 ```
 
+Open the generated workspace in Xcode and run.
+
+---
+
 ## License
 
-Open source.
+Open source. Free to use, share, and contribute.
