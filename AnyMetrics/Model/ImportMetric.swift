@@ -69,4 +69,46 @@ struct MetricItemImportData {
         data.payload = sanitized
         return data
     }
+
+    static func fileName(title: String, id: UUID) -> String {
+        let sanitizedTitle = title
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .joined(separator: "_")
+            .lowercased()
+        let baseName = sanitizedTitle.isEmpty ? "metric" : sanitizedTitle
+        let shortId = String(id.uuidString.prefix(8)).lowercased()
+        return "\(baseName)_\(shortId).json"
+    }
+
+    static func writeFile(
+        for metric: Metric,
+        options: MetricExportOptions = .default
+    ) throws -> URL {
+        let exportData = try exportData(for: metric, options: options)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+
+        let jsonData: Data
+        do {
+            jsonData = try encoder.encode(exportData)
+        } catch {
+            throw MetricExportWriteError.encodingFailed
+        }
+
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(fileName(title: metric.title, id: metric.id))
+        do {
+            try jsonData.write(to: tempURL, options: .atomic)
+        } catch {
+            throw MetricExportWriteError.writeFailed
+        }
+        return tempURL
+    }
+}
+
+enum MetricExportWriteError: Error {
+    case encodingFailed
+    case writeFailed
 }

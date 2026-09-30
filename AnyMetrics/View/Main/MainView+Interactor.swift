@@ -18,18 +18,8 @@ extension MainView {
 
         init(di: DI = .shared) {
             self.metricStore = di.metricStore
-            Self.installStarterMetricIfNeeded(store: metricStore)
+            ReviewHandler.recordAppLaunchIfNeeded()
             initialState = .init(metrics: metricStore.metrics)
-        }
-
-        private static func installStarterMetricIfNeeded(store: MetricStore) {
-            guard !AppSettings.hasInstalledStarterMetric else { return }
-
-            if store.metrics.isEmpty {
-                store.addMetric(metric: StarterMetric.make())
-            }
-
-            AppSettings.hasInstalledStarterMetric = true
         }
 
         @MainActor
@@ -39,6 +29,19 @@ extension MainView {
             _ updater: @escaping StateUpdater<S>
         ) {
             switch action {
+            case .addOnboardingWidget(let metric):
+                let metric = StarterMetric.installIfNeeded(metric, in: metricStore)
+                Task { @MainActor in
+                    await updater {
+                        $0.metrics = self.metricStore.metrics
+                    }
+                    WidgetCenter.shared.reloadAllTimelines()
+                    // This is an explicit request, even if automatic guides were disabled.
+                    self.notifications.send(.showWidgetInstructions(metric))
+                    if !metric.hasResult {
+                        self.refreshStoredMetric(id: metric.id, updater: updater)
+                    }
+                }
             case .onAppear, .refreshAllMetrics, .syncMetrics:
                 Task { @MainActor in
                     guard let state = await state() else { return }
@@ -66,9 +69,7 @@ extension MainView {
                         $0.metrics = self.metricStore.metrics
                     }
                     WidgetCenter.shared.reloadAllTimelines()
-                    if isNew, !AppSettings.hideWidgetInstructions {
-                        self.notifications.send(.showWidgetInstructions(metric))
-                    }
+                    self.notifyAfterSavingNewMetric(metric, isNew: isNew)
                 }
 
             case .addMetricAndRefresh(let metric):
@@ -81,9 +82,7 @@ extension MainView {
                     }
                     WidgetCenter.shared.reloadAllTimelines()
                     self.refreshStoredMetric(id: metricID, updater: updater)
-                    if isNew, !AppSettings.hideWidgetInstructions {
-                        self.notifications.send(.showWidgetInstructions(metric))
-                    }
+                    self.notifyAfterSavingNewMetric(metric, isNew: isNew)
                 }
 
             case .removeMetric(let id):
@@ -99,7 +98,7 @@ extension MainView {
                     guard let state = await state() else { return }
                     guard let metric = state.metrics[id] ?? metricStore.metrics[id] else { return }
 
-                    updateMetric(metric: metric) {[weak self] metric in
+                    updateMetric(metric: metric) {[weak self] metric, error in
                         guard let self else { return }
 
                         self.metricStore.addMetric(metric: metric)
@@ -109,15 +108,29 @@ extension MainView {
                                 $0.metrics = self.metricStore.metrics
                             }
                         }
+                        if let error {
+                            self.notifications.send(.error(Self.refreshErrorMessage(metric: metric, error: error)))
+                        }
                     }
                 }
+            }
+        }
+
+        private func notifyAfterSavingNewMetric(_ metric: Metric, isNew: Bool) {
+            guard isNew else { return }
+            if !StarterMetric.isStarter(metric.id) {
+                AnalyticsEvents.metricAdded(type: metric.type)
+                notifications.send(.askReview)
+            }
+            if !AppSettings.hideWidgetInstructions {
+                notifications.send(.showWidgetInstructions(metric))
             }
         }
 
         private func refreshStoredMetric(id: UUID, updater: @escaping StateUpdater<S>) {
             guard let metric = metricStore.metrics[id] else { return }
 
-            updateMetric(metric: metric) { [weak self] refreshed in
+            updateMetric(metric: metric) { [weak self] refreshed, error in
                 guard let self else { return }
 
                 self.metricStore.addMetric(metric: refreshed)
@@ -126,6 +139,10 @@ extension MainView {
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
+                if let error {
+                    self.notifications.send(.error(Self.refreshErrorMessage(metric: refreshed, error: error)))
                 }
             }
         }
@@ -155,24 +172,29 @@ extension MainView {
             }
         }
 
-        private func updateMetric(metric: Metric, callback: @escaping (Metric) -> Void) {
+        private func updateMetric(metric: Metric, callback: @escaping (Metric, Error?) -> Void) {
             var metric = metric
             Fetcher.fetch(for: metric) { result in
+                var error: Error?
                 switch result {
                 case .result(let value):
                     metric.apply(parseResult: value)
-                case .error:
+                case .error(let fetchError):
                     metric.markRefreshFailed()
+                    error = fetchError
                 case .none:
                     break
                 }
 
                 DispatchQueue.main.async {
-                    callback(metric)
+                    callback(metric, error)
                 }
             }
+        }
+
+        private static func refreshErrorMessage(metric: Metric, error: Error) -> String {
+            AnyMetricsStrings.Error.metricRefresh(metric.title, ErrorMessageFormatter.message(for: error))
         }
     }
 
 }
-

@@ -27,9 +27,20 @@
 "metric.actions.delete" = "Remove";
 "metric.actions.edit" = "Edit";
 "metric.actions.title" = "Select action for metric «%@»";
+"metric.actions.menu-title" = "Actions";
+"metric.actions.share" = "Share";
 "metric.actions.export" = "Export";
 "metric.actions.sure" = "You sure?";
 "metric.actions.confirmDelete" = "Delete metric";
+"metric.share.title" = "Share";
+"metric.share.subtitle" = "A card with your widget and a QR code. The metric file is attached — another AnyMetrics user can import it via Add → Import from JSON.";
+"metric.share.button" = "Share";
+"metric.share.copy-link" = "Copy link";
+"metric.share.copied" = "Link copied";
+"metric.share.caption" = "Check out my «%@» widget — made with AnyMetrics";
+"metric.share.card-brand" = "AnyMetrics";
+"metric.share.card-hint" = "Scan to make one like this";
+"metric.share.failed" = "Could not create the share image. Please try again.";
 "metric.export.title" = "Export";
 "metric.export.include-request" = "Export with Request";
 "metric.export.include-widget-style" = "Export with widget style";
@@ -207,33 +218,46 @@
 "info.version" = "Version: %@";
 "info.rate" = "Rate app";
 
+// MARK: - Review
+
+"review.title" = "Enjoying AnyMetrics?";
+"review.message" = "If the app is useful, please leave a rating on the App Store. It helps a lot.";
+"review.rate" = "Rate";
+"review.later" = "Later";
+"review.dont-ask" = "Don't ask again";
+
 // MARK: - Onboarding
 
+"onboarding.add-widget" = "Add widget";
+"onboarding.choose-from-gallery" = "Choose from gallery";
+"onboarding.widget-hint" = "We'll save the metric and show you how to add the widget to your Home Screen.";
+"onboarding.preview-loading" = "Loading…";
+"onboarding.preview-retry" = "Couldn't load. Retry";
 "onboarding.skip" = "Skip";
 "onboarding.next" = "Continue";
-"onboarding.get-started" = "Let's go";
-"onboarding.page1.title" = "Any source —\na number on screen";
-"onboarding.page1.subtitle" = "API or website → widget. No code: just a link and the value you need.";
+"onboarding.page1.title" = "Any source —\non your screen";
+"onboarding.page1.subtitle" = "Numbers, text, and pictures from an API or website, in your widget. No code needed.";
 "onboarding.page2.title" = "Ready-made\nor your own";
 "onboarding.page2.subtitle" = "Pick a metric from the gallery, or build your own in a few minutes.";
 "onboarding.page3.title" = "Custom\nwidgets";
 "onboarding.page3.subtitle" = "Pick a template or design your own — layout, colors, and background photo.";
-"onboarding.page4.title" = "Always\nin sight";
-"onboarding.page4.subtitle" = "Widgets refresh on their own. Add your first metric and put it on the Home Screen.";
+"onboarding.page4.title" = "Add your\nfirst widget";
+"onboarding.page4.subtitle" = "Start with Quote of the Day, or pick another metric from the gallery.";
 
 // MARK: - Starter Metric
 
-"starter-metric.title" = "AnyMetrics";
-"starter-metric.measure" = "GitHub stars";
+"starter-metric.title" = "Quote of the Day";
+"starter-metric.measure" = "English · ZenQuotes";
 
 // MARK: - Widget Guide
 
 "widget-guide.title" = "Add to Home Screen";
 "widget-guide.subtitle" = "Metric «%@» is saved. Add a widget to see it on your home screen.";
 "widget-guide.step1" = "Long press on the home screen";
-"widget-guide.step2" = "Tap + in the top corner";
+"widget-guide.step2" = "Tap Edit → Add Widget (or +)";
 "widget-guide.step3" = "Search for AnyMetrics";
-"widget-guide.step4" = "Choose a widget and select your metric";
+"widget-guide.step4" = "Choose a size and tap Add Widget";
+"widget-guide.select-metric" = "Long press the widget → Edit Widget, then select “%@”";
 "widget-guide.done" = "Got it";
 "widget-guide.dont-show-again" = "Don't show again";
 
@@ -249,10 +273,13 @@
 "error.host-not-found" = "Server not found. Check the URL";
 "error.ssl" = "Secure connection failed";
 "error.unknown" = "Something went wrong: %@";
+"error.metric-refresh" = "Couldn't update «%@». %@";
 
 // MARK: - Dev Menu
 
 "dev-menu.title" = "Dev Menu";
 "dev-menu.show-onboarding" = "Show onboarding";
 "dev-menu.show-widget-instructions" = "Show widget instructions";
+"dev-menu.show-review-prompt" = "Show review prompt";
+"dev-menu.reset-review" = "Reset review prompts";
 

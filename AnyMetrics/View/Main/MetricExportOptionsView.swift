@@ -175,10 +175,9 @@ struct MetricExportOptionsView: View {
 
         Task {
             do {
-                let fileURL = try await Self.writeExportFile(
-                    metric: metricToExport,
-                    options: options
-                )
+                let fileURL = try await Task.detached(priority: .userInitiated) {
+                    try MetricItemImportData.writeFile(for: metricToExport, options: options)
+                }.value
                 await MainActor.run {
                     isExporting = false
                     onExported(fileURL)
@@ -192,43 +191,6 @@ struct MetricExportOptionsView: View {
         }
     }
 
-    private static func writeExportFile(
-        metric: Metric,
-        options: MetricExportOptions
-    ) async throws -> URL {
-        try await Task.detached(priority: .userInitiated) {
-            let exportData = try MetricItemImportData.exportData(for: metric, options: options)
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            encoder.dateEncodingStrategy = .iso8601
-
-            let jsonData: Data
-            do {
-                jsonData = try encoder.encode(exportData)
-            } catch {
-                throw MetricExportWriteError.encodingFailed
-            }
-
-            let sanitizedTitle = metric.title
-                .components(separatedBy: CharacterSet.alphanumerics.inverted)
-                .filter { !$0.isEmpty }
-                .joined(separator: "_")
-                .lowercased()
-            let baseName = sanitizedTitle.isEmpty ? "metric" : sanitizedTitle
-            let shortId = String(metric.id.uuidString.prefix(8)).lowercased()
-            let fileName = "\(baseName)_\(shortId).json"
-            let tempURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(fileName)
-
-            do {
-                try jsonData.write(to: tempURL, options: .atomic)
-            } catch {
-                throw MetricExportWriteError.writeFailed
-            }
-            return tempURL
-        }.value
-    }
-
     private static func message(for error: Error) -> String {
         if let storeError = error as? WidgetBackgroundStoreError {
             switch storeError {
@@ -240,11 +202,6 @@ struct MetricExportOptionsView: View {
         }
         return AnyMetricsStrings.Metric.Export.failed
     }
-}
-
-private enum MetricExportWriteError: Error {
-    case encodingFailed
-    case writeFailed
 }
 
 private struct ExportSheetHeightPreferenceKey: PreferenceKey {

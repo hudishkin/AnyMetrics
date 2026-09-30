@@ -42,74 +42,80 @@ struct WidgetInstructionsView: View {
             Step(id: 1, icon: "hand.tap", text: AnyMetricsStrings.WidgetGuide.step1),
             Step(id: 2, icon: "plus.app", text: AnyMetricsStrings.WidgetGuide.step2),
             Step(id: 3, icon: "magnifyingglass", text: AnyMetricsStrings.WidgetGuide.step3),
-            Step(id: 4, icon: "square.grid.2x2", text: AnyMetricsStrings.WidgetGuide.step4)
+            Step(id: 4, icon: "square.grid.2x2", text: AnyMetricsStrings.WidgetGuide.step4),
+            Step(id: 5, icon: "slider.horizontal.3", text: AnyMetricsStrings.WidgetGuide.selectMetric(metricTitle))
         ]
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
-            VStack(alignment: .leading, spacing: Constants.contentSpacing) {
-                Text(AnyMetricsStrings.WidgetGuide.title)
-                    .font(Constants.fontTitle)
-                    .foregroundColor(Constants.textColor)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
+                VStack(alignment: .leading, spacing: Constants.contentSpacing) {
+                    Text(AnyMetricsStrings.WidgetGuide.title)
+                        .font(Constants.fontTitle)
+                        .foregroundColor(Constants.textColor)
+                        .accessibilityIdentifier("widgetGuide.title")
 
-                Text(AnyMetricsStrings.WidgetGuide.subtitle(metricTitle))
-                    .font(Constants.fontSubtitle)
-                    .foregroundColor(Constants.secondaryColor)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            VStack(alignment: .leading, spacing: Constants.stepSpacing) {
-                ForEach(steps) { step in
-                    HStack(alignment: .firstTextBaseline, spacing: 14) {
-                        Image(systemName: step.icon)
-                            .font(.system(size: Constants.stepIconSize, weight: .medium))
-                            .foregroundColor(Constants.secondaryColor)
-                            .frame(width: Constants.stepIconWidth, alignment: .center)
-
-                        Text(step.text)
-                            .font(Constants.fontStep)
-                            .foregroundColor(Constants.textColor)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-            }
-
-            VStack(spacing: 16) {
-                Toggle(isOn: $dontShowAgain) {
-                    Text(AnyMetricsStrings.WidgetGuide.dontShowAgain)
+                    Text(AnyMetricsStrings.WidgetGuide.subtitle(metricTitle))
                         .font(Constants.fontSubtitle)
                         .foregroundColor(Constants.secondaryColor)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Button {
-                    ImpactHelper.impactButton()
-                    if dontShowAgain {
-                        AppSettings.hideWidgetInstructions = true
+                VStack(alignment: .leading, spacing: Constants.stepSpacing) {
+                    ForEach(steps) { step in
+                        HStack(alignment: .firstTextBaseline, spacing: 14) {
+                            Image(systemName: step.icon)
+                                .font(.system(size: Constants.stepIconSize, weight: .medium))
+                                .foregroundColor(Constants.secondaryColor)
+                                .frame(width: Constants.stepIconWidth, alignment: .center)
+
+                            Text(step.text)
+                                .font(Constants.fontStep)
+                                .foregroundColor(Constants.textColor)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
-                    onDismiss()
-                } label: {
-                    Text(AnyMetricsStrings.WidgetGuide.done)
-                        .font(Constants.fontButton)
-                        .foregroundColor(Constants.textColor)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
                 }
-                .background(Constants.buttonBackground)
-                .cornerRadius(Constants.buttonCorner)
+
+                VStack(spacing: 16) {
+                    Toggle(isOn: $dontShowAgain) {
+                        Text(AnyMetricsStrings.WidgetGuide.dontShowAgain)
+                            .font(Constants.fontSubtitle)
+                            .foregroundColor(Constants.secondaryColor)
+                    }
+
+                    Button {
+                        ImpactHelper.impactButton()
+                        if dontShowAgain {
+                            AppSettings.hideWidgetInstructions = true
+                        }
+                        onDismiss()
+                    } label: {
+                        Text(AnyMetricsStrings.WidgetGuide.done)
+                            .font(Constants.fontButton)
+                            .foregroundColor(Constants.textColor)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                    }
+                    .background(Constants.buttonBackground)
+                    .cornerRadius(Constants.buttonCorner)
+                    .accessibilityIdentifier("widgetGuide.done")
+                }
             }
+            .padding(.horizontal, Constants.horizontalPadding)
+            .padding(.top, Constants.topPadding)
+            .padding(.bottom, Constants.bottomPadding)
+            .fixedSize(horizontal: false, vertical: true)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: SheetHeightPreferenceKey.self, value: proxy.size.height)
+                }
+            )
         }
-        .padding(.horizontal, Constants.horizontalPadding)
-        .padding(.top, Constants.topPadding)
-        .padding(.bottom, Constants.bottomPadding)
-        .fixedSize(horizontal: false, vertical: true)
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .preference(key: SheetHeightPreferenceKey.self, value: proxy.size.height)
-            }
-        )
+        .frame(maxHeight: sheetHeight)
         .onPreferenceChange(SheetHeightPreferenceKey.self) { height in
             guard height > 0 else { return }
             sheetHeight = height

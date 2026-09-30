@@ -4,6 +4,7 @@ import SwiftUI
 struct DevMenuView: View {
 
     let onShowOnboarding: () -> Void
+    let onShowReviewPrompt: () -> Void
 
     @Environment(\.dismiss)
     private var dismiss
@@ -21,6 +22,17 @@ struct DevMenuView: View {
 
                 Button(AnyMetricsStrings.DevMenu.showWidgetInstructions) {
                     showWidgetInstructions = true
+                }
+
+                Button(AnyMetricsStrings.DevMenu.showReviewPrompt) {
+                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        onShowReviewPrompt()
+                    }
+                }
+
+                Button(AnyMetricsStrings.DevMenu.resetReview) {
+                    ReviewHandler.reset()
                 }
             }
             .navigationTitle(AnyMetricsStrings.DevMenu.title)
@@ -42,6 +54,6 @@ struct DevMenuView: View {
 }
 
 #Preview {
-    DevMenuView(onShowOnboarding: {})
+    DevMenuView(onShowOnboarding: {}, onShowReviewPrompt: {})
 }
 #endif
