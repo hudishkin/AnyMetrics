@@ -459,7 +459,7 @@ public struct WidgetAppearanceRenderer: View {
         clipped
             .frame(width: size.width, height: size.height)
             .overlay {
-                if effectiveGlass, #available(iOS 16.0, *), shape == .circle {
+                if effectiveGlass, shape == .circle {
                     Circle()
                         .fill(.ultraThinMaterial)
                         .opacity(0.45)

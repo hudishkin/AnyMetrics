@@ -29,7 +29,7 @@
 "metric.actions.title" = "Что хотите сделать с метрикой «%@»?";
 "metric.actions.menu-title" = "Действия";
 "metric.actions.share" = "Поделиться";
-"metric.actions.export" = "Экспорт";
+"metric.actions.export" = "Экспорт в JSON-файл";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.confirmDelete" = "Да, удалить";
 "metric.share.title" = "Поделиться";
@@ -45,6 +45,7 @@
 "metric.export.include-request" = "Экспортировать запрос";
 "metric.export.include-widget-style" = "Экспортировать стиль виджета";
 "metric.export.footer" = "Выберите, что включить в JSON-файл. Нужен хотя бы один пункт.";
+"metric.export.request-safe" = "Запрос остаётся на устройстве. В файле только стиль виджета — без адреса, заголовков и API-ключей.";
 "metric.export.request-warning" = "Вы экспортируете запрос полностью со всеми данными и параметрами. Если он использует API-key или другие важные параметры, они также будут добавлены в экспорт.";
 "metric.export.failed" = "Не удалось экспортировать метрику. Попробуйте ещё раз.";
 "metric.export.image-unavailable" = "Не удалось включить фоновое изображение виджета в экспорт.";

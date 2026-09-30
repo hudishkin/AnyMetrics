@@ -157,21 +157,21 @@ struct GalleryView: View {
 
     private static func movingQuoteFirst(_ items: [GalleryItem]) -> [GalleryItem] {
         let quoteID = StarterMetric.id
-        var quote: Metric?
-        var groups = items.map { group -> GalleryItem in
-            var metrics = group.metrics
-            if let index = metrics.firstIndex(where: { $0.id == quoteID }) {
-                quote = metrics.remove(at: index)
-                return GalleryItem(name: group.name, tags: group.tags, metrics: metrics)
-            }
-            return group
+        guard let groupIndex = items.firstIndex(where: { group in
+            group.metrics.contains { $0.id == quoteID }
+        }) else {
+            return items
         }
-        guard let quote else { return items }
-        if groups.isEmpty {
-            return [GalleryItem(name: "", tags: "", metrics: [quote])]
+
+        var groups = items
+        var group = groups.remove(at: groupIndex)
+        var metrics = group.metrics
+        if let metricIndex = metrics.firstIndex(where: { $0.id == quoteID }) {
+            let quote = metrics.remove(at: metricIndex)
+            metrics.insert(quote, at: 0)
         }
-        let first = groups[0]
-        groups[0] = GalleryItem(name: first.name, tags: first.tags, metrics: [quote] + first.metrics)
+        group = GalleryItem(name: group.name, tags: group.tags, metrics: metrics)
+        groups.insert(group, at: 0)
         return groups
     }
 

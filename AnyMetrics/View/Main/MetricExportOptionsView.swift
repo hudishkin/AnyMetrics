@@ -8,22 +8,18 @@ struct MetricExportOptionsView: View {
         static let sectionSpacing: CGFloat = 28
         static let rowSpacing: CGFloat = 18
         static let buttonCorner: CGFloat = 30
-        static let cardCorner: CGFloat = 18
         static let horizontalPadding: CGFloat = 24
         static let topPadding: CGFloat = 28
         static let bottomPadding: CGFloat = 24
         static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
         static let secondaryColor = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
         static let buttonBackground = AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor
-        static let cardBackground = AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor
-        static let warningColor = AnyMetricsAsset.Assets.red.swiftUIColor
 
         static let fontTitle = Font.system(size: 28, weight: .bold, design: .default)
         static let fontSubtitle = Font.system(size: 16, weight: .regular, design: .default)
         static let fontRow = Font.system(size: 17, weight: .medium, design: .default)
         static let fontButton = Font.system(size: 17, weight: .semibold, design: .default)
         static let fontFooter = Font.system(size: 14, weight: .regular, design: .default)
-        static let fontWarning = Font.system(size: 14, weight: .regular, design: .default)
         static let fontClose = Font.system(size: 15, weight: .medium, design: .default)
     }
 
@@ -96,23 +92,7 @@ struct MetricExportOptionsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if includeRequest {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Constants.warningColor)
-                        .padding(.top, 1)
-
-                    Text(AnyMetricsStrings.Metric.Export.requestWarning)
-                        .font(Constants.fontWarning)
-                        .foregroundColor(Constants.textColor)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Constants.cardBackground)
-                .cornerRadius(Constants.cardCorner)
-            }
+            MetricRequestNotice(includesRequest: includeRequest)
 
             Button {
                 ImpactHelper.impactButton()
@@ -204,6 +184,54 @@ struct MetricExportOptionsView: View {
     }
 }
 
+struct MetricRequestNotice: View {
+    let includesRequest: Bool
+    var showsBackground = true
+
+    private var textColor: Color { AnyMetricsAsset.Assets.baseText.swiftUIColor }
+    private var secondaryColor: Color { AnyMetricsAsset.Assets.secondaryText.swiftUIColor }
+    private var warningColor: Color { AnyMetricsAsset.Assets.red.swiftUIColor }
+    private var cardBackground: Color { AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor }
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            row(
+                icon: "exclamationmark.triangle.fill",
+                tint: warningColor,
+                text: AnyMetricsStrings.Metric.Export.requestWarning,
+                isVisible: includesRequest
+            )
+            row(
+                icon: "checkmark.circle.fill",
+                tint: secondaryColor,
+                text: AnyMetricsStrings.Metric.Export.requestSafe,
+                isVisible: !includesRequest
+            )
+        }
+        .padding(showsBackground ? 14 : 0)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(showsBackground ? cardBackground : Color.clear)
+        .cornerRadius(showsBackground ? 18 : 0)
+        .animation(.easeInOut(duration: 0.2), value: includesRequest)
+    }
+
+    private func row(icon: String, tint: Color, text: String, isVisible: Bool) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(tint)
+                .padding(.top, 1)
+
+            Text(text)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(textColor)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .opacity(isVisible ? 1 : 0)
+        .accessibilityHidden(!isVisible)
+    }
+}
+
 private struct ExportSheetHeightPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
 
@@ -216,13 +244,9 @@ private struct ExportFittedSheetModifier: ViewModifier {
     let height: CGFloat
 
     func body(content: Content) -> some View {
-        if #available(iOS 16.0, *) {
-            content
-                .presentationDetents([.height(height)])
-                .presentationDragIndicator(.visible)
-        } else {
-            content
-        }
+        content
+            .presentationDetents([.height(height)])
+            .presentationDragIndicator(.visible)
     }
 }
 

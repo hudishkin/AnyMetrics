@@ -18,6 +18,7 @@ extension MainView {
 
         init(di: DI = .shared) {
             self.metricStore = di.metricStore
+            AppSettings.completeOnboardingForExistingLibrary(hasMetrics: !metricStore.metrics.isEmpty)
             ReviewHandler.recordAppLaunchIfNeeded()
             initialState = .init(metrics: metricStore.metrics)
         }

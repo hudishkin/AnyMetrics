@@ -34,6 +34,31 @@ final class StarterMetricTests: XCTestCase {
         XCTAssertTrue(interactor.initialState.metrics.isEmpty)
     }
 
+    func testExistingLibrarySkipsOnboardingWithoutAddingStarter() {
+        let previous = AppSettings.hasCompletedOnboarding
+        AppSettings.hasCompletedOnboarding = false
+        defer { AppSettings.hasCompletedOnboarding = previous }
+
+        let user = Metric(id: UUID(), title: "My service", measure: "Status", type: .checkStatus)
+        store.addMetric(metric: user)
+
+        _ = MainView.Interactor(di: DI(metricStore: store))
+
+        XCTAssertTrue(AppSettings.hasCompletedOnboarding)
+        XCTAssertEqual(store.metrics.count, 1)
+        XCTAssertNil(store.metrics[StarterMetric.id])
+    }
+
+    func testEmptyLibraryKeepsOnboardingAvailable() {
+        let previous = AppSettings.hasCompletedOnboarding
+        AppSettings.hasCompletedOnboarding = false
+        defer { AppSettings.hasCompletedOnboarding = previous }
+
+        _ = MainView.Interactor(di: DI(metricStore: store))
+
+        XCTAssertFalse(AppSettings.hasCompletedOnboarding)
+    }
+
     func testRepeatingOnboardingPreservesEditedPreset() throws {
         var edited = StarterMetric.installIfNeeded(in: store)
         edited.title = "My quote"

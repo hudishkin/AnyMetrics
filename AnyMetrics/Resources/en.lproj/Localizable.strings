@@ -29,7 +29,7 @@
 "metric.actions.title" = "Select action for metric «%@»";
 "metric.actions.menu-title" = "Actions";
 "metric.actions.share" = "Share";
-"metric.actions.export" = "Export";
+"metric.actions.export" = "Export as JSON file";
 "metric.actions.sure" = "You sure?";
 "metric.actions.confirmDelete" = "Delete metric";
 "metric.share.title" = "Share";
@@ -45,6 +45,7 @@
 "metric.export.include-request" = "Export with Request";
 "metric.export.include-widget-style" = "Export with widget style";
 "metric.export.footer" = "Choose what to include in the JSON file. At least one option is required.";
+"metric.export.request-safe" = "The request stays on this device. The file includes only the widget style, without the URL, headers, or API keys.";
 "metric.export.request-warning" = "You are exporting the full request with all data and parameters. If it uses an API key or other sensitive values, they will also be included in the export.";
 "metric.export.failed" = "Could not export the metric. Please try again.";
 "metric.export.image-unavailable" = "Could not include the widget background image in the export.";
@@ -229,7 +230,7 @@
 // MARK: - Onboarding
 
 "onboarding.add-widget" = "Add widget";
-"onboarding.choose-from-gallery" = "Choose from gallery";
+"onboarding.choose-from-gallery" = "Choose from Gallery";
 "onboarding.widget-hint" = "We'll save the metric and show you how to add the widget to your Home Screen.";
 "onboarding.preview-loading" = "Loading…";
 "onboarding.preview-retry" = "Couldn't load. Retry";

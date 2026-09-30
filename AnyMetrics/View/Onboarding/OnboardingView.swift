@@ -134,7 +134,7 @@ struct OnboardingView: View {
 
     private func pageView(_ page: Page) -> some View {
         GeometryReader { geometry in
-            let previewSide = min(240, max(120, geometry.size.height * 0.4))
+            let previewSide = min(168, max(104, geometry.size.height * 0.3))
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.iconTextSpacing) {
                     Spacer(minLength: 0)
@@ -149,7 +149,7 @@ struct OnboardingView: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: page.image == nil ? previewSide + 76 : min(Constants.imageHeight, geometry.size.height * 0.55))
+                    .frame(height: page.image == nil ? nil : min(Constants.imageHeight, geometry.size.height * 0.55))
 
                     VStack(alignment: .leading, spacing: Constants.titleSubtitleSpacing) {
                         Text(page.title)
@@ -163,19 +163,6 @@ struct OnboardingView: View {
                             .foregroundColor(Constants.secondaryColor)
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
-
-                        if page.image == nil {
-                            Button {
-                                showGallery = true
-                            } label: {
-                                Label(AnyMetricsStrings.Onboarding.chooseFromGallery, systemImage: "square.grid.2x2")
-                                    .font(Constants.fontSkip)
-                            }
-                            .foregroundColor(Constants.secondaryColor)
-                            .accessibilityIdentifier("onboarding.chooseFromGallery")
-                            .disabled(hasCompleted)
-                            .padding(.top, 4)
-                        }
                     }
 
                     Spacer(minLength: 0)
@@ -187,7 +174,7 @@ struct OnboardingView: View {
     }
 
     private func widgetPreview(side: CGFloat) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             ZStack {
                 MetricContentView(metric: selectedMetric)
                     .opacity(isLoadingPreview && !selectedMetric.hasResult ? 0.35 : 1)
@@ -197,8 +184,8 @@ struct OnboardingView: View {
                 }
             }
             .frame(width: side, height: side)
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .shadow(color: .black.opacity(0.15), radius: 16, y: 8)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
             .accessibilityLabel(selectedMetric.title)
 
             Text(selectedMetric.title)
@@ -222,6 +209,21 @@ struct OnboardingView: View {
                     .font(.footnote)
                     .foregroundColor(Constants.secondaryColor)
             }
+
+            Button {
+                showGallery = true
+            } label: {
+                Text(AnyMetricsStrings.Onboarding.chooseFromGallery)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Constants.textColor)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+            }
+            .background(Constants.buttonBackground)
+            .clipShape(Capsule())
+            .accessibilityIdentifier("onboarding.chooseFromGallery")
+            .disabled(hasCompleted)
+            .padding(.top, 4)
         }
     }
 

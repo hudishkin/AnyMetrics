@@ -57,6 +57,34 @@ final class MetricShareComposerTests: XCTestCase {
         XCTAssertTrue(fileURL.lastPathComponent.hasSuffix(".json"))
     }
 
+    func testExportOmitsRequestWhenDisabled() throws {
+        let metric = Metric(
+            id: UUID(),
+            title: "Bitcoin",
+            measure: "USD",
+            type: .json,
+            request: RequestData(
+                headers: ["Authorization": "secret"],
+                method: "GET",
+                url: URL(string: "https://example.com/price")!
+            )
+        )
+        let fileURL = try MetricItemImportData.writeFile(
+            for: metric,
+            options: MetricExportOptions(includeRequest: false, includeWidgetStyle: true)
+        )
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let data = try Data(contentsOf: fileURL)
+        let imported = try JsonMetricParser().parse(data: data)
+        let json = String(decoding: data, as: UTF8.self)
+
+        XCTAssertNil(imported.payload?.request)
+        XCTAssertEqual(imported.includes?.request, false)
+        XCTAssertEqual(imported.includes?.widgetStyle, true)
+        XCTAssertFalse(json.contains("secret"))
+    }
+
     func testSharePayloadDoesNotExposeRawAppStoreURL() {
         let imageURL = FileManager.default.temporaryDirectory.appendingPathComponent("share.png")
         let json = FileManager.default.temporaryDirectory.appendingPathComponent("metric.json")

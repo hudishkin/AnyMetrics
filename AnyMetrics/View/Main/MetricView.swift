@@ -25,21 +25,26 @@ enum MetricSharePresenter {
     private static let maxAttempts = 10
     private static let retryDelay: TimeInterval = 0.2
 
-    static func present(fileURL: URL, completion: ((Bool) -> Void)? = nil) {
+    enum Result {
+        case dismissed(completed: Bool)
+        case failed
+    }
+
+    static func present(fileURL: URL, completion: ((Result) -> Void)? = nil) {
         present(items: [fileURL], completion: completion)
     }
 
-    static func present(items: [Any], completion: ((Bool) -> Void)? = nil) {
+    static func present(items: [Any], completion: ((Result) -> Void)? = nil) {
         present(items: items, attempt: 0, completion: completion)
     }
 
-    private static func present(items: [Any], attempt: Int, completion: ((Bool) -> Void)?) {
+    private static func present(items: [Any], attempt: Int, completion: ((Result) -> Void)?) {
         let missingLocalFile = items.contains { item in
             guard let url = item as? URL, url.isFileURL else { return false }
             return !FileManager.default.fileExists(atPath: url.path)
         }
         if missingLocalFile {
-            completion?(false)
+            completion?(.failed)
             return
         }
 
@@ -64,11 +69,11 @@ enum MetricSharePresenter {
         }
         let state = PresentationState()
 
-        activity.completionWithItemsHandler = { _, _, _, _ in
+        activity.completionWithItemsHandler = { _, completed, _, _ in
             DispatchQueue.main.async {
                 guard !state.finished else { return }
                 state.finished = true
-                completion?(true)
+                completion?(.dismissed(completed: completed))
             }
         }
 
@@ -97,10 +102,10 @@ enum MetricSharePresenter {
     private static func retryOrFail(
         items: [Any],
         attempt: Int,
-        completion: ((Bool) -> Void)?
+        completion: ((Result) -> Void)?
     ) {
         guard attempt + 1 < maxAttempts else {
-            completion?(false)
+            completion?(.failed)
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) {
@@ -140,6 +145,7 @@ struct MetricView: View {
     var editMetric: ((Metric) -> Void)?
     var shareMetric: ((Metric) -> Void)?
     var exportMetric: ((Metric) -> Void)?
+    var onOverlayChange: ((Bool) -> Void)?
 
     var body: some View {
         Button {
@@ -161,12 +167,22 @@ struct MetricView: View {
                 onDelete: { queueAction(.delete) }
             )
         }
+        .onChange(of: showActionMenu) { presented in
+            if presented {
+                onOverlayChange?(true)
+            }
+        }
         .confirmationDialog(
             AnyMetricsStrings.Metric.Actions.sure,
             isPresented: $showConfirmationDelete
         ) {
             Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
                 deletehMetric?(metric.id)
+            }
+        }
+        .onChange(of: showConfirmationDelete) { presented in
+            if !presented {
+                onOverlayChange?(false)
             }
         }
         .scaleEffect(scale)
@@ -200,6 +216,7 @@ struct MetricView: View {
             break
         }
         pendingAction = nil
+        onOverlayChange?(showActionMenu || showConfirmationDelete)
     }
 
     private func getAnimationTimeInterval() -> DispatchTime {

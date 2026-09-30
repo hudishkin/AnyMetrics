@@ -17,6 +17,12 @@ enum AppSettings {
         set { UserDefaults.standard.set(newValue, forKey: onboardingCompletedKey) }
     }
 
+    /// Installed apps already have metrics and no onboarding flag. Don't cover that library.
+    static func completeOnboardingForExistingLibrary(hasMetrics: Bool) {
+        guard hasMetrics, !hasCompletedOnboarding else { return }
+        hasCompletedOnboarding = true
+    }
+
     static var hideWidgetInstructions: Bool {
         get { UserDefaults.standard.bool(forKey: hideWidgetInstructionsKey) }
         set { UserDefaults.standard.set(newValue, forKey: hideWidgetInstructionsKey) }

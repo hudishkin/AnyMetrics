@@ -76,11 +76,14 @@ enum MetricShareComposer {
     }
 
     @MainActor
-    static func writePayload(metric: Metric) throws -> MetricSharePayload {
+    static func writePayload(
+        metric: Metric,
+        options: MetricExportOptions = .default
+    ) throws -> MetricSharePayload {
         let rendered = try writeShareImage(metric: metric)
         let metricURL: URL
         do {
-            metricURL = try MetricItemImportData.writeFile(for: metric, options: .default)
+            metricURL = try MetricItemImportData.writeFile(for: metric, options: options)
         } catch {
             try? FileManager.default.removeItem(at: rendered.url)
             throw error
@@ -112,33 +115,10 @@ enum MetricShareComposer {
     private static func render<Content: View>(_ content: Content, size: CGSize, scale: CGFloat) -> UIImage? {
         let root = content
             .frame(width: size.width, height: size.height)
-
-        if #available(iOS 16.0, *) {
-            let renderer = ImageRenderer(content: root)
-            renderer.scale = scale
-            renderer.proposedSize = ProposedViewSize(size)
-            return renderer.uiImage
-        }
-
-        let hosting = UIHostingController(rootView: root)
-        hosting.view.bounds = CGRect(origin: .zero, size: size)
-        hosting.view.backgroundColor = .clear
-        hosting.overrideUserInterfaceStyle = .light
-
-        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
-        window.rootViewController = hosting
-        window.isHidden = false
-        hosting.view.setNeedsLayout()
-        hosting.view.layoutIfNeeded()
-
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = scale
-        format.opaque = true
-        let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
-            hosting.view.drawHierarchy(in: hosting.view.bounds, afterScreenUpdates: true)
-        }
-        window.isHidden = true
-        return image
+        let renderer = ImageRenderer(content: root)
+        renderer.scale = scale
+        renderer.proposedSize = ProposedViewSize(size)
+        return renderer.uiImage
     }
 }
 

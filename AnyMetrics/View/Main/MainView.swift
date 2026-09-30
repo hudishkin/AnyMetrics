@@ -35,6 +35,10 @@ struct MainView: View {
     @State
     var sharePayload: MetricSharePayload?
     @State
+    var pendingWidgetInstructionsMetric: Metric?
+    @State
+    var isMetricOverlayPresented = false
+    @State
     var errorMessage: String?
     @State
     var pendingErrorMessage: String?
@@ -104,6 +108,13 @@ struct MainView: View {
                                 },
                                 exportMetric: { metric in
                                     exportMetric = metric
+                                },
+                                onOverlayChange: { presented in
+                                    let wasPresented = isMetricOverlayPresented
+                                    isMetricOverlayPresented = presented
+                                    if wasPresented && !presented {
+                                        scheduleReviewPromptIfNeeded()
+                                    }
                                 }
                             )
                             .frame(width: Constants.size, height: Constants.size)
@@ -133,8 +144,9 @@ struct MainView: View {
         }
         .sheet(item: $sheetType, onDismiss: {
             allowDismissed = true
-            presentPendingErrorIfNeeded()
-            scheduleReviewPromptIfNeeded()
+            DispatchQueue.main.async {
+                presentQueuedSurfaces()
+            }
         }) { type in
             switch type {
             case .addMetrics:
@@ -166,8 +178,7 @@ struct MainView: View {
             }
         }
         .sheet(item: $widgetInstructionsMetric, onDismiss: {
-            presentPendingErrorIfNeeded()
-            scheduleReviewPromptIfNeeded()
+            presentQueuedSurfaces()
         }) { metric in
             WidgetInstructionsView(metricTitle: metric.title) {
                 widgetInstructionsMetric = nil
@@ -193,12 +204,12 @@ struct MainView: View {
             get: { errorMessage != nil },
             set: { if !$0 {
                 errorMessage = nil
-                scheduleReviewPromptIfNeeded()
+                presentQueuedSurfaces()
             } }
         )) {
             Button(AnyMetricsStrings.Common.ok, role: .cancel) {
                 errorMessage = nil
-                scheduleReviewPromptIfNeeded()
+                presentQueuedSurfaces()
             }
         } message: {
             Text(errorMessage ?? "")
@@ -227,8 +238,7 @@ struct MainView: View {
                 return
             }
             pendingOnboardingCompletion = nil
-            presentPendingErrorIfNeeded()
-            scheduleReviewPromptIfNeeded()
+            presentQueuedSurfaces()
         }) {
             OnboardingView { completion in
                 pendingOnboardingCompletion = completion
@@ -239,8 +249,7 @@ struct MainView: View {
         }
 #if DEBUG
         .sheet(isPresented: $showDevMenu, onDismiss: {
-            presentPendingErrorIfNeeded()
-            scheduleReviewPromptIfNeeded()
+            presentQueuedSurfaces()
         }) {
             DevMenuView(
                 onShowOnboarding: {
@@ -255,7 +264,7 @@ struct MainView: View {
         .onReceive(viewState.notifications) { notification in
             switch notification {
             case .showWidgetInstructions(let metric):
-                widgetInstructionsMetric = metric
+                presentWidgetInstructions(metric)
             case .askReview:
                 pendingFirstAddReview = true
                 scheduleReviewPromptIfNeeded()
@@ -273,8 +282,12 @@ struct MainView: View {
     private var canPresentReviewPrompt: Bool {
         var isReady = sheetType == nil
             && widgetInstructionsMetric == nil
+            && pendingWidgetInstructionsMetric == nil
             && exportMetric == nil
             && shareMetric == nil
+            && exportFileURL == nil
+            && sharePayload == nil
+            && !isMetricOverlayPresented
             && !showOnboarding
             && !showReviewPrompt
             && errorMessage == nil
@@ -289,6 +302,9 @@ struct MainView: View {
             && widgetInstructionsMetric == nil
             && exportMetric == nil
             && shareMetric == nil
+            && sharePayload == nil
+            && exportFileURL == nil
+            && !isMetricOverlayPresented
             && !showOnboarding
             && !showReviewPrompt
             && errorMessage == nil
@@ -296,6 +312,42 @@ struct MainView: View {
         isReady = isReady && !showDevMenu
 #endif
         return isReady
+    }
+
+    private var canPresentWidgetInstructions: Bool {
+        sheetType == nil
+            && exportMetric == nil
+            && shareMetric == nil
+            && sharePayload == nil
+            && exportFileURL == nil
+            && widgetInstructionsMetric == nil
+            && !isMetricOverlayPresented
+            && !showOnboarding
+            && !showReviewPrompt
+            && errorMessage == nil
+    }
+
+    private func presentWidgetInstructions(_ metric: Metric) {
+        if canPresentWidgetInstructions {
+            widgetInstructionsMetric = metric
+        } else {
+            pendingWidgetInstructionsMetric = metric
+        }
+    }
+
+    private func presentQueuedSurfaces() {
+        presentPendingWidgetInstructionsIfNeeded()
+        if widgetInstructionsMetric == nil {
+            presentPendingErrorIfNeeded()
+        }
+        scheduleReviewPromptIfNeeded()
+    }
+
+    private func presentPendingWidgetInstructionsIfNeeded() {
+        guard widgetInstructionsMetric == nil, let metric = pendingWidgetInstructionsMetric else { return }
+        guard canPresentWidgetInstructions else { return }
+        pendingWidgetInstructionsMetric = nil
+        widgetInstructionsMetric = metric
     }
 
     private func scheduleReviewPromptIfNeeded() {
@@ -350,22 +402,35 @@ struct MainView: View {
     }
 
     private func presentExportShareSheetIfNeeded() {
-        guard let fileURL = exportFileURL else { return }
-        MetricSharePresenter.present(fileURL: fileURL) { presented in
+        guard let fileURL = exportFileURL else {
+            presentQueuedSurfaces()
+            return
+        }
+        MetricSharePresenter.present(fileURL: fileURL) { result in
             cleanupExportFile()
-            if !presented {
+            if case .failed = result {
                 presentError(AnyMetricsStrings.Metric.Export.failed)
             }
+            presentQueuedSurfaces()
         }
     }
 
     private func presentMetricShareSheetIfNeeded() {
-        guard let payload = sharePayload else { return }
-        MetricSharePresenter.present(items: payload.activityItems) { presented in
+        guard let payload = sharePayload else {
+            presentQueuedSurfaces()
+            return
+        }
+        MetricSharePresenter.present(items: payload.activityItems) { result in
             cleanupShareFiles()
-            if !presented {
+            switch result {
+            case .dismissed(completed: true):
+                AnalyticsEvents.metricShared(mode: "image_and_metric")
+            case .failed:
                 presentError(AnyMetricsStrings.Metric.Share.failed)
+            case .dismissed(completed: false):
+                break
             }
+            presentQueuedSurfaces()
         }
     }
 

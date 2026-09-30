@@ -154,13 +154,9 @@ private struct ActionsFittedSheetModifier: ViewModifier {
     let height: CGFloat
 
     func body(content: Content) -> some View {
-        if #available(iOS 16.0, *) {
-            content
-                .presentationDetents([.height(height)])
-                .presentationDragIndicator(.visible)
-        } else {
-            content
-        }
+        content
+            .presentationDetents([.height(height)])
+            .presentationDragIndicator(.visible)
     }
 }
 

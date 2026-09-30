@@ -3,11 +3,7 @@ import WidgetKit
 
 private struct WidgetAccentableModifier: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(iOS 16.0, *) {
-            content.widgetAccentable()
-        } else {
-            content
-        }
+        content.widgetAccentable()
     }
 }
 
@@ -27,7 +23,6 @@ public enum MetricWidgetLayout: Sendable {
     case lockInline
 
 #if canImport(WidgetKit)
-    @available(iOS 16.0, *)
     public static func from(family: WidgetFamily) -> MetricWidgetLayout {
         switch family {
         case .systemMedium:
