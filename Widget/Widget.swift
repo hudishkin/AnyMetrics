@@ -101,10 +101,7 @@ struct WidgetEntryView: View {
     }
 
     private var widgetLayout: MetricWidgetLayout {
-        if #available(iOS 16.0, *) {
-            return MetricWidgetLayout.from(family: family)
-        }
-        return family == .systemMedium ? .medium : .small
+        MetricWidgetLayout.from(family: family)
     }
 
     private var glassEffect: Bool {
@@ -138,16 +135,13 @@ struct AMWidget: Widget {
     }
 
     private var supportedFamilies: [WidgetFamily] {
-        if #available(iOS 16.0, *) {
-            return [
-                .systemSmall,
-                .systemMedium,
-                .accessoryCircular,
-                .accessoryRectangular,
-                .accessoryInline
-            ]
-        }
-        return [.systemSmall, .systemMedium]
+        [
+            .systemSmall,
+            .systemMedium,
+            .accessoryCircular,
+            .accessoryRectangular,
+            .accessoryInline
+        ]
     }
 }
 

@@ -12,6 +12,7 @@ struct GalleryView: View {
     private var viewState: ViewState<Interactor> = .init(Interactor())
     @Binding
     var allowDismissed: Bool
+    var onPickMetric: ((Metric) -> Void)? = nil
     @State 
     var searchText: String = ""
     @State
@@ -33,49 +34,51 @@ struct GalleryView: View {
         NavigationView {
             ZStack {
                 List {
-                    NavigationLink(isActive: $showAddMenu) {
-                        MetricFormView(
-                            allowDismissed: $allowDismissed,
-                            action: { metric in
-                                addCustomMetric(metric)
+                    if !isPicker {
+                        NavigationLink(isActive: $showAddMenu) {
+                            MetricFormView(
+                                allowDismissed: $allowDismissed,
+                                action: { metric in
+                                    addCustomMetric(metric)
+                                }
+                            )
+                            .navigationTitle(AnyMetricsStrings.Addmetric.titleNew)
+                            .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            HStack(spacing: 12) {
+                                AnyMetricsAsset.Assets.plus.swiftUIImage
+                                    .resizable()
+                                    .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
+                                Text(AnyMetricsStrings.Metric.Add.custom).font(Constants.itemTitleFont)
                             }
-                        )
-                        .navigationTitle(AnyMetricsStrings.Addmetric.titleNew)
-                        .navigationBarTitleDisplayMode(.inline)
-                    } label: {
-                        HStack(spacing: 12) {
-                            AnyMetricsAsset.Assets.plus.swiftUIImage
-                                .resizable()
-                                .frame(width: Constants.createNewIcon, height:  Constants.createNewIcon)
-                            Text(AnyMetricsStrings.Metric.Add.custom).font(Constants.itemTitleFont)
                         }
-                    }
-                    .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                    .listRowSeparator(.hidden)
-                    .buttonStyle(PlainButtonStyle())
+                        .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                        .listRowSeparator(.hidden)
+                        .buttonStyle(PlainButtonStyle())
 
-                    NavigationLink(isActive: $showImportMenu) {
-                        ImportMetricView(onImported: { metric in
-                            showImportMenu = false
-                            saveMetric(metric, dismissGallery: true)
-                        })
-                        .navigationTitle(AnyMetricsStrings.Import.title)
-                        .navigationBarTitleDisplayMode(.inline)
-                    } label: {
-                        HStack(spacing: 12) {
-                            AnyMetricsAsset.Assets.import.swiftUIImage
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
-                            Text(AnyMetricsStrings.Import.title).font(Constants.itemTitleFont)
+                        NavigationLink(isActive: $showImportMenu) {
+                            ImportMetricView(onImported: { metric in
+                                showImportMenu = false
+                                saveMetric(metric, dismissGallery: true)
+                            })
+                            .navigationTitle(AnyMetricsStrings.Import.title)
+                            .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            HStack(spacing: 12) {
+                                AnyMetricsAsset.Assets.import.swiftUIImage
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
+                                Text(AnyMetricsStrings.Import.title).font(Constants.itemTitleFont)
+                            }
                         }
+                        .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                        .listRowSeparator(.hidden)
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                    .listRowSeparator(.hidden)
-                    .buttonStyle(PlainButtonStyle())
 
                     if !viewState.state.showSendRequestMetric {
-                        ForEach(viewState.state.galleryItems, id: \.self) { group in
+                        ForEach(displayedGalleryItems, id: \.self) { group in
                             Section {
                                 ForEach(group.metrics, id: \.self) { metric in
                                     ItemView(
@@ -84,7 +87,7 @@ struct GalleryView: View {
                                             saveMetric(m)
                                         }, removeMetric: { uuid in
                                             mainState.trigger(.removeMetric(uuid))
-                                        }, alreadyAdded: mainState.state.metrics[metric.id] != nil)
+                                        }, alreadyAdded: !isPicker && mainState.state.metrics[metric.id] != nil)
                                     .buttonStyle(PlainButtonStyle())
                                     .listRowSeparator(.hidden)
                                 }
@@ -107,7 +110,7 @@ struct GalleryView: View {
                             .multilineTextAlignment(.center)
                             .padding()
                         Button {
-                            showEmailForm = true
+                            presentGalleryMail()
                         } label: {
                             Text(AnyMetricsStrings.Gallery.Button.send)
                                 .font(Constants.itemTitleFont)
@@ -119,6 +122,13 @@ struct GalleryView: View {
             .padding(0)
             .navigationTitle(AnyMetricsStrings.Gallery.title)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isPicker {
+                    Button(AnyMetricsStrings.Common.close) {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
             .sheet(isPresented: $showEmailForm) {
                 MailView(result: self.$mailResult) { compose in
                     compose.setSubject(AnyMetricsStrings.Gallery.Message.subject)
@@ -138,6 +148,43 @@ struct GalleryView: View {
         }
     }
 
+    private var isPicker: Bool { onPickMetric != nil }
+
+    private var displayedGalleryItems: [GalleryItem] {
+        guard isPicker else { return viewState.state.galleryItems }
+        return Self.movingQuoteFirst(viewState.state.galleryItems)
+    }
+
+    private static func movingQuoteFirst(_ items: [GalleryItem]) -> [GalleryItem] {
+        let quoteID = StarterMetric.id
+        guard let groupIndex = items.firstIndex(where: { group in
+            group.metrics.contains { $0.id == quoteID }
+        }) else {
+            return items
+        }
+
+        var groups = items
+        var group = groups.remove(at: groupIndex)
+        var metrics = group.metrics
+        if let metricIndex = metrics.firstIndex(where: { $0.id == quoteID }) {
+            let quote = metrics.remove(at: metricIndex)
+            metrics.insert(quote, at: 0)
+        }
+        group = GalleryItem(name: group.name, tags: group.tags, metrics: metrics)
+        groups.insert(group, at: 0)
+        return groups
+    }
+
+    private func presentGalleryMail() {
+        if MFMailComposeViewController.canSendMail() {
+            showEmailForm = true
+            return
+        }
+        if let url = URL(string: "mailto:\(AppConfig.emailForReport)") {
+            UIApplication.shared.open(url)
+        }
+    }
+
     private func addCustomMetric(_ metric: Metric) {
         showAddMenu = false
         saveMetric(metric, dismissGallery: true)
@@ -145,6 +192,11 @@ struct GalleryView: View {
 
     private func saveMetric(_ metric: Metric, dismissGallery: Bool = false) {
         ImpactHelper.success()
+        if let onPickMetric {
+            onPickMetric(metric)
+            presentationMode.wrappedValue.dismiss()
+            return
+        }
         mainState.trigger(.addMetricAndRefresh(metric))
         if dismissGallery {
             presentationMode.wrappedValue.dismiss()

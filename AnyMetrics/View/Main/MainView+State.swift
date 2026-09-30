@@ -10,6 +10,7 @@ extension MainView {
 
     enum VAction: ActionProtocol {
         case onAppear
+        case addOnboardingWidget(Metric)
         // case openSheet(ActiveSheet)
         case addMetric(Metric)
         case addMetricAndRefresh(Metric)
@@ -22,5 +23,6 @@ extension MainView {
     enum VNotification: NotificationProtocol {
         case error(String)
         case showWidgetInstructions(Metric)
+        case askReview
     }
 }

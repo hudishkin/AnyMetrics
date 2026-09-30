@@ -25,30 +25,43 @@ enum MetricSharePresenter {
     private static let maxAttempts = 10
     private static let retryDelay: TimeInterval = 0.2
 
-    static func present(fileURL: URL, completion: ((Bool) -> Void)? = nil) {
-        present(fileURL: fileURL, attempt: 0, completion: completion)
+    enum Result {
+        case dismissed(completed: Bool)
+        case failed
     }
 
-    private static func present(fileURL: URL, attempt: Int, completion: ((Bool) -> Void)?) {
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            completion?(false)
+    static func present(fileURL: URL, completion: ((Result) -> Void)? = nil) {
+        present(items: [fileURL], completion: completion)
+    }
+
+    static func present(items: [Any], completion: ((Result) -> Void)? = nil) {
+        present(items: items, attempt: 0, completion: completion)
+    }
+
+    private static func present(items: [Any], attempt: Int, completion: ((Result) -> Void)?) {
+        let missingLocalFile = items.contains { item in
+            guard let url = item as? URL, url.isFileURL else { return false }
+            return !FileManager.default.fileExists(atPath: url.path)
+        }
+        if missingLocalFile {
+            completion?(.failed)
             return
         }
 
         guard let presenter = topViewController() else {
-            retryOrFail(fileURL: fileURL, attempt: attempt, completion: completion)
+            retryOrFail(items: items, attempt: attempt, completion: completion)
             return
         }
 
         if presenter.presentedViewController != nil
             || presenter.isBeingDismissed
             || presenter.isBeingPresented {
-            retryOrFail(fileURL: fileURL, attempt: attempt, completion: completion)
+            retryOrFail(items: items, attempt: attempt, completion: completion)
             return
         }
 
         let activity = UIActivityViewController(
-            activityItems: [fileURL],
+            activityItems: items,
             applicationActivities: nil
         )
         final class PresentationState {
@@ -56,11 +69,11 @@ enum MetricSharePresenter {
         }
         let state = PresentationState()
 
-        activity.completionWithItemsHandler = { _, _, _, _ in
+        activity.completionWithItemsHandler = { _, completed, _, _ in
             DispatchQueue.main.async {
                 guard !state.finished else { return }
                 state.finished = true
-                completion?(true)
+                completion?(.dismissed(completed: completed))
             }
         }
 
@@ -81,22 +94,22 @@ enum MetricSharePresenter {
         DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) {
             guard !state.finished else { return }
             if activity.presentingViewController == nil {
-                retryOrFail(fileURL: fileURL, attempt: attempt, completion: completion)
+                retryOrFail(items: items, attempt: attempt, completion: completion)
             }
         }
     }
 
     private static func retryOrFail(
-        fileURL: URL,
+        items: [Any],
         attempt: Int,
-        completion: ((Bool) -> Void)?
+        completion: ((Result) -> Void)?
     ) {
         guard attempt + 1 < maxAttempts else {
-            completion?(false)
+            completion?(.failed)
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + retryDelay) {
-            present(fileURL: fileURL, attempt: attempt + 1, completion: completion)
+            present(items: items, attempt: attempt + 1, completion: completion)
         }
     }
 
@@ -121,11 +134,18 @@ struct MetricView: View {
     @State var opacity = Constants.animationOpacityBegin
     @State var showActionMenu = false
     @State var showConfirmationDelete = false
+    @State private var pendingAction: PendingAction?
+
+    private enum PendingAction {
+        case edit, share, export, delete
+    }
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
     var editMetric: ((Metric) -> Void)?
+    var shareMetric: ((Metric) -> Void)?
     var exportMetric: ((Metric) -> Void)?
+    var onOverlayChange: ((Bool) -> Void)?
 
     var body: some View {
         Button {
@@ -134,28 +154,22 @@ struct MetricView: View {
             MetricContentView(metric: metric)
         }
         .buttonStyle(.plain)
-        .confirmationDialog(
-            AnyMetricsStrings.Metric.Actions.title(metric.title),
-            isPresented: $showActionMenu,
-            titleVisibility: .visible
-        ) {
-            Button(AnyMetricsStrings.Metric.Actions.updateValue) {
-                refreshMetric?(metric.id)
-            }
-            Button(AnyMetricsStrings.Metric.Actions.edit) {
-                editMetric?(metric)
-            }
-            Button(AnyMetricsStrings.Metric.Actions.export) {
-                // Defer so the actions dialog can finish dismissing first.
-                DispatchQueue.main.async {
-                    exportMetric?(metric)
-                }
-            }
-            Button(AnyMetricsStrings.Metric.Actions.delete, role: .destructive) {
-                // Defer so the actions dialog can finish dismissing first.
-                DispatchQueue.main.async {
-                    showConfirmationDelete = true
-                }
+        .sheet(isPresented: $showActionMenu, onDismiss: performPendingAction) {
+            MetricActionsMenuView(
+                metricTitle: metric.title,
+                onRefresh: {
+                    showActionMenu = false
+                    refreshMetric?(metric.id)
+                },
+                onEdit: { queueAction(.edit) },
+                onExport: { queueAction(.export) },
+                onShare: { queueAction(.share) },
+                onDelete: { queueAction(.delete) }
+            )
+        }
+        .onChange(of: showActionMenu) { presented in
+            if presented {
+                onOverlayChange?(true)
             }
         }
         .confirmationDialog(
@@ -164,6 +178,11 @@ struct MetricView: View {
         ) {
             Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
                 deletehMetric?(metric.id)
+            }
+        }
+        .onChange(of: showConfirmationDelete) { presented in
+            if !presented {
+                onOverlayChange?(false)
             }
         }
         .scaleEffect(scale)
@@ -176,6 +195,28 @@ struct MetricView: View {
                 }
             }
         }
+    }
+
+    private func queueAction(_ action: PendingAction) {
+        pendingAction = action
+        showActionMenu = false
+    }
+
+    private func performPendingAction() {
+        switch pendingAction {
+        case .edit:
+            editMetric?(metric)
+        case .share:
+            shareMetric?(metric)
+        case .export:
+            exportMetric?(metric)
+        case .delete:
+            showConfirmationDelete = true
+        case nil:
+            break
+        }
+        pendingAction = nil
+        onOverlayChange?(showActionMenu || showConfirmationDelete)
     }
 
     private func getAnimationTimeInterval() -> DispatchTime {

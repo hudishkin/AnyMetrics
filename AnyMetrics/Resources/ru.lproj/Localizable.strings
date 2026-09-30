@@ -27,13 +27,25 @@
 "metric.actions.delete" = "Удалить метрику";
 "metric.actions.edit" = "Редактировать";
 "metric.actions.title" = "Что хотите сделать с метрикой «%@»?";
-"metric.actions.export" = "Экспорт";
+"metric.actions.menu-title" = "Действия";
+"metric.actions.share" = "Поделиться";
+"metric.actions.export" = "Экспорт в JSON-файл";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.confirmDelete" = "Да, удалить";
+"metric.share.title" = "Поделиться";
+"metric.share.subtitle" = "Карточка с виджетом и QR-кодом. Файл метрики тоже вложен — другой пользователь AnyMetrics сможет добавить её через «Добавить → Импорт из JSON».";
+"metric.share.button" = "Поделиться";
+"metric.share.copy-link" = "Скопировать ссылку";
+"metric.share.copied" = "Ссылка скопирована";
+"metric.share.caption" = "Смотрите виджет «%@» — сделано в AnyMetrics";
+"metric.share.card-brand" = "AnyMetrics";
+"metric.share.card-hint" = "Наведите камеру — и себе такой";
+"metric.share.failed" = "Не удалось создать картинку. Попробуйте ещё раз.";
 "metric.export.title" = "Экспорт";
 "metric.export.include-request" = "Экспортировать запрос";
 "metric.export.include-widget-style" = "Экспортировать стиль виджета";
 "metric.export.footer" = "Выберите, что включить в JSON-файл. Нужен хотя бы один пункт.";
+"metric.export.request-safe" = "Запрос остаётся на устройстве. В файле только стиль виджета — без адреса, заголовков и API-ключей.";
 "metric.export.request-warning" = "Вы экспортируете запрос полностью со всеми данными и параметрами. Если он использует API-key или другие важные параметры, они также будут добавлены в экспорт.";
 "metric.export.failed" = "Не удалось экспортировать метрику. Попробуйте ещё раз.";
 "metric.export.image-unavailable" = "Не удалось включить фоновое изображение виджета в экспорт.";
@@ -205,35 +217,48 @@
 "info.github-app-repo" = "Репозиторий приложения";
 "info.github-gallery-repo" = "Репозиторий галереи";
 "info.version" = "Версия: %@";
-"info.rate" = "Отценить приложение";
+"info.rate" = "Оценить приложение";
+
+// MARK: - Review
+
+"review.title" = "Нравится AnyMetrics?";
+"review.message" = "Если приложение полезно, оцените его в App Store — это очень помогает.";
+"review.rate" = "Оценить";
+"review.later" = "Позже";
+"review.dont-ask" = "Не спрашивать";
 
 // MARK: - Onboarding
 
+"onboarding.add-widget" = "Добавить виджет";
+"onboarding.choose-from-gallery" = "Выбрать из галереи";
+"onboarding.widget-hint" = "Сохраним метрику и покажем, как добавить виджет на домашний экран.";
+"onboarding.preview-loading" = "Загружаем…";
+"onboarding.preview-retry" = "Не загрузилось. Повторить";
 "onboarding.skip" = "Пропустить";
 "onboarding.next" = "Дальше";
-"onboarding.get-started" = "Поехали";
-"onboarding.page1.title" = "Любой источник —\nцифра на экране";
-"onboarding.page1.subtitle" = "API или сайт → виджет. Без кода: ссылка и нужное значение.";
+"onboarding.page1.title" = "Любой источник —\nу вас на экране";
+"onboarding.page1.subtitle" = "Числа, текст и картинки из API или с сайта — в вашем виджете. Без кода.";
 "onboarding.page2.title" = "Готовое\nили своё";
 "onboarding.page2.subtitle" = "Возьмите метрику из галереи или соберите свою за пару минут.";
 "onboarding.page3.title" = "Кастомные\nвиджеты";
 "onboarding.page3.subtitle" = "Выберите шаблон или оформите сами — расположение, цвета и фото на фоне.";
-"onboarding.page4.title" = "Всегда\nна виду";
-"onboarding.page4.subtitle" = "Виджет обновляется сам. Добавьте первую метрику и вынесите на домашний экран.";
+"onboarding.page4.title" = "Добавьте\nпервый виджет";
+"onboarding.page4.subtitle" = "Начните с «Цитаты дня» или выберите другую метрику из галереи.";
 
 // MARK: - Starter Metric
 
-"starter-metric.title" = "AnyMetrics ⭐";
-"starter-metric.measure" = "Звёзды GitHub";
+"starter-metric.title" = "Цитата дня";
+"starter-metric.measure" = "Английский · ZenQuotes";
 
 // MARK: - Widget Guide
 
 "widget-guide.title" = "Добавить на домашний экран";
 "widget-guide.subtitle" = "Метрика «%@» сохранена. Добавьте виджет, чтобы видеть её на домашнем экране.";
 "widget-guide.step1" = "Долго нажмите на домашний экран";
-"widget-guide.step2" = "Нажмите + в верхнем углу";
+"widget-guide.step2" = "Нажмите «Изменить» → «Добавить виджет» (или +)";
 "widget-guide.step3" = "Найдите AnyMetrics";
-"widget-guide.step4" = "Выберите виджет и укажите вашу метрику";
+"widget-guide.step4" = "Выберите размер и нажмите «Добавить виджет»";
+"widget-guide.select-metric" = "Зажмите виджет → «Изменить виджет» и выберите «%@»";
 "widget-guide.done" = "Понятно";
 "widget-guide.dont-show-again" = "Не показывать больше";
 
@@ -249,9 +274,12 @@
 "error.host-not-found" = "Сервер не найден. Проверьте URL";
 "error.ssl" = "Ошибка защищённого соединения";
 "error.unknown" = "Что-то пошло не так: %@";
+"error.metric-refresh" = "Не удалось обновить «%@». %@";
 
 // MARK: - Dev Menu
 
 "dev-menu.title" = "Dev меню";
 "dev-menu.show-onboarding" = "Показать онбординг";
 "dev-menu.show-widget-instructions" = "Показать инструкцию виджета";
+"dev-menu.show-review-prompt" = "Показать запрос оценки";
+"dev-menu.reset-review" = "Сбросить запросы оценки";

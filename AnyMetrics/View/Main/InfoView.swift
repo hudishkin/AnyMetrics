@@ -85,7 +85,8 @@ struct InfoView: View {
 
                     VStack(alignment: .leading) {
                         Button {
-                            ReviewHandler.requestReview()
+                            ReviewHandler.markCompleted()
+                            ReviewHandler.requestReview(countsTowardAnnualLimit: false)
                         } label: {
                             Text(AnyMetricsStrings.Info.rate)
                                 .font(Constants.fontLink)

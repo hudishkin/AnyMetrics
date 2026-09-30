@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/iOS-15%2B-black" alt="iOS 15+" />
+  <img src="https://img.shields.io/badge/iOS-16%2B-black" alt="iOS 16+" />
   <img src="https://img.shields.io/badge/price-Free-brightgreen" alt="Free" />
   <img src="https://img.shields.io/badge/ads-None-lightgrey" alt="No ads" />
   <img src="https://img.shields.io/badge/license-Open%20Source-blue" alt="Open source" />
@@ -180,7 +180,7 @@ div a.link
 
 ## Build from source
 
-**Requirements:** iOS 15.0+, Xcode 15+, [Tuist](https://tuist.io)
+**Requirements:** iOS 16.0+, Xcode 15+, [Tuist](https://tuist.io)
 
 ```bash
 tuist install

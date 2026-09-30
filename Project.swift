@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version = "2.4"
+let version = "2.5"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
 let teamId = "Q424U5CAPS"
@@ -66,7 +66,7 @@ let sharedTarget: Target = .target(
     destinations: .iOS,
     product: .framework,
     bundleId: "\(bundleId).Shared",
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .default,
     sources: [
         "AnyMetricsShared/**/*.swift"
@@ -95,7 +95,7 @@ let appTarget: Target = .target(
     destinations: .iOS,
     product: .app,
     bundleId: bundleId,
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .extendingDefault(with: appInfoPlist),
     sources: [
         "AnyMetrics/**/*.swift",
@@ -169,7 +169,7 @@ let widgetTarget: Target = .target(
     destinations: .iOS,
     product: .appExtension,
     bundleId: "\(bundleId).WidgetExtension",
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .extendingDefault(with: widgetInfoPlist),
     sources: [
         "Widget/Widget.swift",
@@ -208,7 +208,7 @@ let intentTarget: Target = .target(
     destinations: .iOS,
     product: .appExtension,
     bundleId: "\(bundleId).IntentExtension",
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .extendingDefault(with: intentInfoPlist),
     sources: [
         "Intent/IntentHandler.swift",
@@ -239,7 +239,7 @@ let unitTestsTarget: Target = .target(
     destinations: .iOS,
     product: .unitTests,
     bundleId: "\(bundleId).AnyMetricsTests",
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .default,
     sources: ["AnyMetricsTests/**/*.swift"],
     dependencies: [.target(name: "AnyMetrics")],
@@ -261,7 +261,7 @@ let uiTestsTarget: Target = .target(
     destinations: .iOS,
     product: .uiTests,
     bundleId: "\(bundleId).AnyMetricsUITests",
-    deploymentTargets: .iOS("15.0"),
+    deploymentTargets: .iOS("16.0"),
     infoPlist: .default,
     sources: ["AnyMetricsUITests/**/*.swift"],
     dependencies: [.target(name: "AnyMetrics")],
@@ -281,7 +281,7 @@ let project = Project(
     name: "AnyMetrics",
     settings: .settings(
         base: [
-            "IPHONEOS_DEPLOYMENT_TARGET": "15.0",
+            "IPHONEOS_DEPLOYMENT_TARGET": "16.0",
             "SWIFT_VERSION": "5.0",
             "MARKETING_VERSION": .string(version),
             "CURRENT_PROJECT_VERSION": .string(buildNumber)
