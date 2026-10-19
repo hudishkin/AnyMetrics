@@ -18,6 +18,7 @@
 "metric.value.bad" = "Не хорошо";
 "metric.value.empty" = "N/A";
 "metric.value.error" = "Ошибка";
+"metric.value.stale" = "устарело";
 "metric.updated.just-now" = "только что";
 
 "metric.add" = "Добавить";
@@ -142,6 +143,10 @@
 "addmetric.design.minimal" = "Минимализм";
 "addmetric.design.ring" = "Кольцо";
 "addmetric.design.plain" = "Без заливки";
+"addmetric.design.choose-design" = "Выбрать дизайн";
+"addmetric.design.custom" = "Свой";
+"addmetric.design.edit-selected" = "Редактировать";
+"addmetric.design.edit-design" = "Редактировать дизайн";
 "addmetric.design.preview" = "Превью";
 "addmetric.design.presets" = "Шаблоны";
 "addmetric.design.background" = "Фон";
@@ -163,6 +168,9 @@
 "addmetric.design.size-small" = "Маленький";
 "addmetric.design.size-medium" = "Средний";
 "addmetric.design.bg-status-gradient" = "Градиент по статусу";
+"addmetric.design.bg-gradients" = "Градиенты";
+"addmetric.design.bg-custom-gradient" = "Свой градиент";
+"addmetric.design.bg-gradient-stop" = "Цвет %@";
 "addmetric.design.bg-system" = "Системный фон";
 "addmetric.design.bg-solid" = "Сплошной цвет";
 "addmetric.design.bg-photo" = "Выбрать фото";
@@ -212,12 +220,15 @@
 
 // MARK: - Info View
 
-"info.title" = "О приложении";
-"info.message" = "ЭниМетрик проект, разработанный для решения собственной проблемы и опубликованный в AppStore для всех бесплатно.\n\nЧто бы добавить в галерею метрику отправьте pull request в репозиторий галереи на Github.";
-"info.github-app-repo" = "Репозиторий приложения";
-"info.github-gallery-repo" = "Репозиторий галереи";
-"info.version" = "Версия: %@";
-"info.rate" = "Оценить приложение";
+"info.summary" = "Любой HTTP-адрес становится виджетом на домашнем экране. Без кода и без своих серверов.";
+"info.trust" = "Запросы уходят прямо с iPhone. Ключи остаются на устройстве. Бесплатно, без рекламы, исходный код открыт.";
+"info.rate" = "Оценить в App Store";
+"info.contact" = "Написать разработчику";
+"info.privacy" = "Конфиденциальность";
+"info.source" = "Исходный код";
+"info.gallery" = "Предложить метрику";
+"info.mail-subject" = "[AnyMetrics] Обратная связь";
+"info.version" = "Версия %@";
 
 // MARK: - Review
 
@@ -244,6 +255,12 @@
 "onboarding.page3.subtitle" = "Выберите шаблон или оформите сами — расположение, цвета и фото на фоне.";
 "onboarding.page4.title" = "Добавьте\nпервый виджет";
 "onboarding.page4.subtitle" = "Начните с «Цитаты дня» или выберите другую метрику из галереи.";
+"onboarding.gradient.title" = "Фон";
+"onboarding.gradient.dusk" = "Фиолетовый";
+"onboarding.gradient.sunset" = "Закат";
+"onboarding.gradient.ocean" = "Океан";
+"onboarding.gradient.aurora" = "Сияние";
+"onboarding.gradient.mono" = "Монохром";
 
 // MARK: - Starter Metric
 
@@ -254,17 +271,29 @@
 
 "widget-guide.title" = "Добавить на домашний экран";
 "widget-guide.subtitle" = "Метрика «%@» сохранена. Добавьте виджет, чтобы видеть её на домашнем экране.";
-"widget-guide.step1" = "Долго нажмите на домашний экран";
-"widget-guide.step2" = "Нажмите «Изменить» → «Добавить виджет» (или +)";
-"widget-guide.step3" = "Найдите AnyMetrics";
-"widget-guide.step4" = "Выберите размер и нажмите «Добавить виджет»";
-"widget-guide.select-metric" = "Зажмите виджет → «Изменить виджет» и выберите «%@»";
+"widget-guide.progress" = "Шаг %@ из %@";
+"widget-guide.next" = "Далее";
+"widget-guide.back" = "Назад";
 "widget-guide.done" = "Понятно";
 "widget-guide.dont-show-again" = "Не показывать больше";
+"widget-guide.demo.edit" = "Изменить";
+"widget-guide.demo.add-widget" = "Добавить виджет";
+"widget-guide.demo.edit-widget" = "Изменить виджет";
+"widget-guide.demo.metric-type" = "Metric Type";
+"widget-guide.ios16.step1" = "Нажмите и удерживайте пустое место на домашнем экране, пока значки не начнут покачиваться.";
+"widget-guide.ios16.step2" = "Нажмите «+» в левом верхнем углу.";
+"widget-guide.ios16.step3" = "Найдите AnyMetrics и нажмите на него.";
+"widget-guide.ios16.step4" = "Выберите размер и нажмите «Добавить виджет».";
+"widget-guide.ios16.select-metric" = "Зажмите виджет, нажмите «Изменить виджет» и в пункте «Metric Type» выберите «%@».";
+"widget-guide.ios18.step1" = "Нажмите и удерживайте фон домашнего экрана, пока значки не начнут покачиваться.";
+"widget-guide.ios18.step2" = "Нажмите «Изменить» в верхней части экрана, затем «Добавить виджет».";
+"widget-guide.ios18.step3" = "Найдите AnyMetrics и нажмите на него.";
+"widget-guide.ios18.step4" = "Смахните до нужного размера и нажмите «Добавить виджет».";
+"widget-guide.ios18.select-metric" = "Зажмите виджет, нажмите «Изменить виджет» и в пункте «Metric Type» выберите «%@».";
 
 // MARK: - Errors
 
-"error.http-status" = "Сервер вернул HTTP %d";
+"error.http-status" = "Сервер вернул HTTP %@";
 "error.invalid-response" = "Некорректный или пустой ответ";
 "error.parse-failed" = "Не удалось получить значение. Проверьте правило парсинга: %@";
 "error.parse-failed-generic" = "Не удалось разобрать ответ. Проверьте правило парсинга";

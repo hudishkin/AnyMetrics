@@ -35,6 +35,19 @@ public enum MetricDisplayHelpers {
         metric.refreshFailed
     }
 
+    /// Previous number or status is still on screen after a failed refresh.
+    public static func showsStaleValue(for metric: Metric) -> Bool {
+        guard metric.refreshFailed, metric.resultKind != .image else { return false }
+        if metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none) {
+            return true
+        }
+        return !metric.result.isEmpty
+    }
+
+    public static func staleMark(bundle: Bundle = Bundle(for: MetricStore.self)) -> String {
+        NSLocalizedString("metric.value.stale", bundle: bundle, comment: "")
+    }
+
     public static func relativeUpdatedString(
         for date: Date?,
         bundle: Bundle = Bundle(for: MetricStore.self)

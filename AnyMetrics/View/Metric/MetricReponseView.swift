@@ -43,6 +43,8 @@ struct MetricResponseView: View {
     var viewState: ViewState<MetricFormView.Interactor>
     @EnvironmentObject
     var requestViewState: ViewState<RequestFormView.Interactor>
+    @Environment(\.metricFormSession)
+    private var formSession
     var action: (Metric) -> Void
 
     private var typeCode: CodeView.CodeType {
@@ -222,6 +224,7 @@ struct MetricResponseView: View {
                     } label: {
                         Button(action: {
                             showNext = true
+                            formSession.advance(to: AnalyticsEvents.FormStep.display)
                         }, label: {
                             Spacer()
                             Text(AnyMetricsStrings.Addmetric.Button.next)

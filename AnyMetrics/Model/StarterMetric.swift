@@ -28,8 +28,66 @@ enum StarterMetric {
             website: URL(string: "https://zenquotes.io/")!,
             interval: 86400,
             widgetDesign: WidgetDesign.roundedCard,
-            widgetAppearance: .preset(WidgetDesign.roundedCard)
+            widgetAppearance: appearance(for: .dusk)
         )
+    }
+
+    /// Backgrounds offered for the quote widget. `mono` is the only colorless option.
+    enum QuoteStyle: String, CaseIterable, Identifiable {
+        case dusk
+        case sunset
+        case ocean
+        case aurora
+        case mono
+
+        var id: String { rawValue }
+
+        var localizationKey: String { "onboarding.gradient.\(rawValue)" }
+
+        var colors: [String] {
+            switch self {
+            case .dusk:
+                return ["#7C3AED", "#E11D48", "#312E81"]
+            case .sunset:
+                return ["#C2410C", "#BE123C", "#4C0519"]
+            case .ocean:
+                return ["#0F766E", "#1D4ED8", "#0F172A"]
+            case .aurora:
+                return ["#6D28D9", "#DB2777", "#0E7490"]
+            case .mono:
+                return ["#636366", "#2C2C2E", "#1C1C1E"]
+            }
+        }
+    }
+
+    static func appearance(for style: QuoteStyle) -> WidgetAppearance {
+        var appearance = WidgetAppearance.roundedCard
+        let gradient = WidgetGradientSpec(
+            colors: style.colors.map { .hex($0) },
+            startX: 1,
+            startY: 0,
+            endX: 0,
+            endY: 1
+        )
+        appearance.small.background.fill = .gradient(gradient)
+        appearance.medium.background.fill = .gradient(gradient)
+        appearance.small.elements = tintedForGradient(appearance.small.elements)
+        appearance.medium.elements = tintedForGradient(appearance.medium.elements)
+        appearance.presetId = WidgetAppearancePreset.custom.rawValue
+        return appearance
+    }
+
+    private static func tintedForGradient(_ elements: [WidgetElementSpec]) -> [WidgetElementSpec] {
+        elements.map { element in
+            var copy = element
+            switch element.kind {
+            case .title, .value:
+                copy.color = .hex("#FFFFFF")
+            case .measure, .updated:
+                copy.color = .hex("#E6FFFFFF")
+            }
+            return copy
+        }
     }
 
     @discardableResult

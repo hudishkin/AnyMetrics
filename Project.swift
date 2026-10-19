@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version = "2.5"
+let version = "2.6"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
 let teamId = "Q424U5CAPS"
@@ -30,7 +30,8 @@ let appInfoPlist: [String: Plist.Value] = [
     ]),
     "CFBundleShortVersionString": .string(version),
     "CFBundleVersion": .string(buildNumber),
-    "ITSAppUsesNonExemptEncryption": .boolean(false)
+    "ITSAppUsesNonExemptEncryption": .boolean(false),
+    "FirebaseAutomaticScreenReportingEnabled": .boolean(false)
 ]
 
 let widgetInfoPlist: [String: Plist.Value] = [

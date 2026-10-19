@@ -15,6 +15,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         guard !isPreview else { return true }
 
         FirebaseApp.configure()
+        // The flag is persisted on device, so release builds must re-enable it explicitly.
+#if DEBUG
+        Analytics.setAnalyticsCollectionEnabled(false)
+#else
+        Analytics.setAnalyticsCollectionEnabled(true)
+#endif
         return true
     }
 

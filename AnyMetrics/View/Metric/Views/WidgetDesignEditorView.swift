@@ -50,6 +50,11 @@ struct WidgetDesignEditorView: View {
     @State private var showURLField = false
     @State private var backgroundURLText = ""
     @State private var solidColor = Color.blue.opacity(0.35)
+    @State private var gradientStops = [
+        Color(red: 0.11, green: 0.11, blue: 0.12),
+        Color(red: 0.23, green: 0.23, blue: 0.24),
+        Color(red: 0.56, green: 0.56, blue: 0.58)
+    ]
     @State private var elementTextColor = Color.primary
     @State private var isSyncingControls = false
     @State private var backgroundURLTask: URLSessionDataTask?
@@ -401,23 +406,15 @@ struct WidgetDesignEditorView: View {
         }
 
         if !usesResultImageAsBackground {
-            if currentBackgroundKind == .customGradient {
-                backgroundRow(
-                    title: L10n.bgStatusGradient,
-                    kind: .customGradient,
-                    systemImage: "circle.lefthalf.filled"
-                ) {
-                    // Keep imported custom gradient; don't replace with status gradient.
-                }
-            } else {
-                backgroundRow(
-                    title: L10n.bgStatusGradient,
-                    kind: .statusGradient,
-                    systemImage: "circle.lefthalf.filled"
-                ) {
-                    setFill(.statusGradient)
-                }
+            backgroundRow(
+                title: L10n.bgStatusGradient,
+                kind: .statusGradient,
+                systemImage: "circle.lefthalf.filled"
+            ) {
+                setFill(.statusGradient)
             }
+
+            gradientOptions
 
             backgroundRow(
                 title: L10n.bgSystem,
@@ -546,6 +543,151 @@ struct WidgetDesignEditorView: View {
             )
         }
         .padding(.vertical, Constants.controlVerticalPadding)
+    }
+
+    private var gradientOptions: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.bgGradients)
+                .font(Constants.fontRow)
+                .foregroundColor(Constants.textColor)
+
+            HStack(spacing: 12) {
+                ForEach(StarterMetric.QuoteStyle.allCases) { style in
+                    gradientPresetButton(style)
+                }
+            }
+
+            Button(action: beginCustomGradient) {
+                HStack(spacing: Constants.controlSpacing) {
+                    selectionMark(isCustomGradient)
+                    Image(systemName: "slider.horizontal.3")
+                        .foregroundColor(Constants.secondaryColor)
+                        .frame(width: Constants.iconWidth)
+                    Text(L10n.bgCustomGradient)
+                        .font(Constants.fontRow)
+                        .foregroundColor(Constants.textColor)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+
+            if currentGradientSpec != nil {
+                ForEach(0..<3, id: \.self) { index in
+                    ColorPicker(
+                        L10n.bgGradientStop(index + 1),
+                        selection: gradientStopBinding(index),
+                        supportsOpacity: true
+                    )
+                }
+            }
+        }
+        .padding(.vertical, Constants.controlVerticalPadding)
+    }
+
+    private func gradientPresetButton(_ style: StarterMetric.QuoteStyle) -> some View {
+        let selected = matchesPreset(style)
+        return Button {
+            applyPreset(style)
+        } label: {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: style.colors.compactMap { Color(hex: $0) },
+                        startPoint: .topTrailing,
+                        endPoint: .bottomLeading
+                    )
+                )
+                .frame(width: 28, height: 28)
+                .padding(3)
+                .overlay {
+                    Circle()
+                        .strokeBorder(selected ? Constants.textColor : Color.clear, lineWidth: 1.5)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(NSLocalizedString(style.localizationKey, comment: "")))
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private var currentGradientSpec: WidgetGradientSpec? {
+        if case .gradient(let spec) = sizeAppearance.background.fill { return spec }
+        return nil
+    }
+
+    private var isCustomGradient: Bool {
+        currentGradientSpec != nil && !StarterMetric.QuoteStyle.allCases.contains(where: matchesPreset)
+    }
+
+    private func matchesPreset(_ style: StarterMetric.QuoteStyle) -> Bool {
+        guard let spec = currentGradientSpec, spec.colors.count == style.colors.count else { return false }
+        return zip(spec.colors, style.colors).allSatisfy { pair in
+            normalizeHex(pair.0) == normalizeHex(pair.1)
+        }
+    }
+
+    private func applyPreset(_ style: StarterMetric.QuoteStyle) {
+        let colors = style.colors.compactMap { Color(hex: $0) }
+        if colors.count == 3 {
+            gradientStops = colors
+        }
+        setFill(.gradient(WidgetGradientSpec(
+            colors: style.colors.map { .hex($0) },
+            startX: 1,
+            startY: 0,
+            endX: 0,
+            endY: 1
+        )))
+    }
+
+    private func beginCustomGradient() {
+        guard currentGradientSpec == nil else { return }
+        let colors = ["#1C1C1E", "#3A3A3C", "#8E8E93"]
+        gradientStops = colors.compactMap { Color(hex: $0) }
+        setFill(.gradient(WidgetGradientSpec(
+            colors: colors.map { .hex($0) },
+            startX: 1,
+            startY: 0,
+            endX: 0,
+            endY: 1
+        )))
+    }
+
+    private func gradientStopBinding(_ index: Int) -> Binding<Color> {
+        Binding(
+            get: { gradientStops[index] },
+            set: { newColor in
+                guard gradientStops.indices.contains(index) else { return }
+                gradientStops[index] = newColor
+                guard !isSyncingControls else { return }
+                var spec = currentGradientSpec ?? WidgetGradientSpec(
+                    colors: [],
+                    startX: 1,
+                    startY: 0,
+                    endX: 0,
+                    endY: 1
+                )
+                spec.colors = gradientStops.map { .hex($0.hexString) }
+                setFill(.gradient(spec))
+            }
+        )
+    }
+
+    private func normalizeHex(_ spec: WidgetColorSpec) -> String {
+        switch spec {
+        case .hex(let hex):
+            return normalizeHex(hex)
+        case .adaptiveHex(let light, _):
+            return normalizeHex(light)
+        case .adaptive:
+            return ""
+        }
+    }
+
+    private func normalizeHex(_ hex: String) -> String {
+        var cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if cleaned.hasPrefix("#") { cleaned.removeFirst() }
+        if cleaned.count == 6 { cleaned = "FF" + cleaned }
+        return cleaned
     }
 
     private func backgroundRow(
@@ -750,6 +892,14 @@ struct WidgetDesignEditorView: View {
         if case .solid(let colorSpec) = sizeAppearance.background.fill,
            let color = Color(widgetColorSpec: colorSpec) {
             solidColor = color
+        }
+        if case .gradient(let spec) = sizeAppearance.background.fill {
+            let parsed = spec.colors.compactMap { Color(widgetColorSpec: $0) }
+            if !parsed.isEmpty {
+                var colors = parsed
+                while colors.count < 3 { colors.append(colors.last ?? .white) }
+                gradientStops = Array(colors.prefix(3))
+            }
         }
         if case .image(.url(let url)) = sizeAppearance.background.fill {
             backgroundURLText = url

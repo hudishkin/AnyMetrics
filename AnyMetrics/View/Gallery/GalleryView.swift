@@ -21,6 +21,10 @@ struct GalleryView: View {
     var showImportMenu: Bool = false
     @State
     var showEmailForm: Bool = false
+    @State
+    private var didLogOpen = false
+    @State
+    private var formSession = MetricFormSession(tracksFunnel: true)
     @Environment(\.presentationMode)
     var presentationMode: Binding<PresentationMode>
     @EnvironmentObject
@@ -38,7 +42,9 @@ struct GalleryView: View {
                         NavigationLink(isActive: $showAddMenu) {
                             MetricFormView(
                                 allowDismissed: $allowDismissed,
+                                formSession: formSession,
                                 action: { metric in
+                                    formSession.markSaved()
                                     addCustomMetric(metric)
                                 }
                             )
@@ -59,7 +65,11 @@ struct GalleryView: View {
                         NavigationLink(isActive: $showImportMenu) {
                             ImportMetricView(onImported: { metric in
                                 showImportMenu = false
-                                saveMetric(metric, dismissGallery: true)
+                                saveMetric(
+                                    metric,
+                                    source: AnalyticsEvents.Source.imported,
+                                    dismissGallery: true
+                                )
                             })
                             .navigationTitle(AnyMetricsStrings.Import.title)
                             .navigationBarTitleDisplayMode(.inline)
@@ -84,7 +94,11 @@ struct GalleryView: View {
                                     ItemView(
                                         metric: metric,
                                         addMetric: { m in
-                                            saveMetric(m)
+                                            saveMetric(
+                                                m,
+                                                source: AnalyticsEvents.Source.gallery,
+                                                galleryGroup: group.name
+                                            )
                                         }, removeMetric: { uuid in
                                             mainState.trigger(.removeMetric(uuid))
                                         }, alreadyAdded: !isPicker && mainState.state.metrics[metric.id] != nil)
@@ -145,7 +159,20 @@ struct GalleryView: View {
         })
         .onAppear {
             viewState.trigger(.onAppear)
+            if !didLogOpen {
+                didLogOpen = true
+                AnalyticsEvents.galleryOpened(
+                    entry: isPicker ? AnalyticsEvents.GalleryEntry.onboarding : AnalyticsEvents.GalleryEntry.main
+                )
+            }
         }
+        .onChange(of: showAddMenu, perform: { shown in
+            if shown {
+                formSession.begin()
+            } else {
+                formSession.abandonIfNeeded()
+            }
+        })
     }
 
     private var isPicker: Bool { onPickMetric != nil }
@@ -187,15 +214,29 @@ struct GalleryView: View {
 
     private func addCustomMetric(_ metric: Metric) {
         showAddMenu = false
-        saveMetric(metric, dismissGallery: true)
+        saveMetric(metric, source: AnalyticsEvents.Source.custom, dismissGallery: true)
     }
 
-    private func saveMetric(_ metric: Metric, dismissGallery: Bool = false) {
+    private func saveMetric(
+        _ metric: Metric,
+        source: String,
+        galleryGroup: String? = nil,
+        dismissGallery: Bool = false
+    ) {
         ImpactHelper.success()
         if let onPickMetric {
             onPickMetric(metric)
             presentationMode.wrappedValue.dismiss()
             return
+        }
+        if mainState.state.metrics[metric.id] == nil {
+            AnalyticsEvents.metricAdded(
+                source: source,
+                type: metric.type,
+                resultKind: metric.resultKind,
+                galleryId: source == AnalyticsEvents.Source.gallery ? metric.id.uuidString : nil,
+                galleryGroup: galleryGroup
+            )
         }
         mainState.trigger(.addMetricAndRefresh(metric))
         if dismissGallery {

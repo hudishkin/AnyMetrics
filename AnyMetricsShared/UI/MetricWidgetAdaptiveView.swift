@@ -92,13 +92,15 @@ public struct MetricWidgetAdaptiveView: View {
     }
 
     private var valueText: String {
-        MetricDisplayHelpers.valueString(
+        let value = MetricDisplayHelpers.valueString(
             for: metric,
             goodLabel: palette.statusGoodLabel,
             badLabel: palette.statusBadLabel,
             emptyLabel: palette.emptyLabel,
             errorLabel: palette.errorLabel
         )
+        guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
+        return "\(value) · \(MetricDisplayHelpers.staleMark())"
     }
 
     private var isStatusMetric: Bool {
@@ -117,6 +119,9 @@ public struct MetricWidgetAdaptiveView: View {
             return metric.resultWithError ? palette.textErrorColor : palette.textSuccessColor
         }
         if metric.refreshFailed && metric.result.isEmpty {
+            return palette.textErrorColor
+        }
+        if MetricDisplayHelpers.showsStaleValue(for: metric) {
             return palette.textErrorColor
         }
         if metric.resultKind == .image, resultImage == nil {
@@ -167,7 +172,7 @@ public struct MetricWidgetAdaptiveView: View {
                         .minimumScaleFactor(0.7)
                         .accentableOnLockScreen()
                 } else if MetricDisplayHelpers.showsStaleUpdate(for: metric) {
-                    Text(palette.errorLabel)
+                    Text(MetricDisplayHelpers.staleMark())
                         .font(.caption2)
                         .foregroundColor(palette.textErrorColor)
                         .lineLimit(1)

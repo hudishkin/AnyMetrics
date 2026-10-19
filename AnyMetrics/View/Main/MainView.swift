@@ -35,6 +35,10 @@ struct MainView: View {
     @State
     var sharePayload: MetricSharePayload?
     @State
+    var shareIncludesRequest = false
+    @State
+    var widgetGuideDontShowAgain = false
+    @State
     var pendingWidgetInstructionsMetric: Metric?
     @State
     var isMetricOverlayPresented = false
@@ -45,7 +49,9 @@ struct MainView: View {
     @State
     var showReviewPrompt = false
     @State
-    var pendingFirstAddReview = false
+    var refreshSucceededThisLaunch = false
+    @State
+    var offerSecondMetric = false
     @State
     var reviewPromptScheduled = false
 #if DEBUG
@@ -178,9 +184,19 @@ struct MainView: View {
             }
         }
         .sheet(item: $widgetInstructionsMetric, onDismiss: {
+            AnalyticsEvents.widgetGuideDismissed(dontShowAgain: widgetGuideDontShowAgain)
+            widgetGuideDontShowAgain = false
+            let offerGallery = offerSecondMetric
+            offerSecondMetric = false
+            if offerGallery {
+                DispatchQueue.main.async {
+                    sheetType = .addMetrics
+                }
+            }
             presentQueuedSurfaces()
         }) { metric in
-            WidgetInstructionsView(metricTitle: metric.title) {
+            WidgetInstructionsView(metricTitle: metric.title) { dontShowAgain in
+                widgetGuideDontShowAgain = dontShowAgain
                 widgetInstructionsMetric = nil
             }
         }
@@ -195,7 +211,8 @@ struct MainView: View {
         .sheet(item: $shareMetric, onDismiss: {
             presentMetricShareSheetIfNeeded()
         }) { metric in
-            MetricShareOptionsView(metric: metric) { payload in
+            MetricShareOptionsView(metric: metric) { payload, includeRequest in
+                shareIncludesRequest = includeRequest
                 sharePayload = payload
                 shareMetric = nil
             }
@@ -219,7 +236,7 @@ struct MainView: View {
             isPresented: $showReviewPrompt
         ) {
             Button(AnyMetricsStrings.Review.rate) {
-                ReviewHandler.markCompleted()
+                ReviewHandler.markCompleted(source: AnalyticsEvents.ReviewSource.prompt)
                 ReviewHandler.requestReview()
             }
             Button(AnyMetricsStrings.Review.dontAsk) {
@@ -243,6 +260,7 @@ struct MainView: View {
             OnboardingView { completion in
                 pendingOnboardingCompletion = completion
                 AppSettings.hasCompletedOnboarding = true
+                AnalyticsEvents.syncLibrary(viewState.state.metrics)
                 showOnboarding = false
             }
             .environmentObject(viewState)
@@ -263,10 +281,13 @@ struct MainView: View {
 #endif
         .onReceive(viewState.notifications) { notification in
             switch notification {
-            case .showWidgetInstructions(let metric):
+            case .showWidgetInstructions(let metric, let offerSecond):
+                offerSecondMetric = offerSecond
                 presentWidgetInstructions(metric)
             case .askReview:
-                pendingFirstAddReview = true
+                ReviewHandler.deferPromptUntilNextLaunch()
+            case .reviewAfterSuccessfulRefresh:
+                refreshSucceededThisLaunch = true
                 scheduleReviewPromptIfNeeded()
             case .error(let message):
                 presentError(message)
@@ -329,7 +350,7 @@ struct MainView: View {
 
     private func presentWidgetInstructions(_ metric: Metric) {
         if canPresentWidgetInstructions {
-            widgetInstructionsMetric = metric
+            showWidgetGuide(metric)
         } else {
             pendingWidgetInstructionsMetric = metric
         }
@@ -347,37 +368,36 @@ struct MainView: View {
         guard widgetInstructionsMetric == nil, let metric = pendingWidgetInstructionsMetric else { return }
         guard canPresentWidgetInstructions else { return }
         pendingWidgetInstructionsMetric = nil
+        showWidgetGuide(metric)
+    }
+
+    private func showWidgetGuide(_ metric: Metric) {
+        AnalyticsEvents.widgetGuideShown()
         widgetInstructionsMetric = metric
     }
 
     private func scheduleReviewPromptIfNeeded() {
         guard canPresentReviewPrompt, !reviewPromptScheduled else { return }
 
-        guard reviewPromptTrigger(preferFirstAdd: pendingFirstAddReview) != nil else {
-            pendingFirstAddReview = false
-            return
-        }
+        guard reviewPromptTrigger() != nil else { return }
 
         reviewPromptScheduled = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             reviewPromptScheduled = false
             guard canPresentReviewPrompt else { return }
-            guard let trigger = reviewPromptTrigger(preferFirstAdd: pendingFirstAddReview) else {
-                pendingFirstAddReview = false
-                return
-            }
-            pendingFirstAddReview = false
+            guard let trigger = reviewPromptTrigger() else { return }
             ReviewHandler.recordPromptShown()
-            AnalyticsEvents.reviewShown(trigger: trigger)
+            AnalyticsEvents.reviewShown(
+                trigger: trigger,
+                librarySize: viewState.state.metrics.count
+            )
             showReviewPrompt = true
         }
     }
 
-    private func reviewPromptTrigger(preferFirstAdd: Bool) -> ReviewHandler.Trigger? {
+    private func reviewPromptTrigger() -> ReviewHandler.Trigger? {
+        guard refreshSucceededThisLaunch else { return nil }
         let metrics = viewState.state.metrics
-        if preferFirstAdd, ReviewHandler.shouldPrompt(.firstUserAdd, metrics: metrics) {
-            return .firstUserAdd
-        }
         if ReviewHandler.shouldPrompt(.existingUserLaunch, metrics: metrics) {
             return .existingUserLaunch
         }
@@ -423,12 +443,12 @@ struct MainView: View {
         MetricSharePresenter.present(items: payload.activityItems) { result in
             cleanupShareFiles()
             switch result {
-            case .dismissed(completed: true):
-                AnalyticsEvents.metricShared(mode: "image_and_metric")
+            case .dismissed(completed: true, let activity):
+                AnalyticsEvents.metricShared(includeRequest: shareIncludesRequest, activity: activity)
             case .failed:
                 presentError(AnyMetricsStrings.Metric.Share.failed)
-            case .dismissed(completed: false):
-                break
+            case .dismissed(completed: false, _):
+                AnalyticsEvents.metricShareCancelled()
             }
             presentQueuedSurfaces()
         }
