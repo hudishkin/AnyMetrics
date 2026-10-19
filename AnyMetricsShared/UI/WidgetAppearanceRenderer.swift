@@ -220,7 +220,7 @@ public struct WidgetAppearanceRenderer: View {
                             .font(font(for: element, text: text))
                             .foregroundColor(color)
                             .lineLimit(lineLimit(for: element.kind))
-                            .minimumScaleFactor(0.5)
+                            .minimumScaleFactor(minimumScaleFactor(for: element.kind, text: text))
                             .multilineTextAlignment(textAlignment(element.alignment))
                             // Hug content, but never wider than the layout slot.
                             .frame(maxWidth: slotW, alignment: frameAlignment(element.alignment))
@@ -285,17 +285,21 @@ public struct WidgetAppearanceRenderer: View {
         case .title:
             return metric.title.isEmpty ? "—" : metric.title
         case .value:
-            return MetricDisplayHelpers.valueString(
+            let value = MetricDisplayHelpers.valueString(
                 for: metric,
                 goodLabel: palette.statusGoodLabel,
                 badLabel: palette.statusBadLabel,
                 emptyLabel: palette.emptyLabel,
                 errorLabel: palette.errorLabel
             )
+            guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
+            return "\(value) · \(MetricDisplayHelpers.staleMark())"
         case .measure:
             return metric.measure.isEmpty ? "—" : metric.measure
         case .updated:
-            return MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
+            let time = MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
+            guard showsStaleUpdate, updatedAt != nil else { return time }
+            return "\(MetricDisplayHelpers.staleMark()) · \(time)"
         }
     }
 
@@ -319,7 +323,6 @@ public struct WidgetAppearanceRenderer: View {
 
     private func valueFont(for text: String, scale: CGFloat) -> Font {
         let inWidget = usesWidgetChrome
-        let isStatus = isStatusMetric
         let base: CGFloat
         if sizeKey == .medium {
             switch text.count {
@@ -327,7 +330,7 @@ public struct WidgetAppearanceRenderer: View {
             case ..<6: base = inWidget ? 38 : 42
             case ..<10: base = inWidget ? 32 : 36
             case ..<15: base = inWidget ? 26 : 30
-            default: base = inWidget ? 20 : 24
+            default: base = 18
             }
         } else {
             switch text.count {
@@ -335,19 +338,34 @@ public struct WidgetAppearanceRenderer: View {
             case ..<6: base = inWidget ? 22 : 34
             case ..<10: base = inWidget ? 18 : 28
             case ..<15: base = inWidget ? 15 : 22
-            default: base = inWidget ? 13 : 17
+            default: base = 12
             }
         }
         let size = base * scale
-        return .system(size: size, weight: size < 22 ? .medium : .semibold, design: isStatus ? .rounded : .monospaced)
+        return .system(size: size, weight: size < 22 ? .medium : .semibold, design: valueDesign(for: text))
+    }
+
+    /// Short values stay monospaced counters. Long prose (quotes) uses the system face so more words fit on a line.
+    private func valueDesign(for text: String) -> Font.Design {
+        if isStatusMetric { return .rounded }
+        return text.count >= 15 ? .default : .monospaced
     }
 
     private func lineLimit(for kind: WidgetElementKind) -> Int {
         switch kind {
         case .title, .measure: return 2
-        case .value: return isStatusMetric ? 1 : 2
+        case .value:
+            if isStatusMetric { return 1 }
+            // Quotes need four lines on both the square and the wide widget.
+            return 4
         case .updated: return 1
         }
+    }
+
+    private func minimumScaleFactor(for kind: WidgetElementKind, text: String) -> CGFloat {
+        // Don't crush a quote down to an unreadable size just to avoid the ellipsis.
+        if kind == .value, !isStatusMetric, text.count >= 15 { return 0.9 }
+        return 0.5
     }
 
     private var isStatusMetric: Bool {
@@ -405,7 +423,7 @@ public struct WidgetAppearanceRenderer: View {
                 }
                 return palette.textSuccessColor
             }
-            if showsValueError {
+            if showsValueError || MetricDisplayHelpers.showsStaleValue(for: metric) {
                 return onStatusGradient && !onDarkGradient
                     ? Color(red: 0.78, green: 0.16, blue: 0.16)
                     : palette.textErrorColor

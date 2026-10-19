@@ -45,7 +45,7 @@ struct DevMenuView: View {
                 }
             }
             .sheet(isPresented: $showWidgetInstructions) {
-                WidgetInstructionsView(metricTitle: "Demo") {
+                WidgetInstructionsView(metricTitle: "Some value") { _ in
                     showWidgetInstructions = false
                 }
             }

@@ -140,6 +140,9 @@ extension RequestFormView {
                     Task { @MainActor in
                         switch completion {
                         case .failure(let error):
+                            if !Self.isCancellation(error) {
+                                AnalyticsEvents.metricRequestTested(success: false, error: error)
+                            }
                             let message = ErrorMessageFormatter.message(for: error)
                             await updater {
                                 $0.requestStatus = .error
@@ -150,6 +153,7 @@ extension RequestFormView {
                             }
                             self?.notifications.send(.error(message))
                         case .finished:
+                            AnalyticsEvents.metricRequestTested(success: true)
                             await updater {
                                 $0.hasRequestError = false
                                 $0.canSetupResponse = true
@@ -169,6 +173,12 @@ extension RequestFormView {
                 })
                 .store(in: &self.disposables)
             }
+        }
+
+        private static func isCancellation(_ error: Error) -> Bool {
+            if error is CancellationError { return true }
+            if let urlError = error as? URLError, urlError.code == .cancelled { return true }
+            return false
         }
     }
 }

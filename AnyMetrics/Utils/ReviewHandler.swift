@@ -13,13 +13,11 @@ import AnyMetricsShared
 enum ReviewHandler {
 
     enum Trigger {
-        case firstUserAdd
         case existingUserLaunch
         case periodic
 
         var analyticsValue: String {
             switch self {
-            case .firstUserAdd: return "first_add"
             case .existingUserLaunch: return "existing_user"
             case .periodic: return "periodic"
             }
@@ -34,10 +32,15 @@ enum ReviewHandler {
 
     private static var didRecordLaunch = false
 
+    static func deferPromptUntilNextLaunch() {
+        AppSettings.reviewDeferredToNextLaunch = true
+    }
+
     static func recordAppLaunchIfNeeded() {
         guard !isPreview, !didRecordLaunch else { return }
         didRecordLaunch = true
         AppSettings.appLaunchCount += 1
+        AppSettings.reviewDeferredToNextLaunch = false
     }
 
     static func hasUserAddedMetrics(_ metrics: Metrics) -> Bool {
@@ -46,11 +49,10 @@ enum ReviewHandler {
 
     static func shouldPrompt(_ trigger: Trigger, metrics: Metrics) -> Bool {
         guard !isPreview else { return false }
+        guard !AppSettings.reviewDeferredToNextLaunch else { return false }
         guard !AppSettings.reviewPromptDisabled, !AppSettings.reviewCompleted else { return false }
 
         switch trigger {
-        case .firstUserAdd:
-            return !AppSettings.hasPromptedReview
         case .existingUserLaunch:
             return !AppSettings.hasPromptedReview && hasUserAddedMetrics(metrics)
         case .periodic:
@@ -69,10 +71,10 @@ enum ReviewHandler {
         AppSettings.lastReviewPromptLaunchCount = AppSettings.appLaunchCount
     }
 
-    static func markCompleted() {
+    static func markCompleted(source: String) {
         guard !AppSettings.reviewCompleted else { return }
         AppSettings.reviewCompleted = true
-        AnalyticsEvents.reviewCompleted()
+        AnalyticsEvents.reviewCompleted(source: source)
     }
 
     static func markLater() {
@@ -101,6 +103,7 @@ enum ReviewHandler {
         AppSettings.lastReviewPromptLaunchCount = 0
         AppSettings.reviewStoreKitCount = 0
         AppSettings.reviewStoreKitYear = 0
+        AppSettings.reviewDeferredToNextLaunch = false
     }
 #endif
 

@@ -4,8 +4,8 @@ fileprivate enum Constants {
     static let contentSpacing: CGFloat = 8
     static let sectionSpacing: CGFloat = 28
     static let stepSpacing: CGFloat = 18
-    static let stepIconSize: CGFloat = 18
-    static let stepIconWidth: CGFloat = 28
+    static let stepCardCorner: CGFloat = 28
+    static let stepCardHeight: CGFloat = 400
     static let buttonCorner: CGFloat = 30
     static let horizontalPadding: CGFloat = 24
     static let topPadding: CGFloat = 28
@@ -16,20 +16,35 @@ fileprivate enum Constants {
 
     static let fontTitle = Font.system(size: 28, weight: .bold, design: .default)
     static let fontSubtitle = Font.system(size: 16, weight: .regular, design: .default)
-    static let fontStep = Font.system(size: 17, weight: .medium, design: .default)
     static let fontButton = Font.system(size: 17, weight: .semibold, design: .default)
 }
 
 struct WidgetInstructionsView: View {
 
+    /// Home Screen steps changed in iOS 18 and are still the same in Apple’s iOS 26 guide.
+    /// Add a case here when a later system version changes the path.
+    enum System {
+        /// iOS 16–17: Add button (+) in the upper-left corner.
+        case ios16
+        /// iOS 18 and later: Edit, then Add Widget.
+        case ios18
+
+        static var current: System {
+            if #available(iOS 18.0, *) {
+                return .ios18
+            }
+            return .ios16
+        }
+    }
+
     private struct Step: Identifiable {
         let id: Int
-        let icon: String
         let text: String
     }
 
     let metricTitle: String
-    let onDismiss: () -> Void
+    var system: System = .current
+    let onDone: (Bool) -> Void
 
     @State
     private var sheetHeight: CGFloat = 360
@@ -37,14 +52,36 @@ struct WidgetInstructionsView: View {
     @State
     private var dontShowAgain = false
 
+    @State
+    private var stepIndex = 0
+
     private var steps: [Step] {
-        [
-            Step(id: 1, icon: "hand.tap", text: AnyMetricsStrings.WidgetGuide.step1),
-            Step(id: 2, icon: "plus.app", text: AnyMetricsStrings.WidgetGuide.step2),
-            Step(id: 3, icon: "magnifyingglass", text: AnyMetricsStrings.WidgetGuide.step3),
-            Step(id: 4, icon: "square.grid.2x2", text: AnyMetricsStrings.WidgetGuide.step4),
-            Step(id: 5, icon: "slider.horizontal.3", text: AnyMetricsStrings.WidgetGuide.selectMetric(metricTitle))
-        ]
+        switch system {
+        case .ios16:
+            return [
+                Step(id: 1, text: AnyMetricsStrings.WidgetGuide.Ios16.step1),
+                Step(id: 2, text: AnyMetricsStrings.WidgetGuide.Ios16.step2),
+                Step(id: 3, text: AnyMetricsStrings.WidgetGuide.Ios16.step3),
+                Step(id: 4, text: AnyMetricsStrings.WidgetGuide.Ios16.step4),
+                Step(id: 5, text: AnyMetricsStrings.WidgetGuide.Ios16.selectMetric(metricTitle))
+            ]
+        case .ios18:
+            return [
+                Step(id: 1, text: AnyMetricsStrings.WidgetGuide.Ios18.step1),
+                Step(id: 2, text: AnyMetricsStrings.WidgetGuide.Ios18.step2),
+                Step(id: 3, text: AnyMetricsStrings.WidgetGuide.Ios18.step3),
+                Step(id: 4, text: AnyMetricsStrings.WidgetGuide.Ios18.step4),
+                Step(id: 5, text: AnyMetricsStrings.WidgetGuide.Ios18.selectMetric(metricTitle))
+            ]
+        }
+    }
+
+    private var currentStep: Step {
+        steps[min(stepIndex, steps.count - 1)]
+    }
+
+    private var isLastStep: Bool {
+        stepIndex >= steps.count - 1
     }
 
     var body: some View {
@@ -63,20 +100,16 @@ struct WidgetInstructionsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                VStack(alignment: .leading, spacing: Constants.stepSpacing) {
-                    ForEach(steps) { step in
-                        HStack(alignment: .firstTextBaseline, spacing: 14) {
-                            Image(systemName: step.icon)
-                                .font(.system(size: Constants.stepIconSize, weight: .medium))
-                                .foregroundColor(Constants.secondaryColor)
-                                .frame(width: Constants.stepIconWidth, alignment: .center)
+                VStack(spacing: Constants.stepSpacing) {
+                    Text(AnyMetricsStrings.WidgetGuide.progress(stepIndex + 1, steps.count))
+                        .font(Constants.fontSubtitle)
+                        .foregroundColor(Constants.secondaryColor)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityIdentifier("widgetGuide.progress")
 
-                            Text(step.text)
-                                .font(Constants.fontStep)
-                                .foregroundColor(Constants.textColor)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
+                    stepPager
+
+                    pageDots
                 }
 
                 VStack(spacing: 16) {
@@ -86,22 +119,47 @@ struct WidgetInstructionsView: View {
                             .foregroundColor(Constants.secondaryColor)
                     }
 
-                    Button {
-                        ImpactHelper.impactButton()
-                        if dontShowAgain {
-                            AppSettings.hideWidgetInstructions = true
+                    HStack(spacing: 12) {
+                        Button {
+                            guard stepIndex > 0 else { return }
+                            ImpactHelper.impactButton()
+                            withAnimation {
+                                stepIndex -= 1
+                            }
+                        } label: {
+                            Text(AnyMetricsStrings.WidgetGuide.back)
+                                .font(Constants.fontButton)
+                                .foregroundColor(Constants.secondaryColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
                         }
-                        onDismiss()
-                    } label: {
-                        Text(AnyMetricsStrings.WidgetGuide.done)
-                            .font(Constants.fontButton)
-                            .foregroundColor(Constants.textColor)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
+                        .buttonStyle(.plain)
+                        .disabled(stepIndex == 0)
+                        .accessibilityIdentifier("widgetGuide.back")
+
+                        Button {
+                            ImpactHelper.impactButton()
+                            if isLastStep {
+                                if dontShowAgain {
+                                    AppSettings.hideWidgetInstructions = true
+                                }
+                                onDone(dontShowAgain)
+                            } else {
+                                withAnimation {
+                                    stepIndex += 1
+                                }
+                            }
+                        } label: {
+                            Text(isLastStep ? AnyMetricsStrings.WidgetGuide.done : AnyMetricsStrings.WidgetGuide.next)
+                                .font(Constants.fontButton)
+                                .foregroundColor(Constants.textColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                        }
+                        .background(Constants.buttonBackground)
+                        .cornerRadius(Constants.buttonCorner)
+                        .accessibilityIdentifier(isLastStep ? "widgetGuide.done" : "widgetGuide.next")
                     }
-                    .background(Constants.buttonBackground)
-                    .cornerRadius(Constants.buttonCorner)
-                    .accessibilityIdentifier("widgetGuide.done")
                 }
             }
             .padding(.horizontal, Constants.horizontalPadding)
@@ -121,6 +179,56 @@ struct WidgetInstructionsView: View {
             sheetHeight = height
         }
         .modifier(FittedSheetModifier(height: sheetHeight))
+    }
+
+    private var stepPager: some View {
+        Color.clear
+            .frame(height: Constants.stepCardHeight)
+            .overlay {
+                TabView(selection: $stepIndex) {
+                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                        stepCard(step)
+                            .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+            }
+            .clipped()
+    }
+
+    private func stepCard(_ step: Step) -> some View {
+        VStack(spacing: 12) {
+            WidgetGuideDemoView(step: step.id, system: system, metricTitle: metricTitle)
+
+            Text(step.text)
+                .font(Constants.fontSubtitle)
+                .foregroundColor(Constants.textColor)
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("widgetGuide.step")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            RoundedRectangle(cornerRadius: Constants.stepCardCorner, style: .continuous)
+                .fill(Color.primary.opacity(0.08))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Constants.stepCardCorner, style: .continuous))
+    }
+
+    private var pageDots: some View {
+        HStack(spacing: 6) {
+            ForEach(steps) { step in
+                Circle()
+                    .fill(step.id == currentStep.id ? Constants.textColor : Constants.secondaryColor.opacity(0.35))
+                    .frame(width: 6, height: 6)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityHidden(true)
     }
 }
 
@@ -143,8 +251,13 @@ private struct FittedSheetModifier: ViewModifier {
 }
 
 #if DEBUG
-#Preview {
-    WidgetInstructionsView(metricTitle: "Server Status", onDismiss: {})
+#Preview("iOS 18") {
+    WidgetInstructionsView(metricTitle: "Server Status", system: .ios18, onDone: { _ in })
+        .preferredColorScheme(.dark)
+}
+
+#Preview("iOS 16") {
+    WidgetInstructionsView(metricTitle: "Server Status", system: .ios16, onDone: { _ in })
         .preferredColorScheme(.dark)
 }
 #endif

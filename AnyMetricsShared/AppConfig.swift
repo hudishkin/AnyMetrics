@@ -9,8 +9,10 @@ public enum AppConfig {
         public static let galleryVersion = "v1"
 
         public static let appStore = URL(string: "https://apps.apple.com/app/anymetrics/id1609900961")!
+        public static let appStoreReview = URL(string: "https://apps.apple.com/app/id1609900961?action=write-review")!
         public static let appRepository = URL(string: "https://github.com/hudishkin/AnyMetrics")!
         public static let galleryRepository = URL(string: "https://github.com/hudishkin/AnyMetricsGallery")!
+        public static let privacyPolicy = URL(string: "https://github.com/hudishkin/AnyMetrics/blob/main/privacy_policy.md")!
         public static let rules = URL(string: "https://github.com/hudishkin/AnyMetrics")!
         public static let gallery = URL(string: String(format: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/%@/list.min.json", galleryVersion))!
     }

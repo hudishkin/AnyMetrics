@@ -18,6 +18,7 @@
 "metric.value.bad" = "Bad";
 "metric.value.empty" = "N/A";
 "metric.value.error" = "Error";
+"metric.value.stale" = "outdated";
 "metric.updated.just-now" = "just now";
 "metric.add" = "Add";
 
@@ -143,6 +144,10 @@
 "addmetric.design.minimal" = "Minimal";
 "addmetric.design.ring" = "Ring";
 "addmetric.design.plain" = "Plain";
+"addmetric.design.choose-design" = "Choose design";
+"addmetric.design.custom" = "Custom";
+"addmetric.design.edit-selected" = "Edit";
+"addmetric.design.edit-design" = "Edit design";
 "addmetric.design.preview" = "Preview";
 "addmetric.design.presets" = "Templates";
 "addmetric.design.background" = "Background";
@@ -164,6 +169,9 @@
 "addmetric.design.size-small" = "Small";
 "addmetric.design.size-medium" = "Medium";
 "addmetric.design.bg-status-gradient" = "Status gradient";
+"addmetric.design.bg-gradients" = "Gradients";
+"addmetric.design.bg-custom-gradient" = "Custom gradient";
+"addmetric.design.bg-gradient-stop" = "Color %@";
 "addmetric.design.bg-system" = "System background";
 "addmetric.design.bg-solid" = "Solid color";
 "addmetric.design.bg-photo" = "Choose photo";
@@ -212,12 +220,15 @@
 
 // MARK: - Info View
 
-"info.title" = "About";
-"info.message" = "AnyMetrics is project developed to solve its own problem and published to App Store for everyone for free.\n\nTo add a metric to the gallery, send a pull request to the gallery repository on Github.";
-"info.github-app-repo" = "App repository";
-"info.github-gallery-repo" = "Gallery repository";
-"info.version" = "Version: %@";
-"info.rate" = "Rate app";
+"info.summary" = "Any HTTP endpoint becomes a widget on your Home Screen. No code, no servers of your own.";
+"info.trust" = "Requests go straight from your iPhone. API keys stay on the device. Free, no ads, open source.";
+"info.rate" = "Rate on the App Store";
+"info.contact" = "Contact the developer";
+"info.privacy" = "Privacy Policy";
+"info.source" = "Source code";
+"info.gallery" = "Suggest a metric";
+"info.mail-subject" = "[AnyMetrics] Feedback";
+"info.version" = "Version %@";
 
 // MARK: - Review
 
@@ -244,6 +255,12 @@
 "onboarding.page3.subtitle" = "Pick a template or design your own — layout, colors, and background photo.";
 "onboarding.page4.title" = "Add your\nfirst widget";
 "onboarding.page4.subtitle" = "Start with Quote of the Day, or pick another metric from the gallery.";
+"onboarding.gradient.title" = "Background";
+"onboarding.gradient.dusk" = "Violet";
+"onboarding.gradient.sunset" = "Sunset";
+"onboarding.gradient.ocean" = "Ocean";
+"onboarding.gradient.aurora" = "Aurora";
+"onboarding.gradient.mono" = "Monochrome";
 
 // MARK: - Starter Metric
 
@@ -254,17 +271,29 @@
 
 "widget-guide.title" = "Add to Home Screen";
 "widget-guide.subtitle" = "Metric «%@» is saved. Add a widget to see it on your home screen.";
-"widget-guide.step1" = "Long press on the home screen";
-"widget-guide.step2" = "Tap Edit → Add Widget (or +)";
-"widget-guide.step3" = "Search for AnyMetrics";
-"widget-guide.step4" = "Choose a size and tap Add Widget";
-"widget-guide.select-metric" = "Long press the widget → Edit Widget, then select “%@”";
+"widget-guide.progress" = "Step %@ of %@";
+"widget-guide.next" = "Next";
+"widget-guide.back" = "Back";
 "widget-guide.done" = "Got it";
 "widget-guide.dont-show-again" = "Don't show again";
+"widget-guide.demo.edit" = "Edit";
+"widget-guide.demo.add-widget" = "Add Widget";
+"widget-guide.demo.edit-widget" = "Edit Widget";
+"widget-guide.demo.metric-type" = "Metric Type";
+"widget-guide.ios16.step1" = "Touch and hold an empty area of the Home Screen until the apps jiggle.";
+"widget-guide.ios16.step2" = "Tap + in the upper-left corner.";
+"widget-guide.ios16.step3" = "Search for AnyMetrics and tap it.";
+"widget-guide.ios16.step4" = "Choose a size, then tap Add Widget.";
+"widget-guide.ios16.select-metric" = "Touch and hold the widget, tap Edit Widget, and set Metric Type to “%@”.";
+"widget-guide.ios18.step1" = "Touch and hold the Home Screen background until the apps jiggle.";
+"widget-guide.ios18.step2" = "Tap Edit at the top of the screen, then tap Add Widget.";
+"widget-guide.ios18.step3" = "Search for AnyMetrics and tap it.";
+"widget-guide.ios18.step4" = "Swipe to a size, then tap Add Widget.";
+"widget-guide.ios18.select-metric" = "Touch and hold the widget, tap Edit Widget, and set Metric Type to “%@”.";
 
 // MARK: - Errors
 
-"error.http-status" = "Server returned HTTP %d";
+"error.http-status" = "Server returned HTTP %@";
 "error.invalid-response" = "Invalid or empty response";
 "error.parse-failed" = "Could not parse value. Check your parsing rule: %@";
 "error.parse-failed-generic" = "Could not parse the response. Check your parsing rule";

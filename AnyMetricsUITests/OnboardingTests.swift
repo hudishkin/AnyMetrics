@@ -15,11 +15,6 @@ final class OnboardingTests: XCTestCase {
 
         app.terminate()
         app.launch()
-        for _ in 0..<3 {
-            let next = app.buttons["onboarding.next"]
-            XCTAssertTrue(next.waitForExistence(timeout: 5))
-            next.tap()
-        }
 
         let addWidget = app.buttons["onboarding.addWidget"]
         XCTAssertTrue(addWidget.waitForExistence(timeout: 5))
@@ -41,6 +36,12 @@ final class OnboardingTests: XCTestCase {
         add(instructions)
 
         let done = app.buttons["widgetGuide.done"]
+        let next = app.buttons["widgetGuide.next"]
+        for _ in 0..<6 where !done.exists {
+            XCTAssertTrue(next.waitForExistence(timeout: 2))
+            next.tap()
+        }
+        XCTAssertTrue(done.waitForExistence(timeout: 2))
         if !done.isHittable { app.swipeUp() }
         done.tap()
         waitForDisappearance(guide)

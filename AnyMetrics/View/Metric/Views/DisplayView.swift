@@ -14,6 +14,8 @@ extension MetricFormView {
         @State
         private var showStyleEditor = false
         @State
+        private var showDesignGallery = false
+        @State
         private var showStyleImporter = false
         @State
         private var styleImportError: String?
@@ -34,39 +36,13 @@ extension MetricFormView {
             ZStack(alignment: .bottomTrailing) {
                 Form {
                     Section {
-                        designCarousel
-                    } header: {
-                        EmptyView()
-                    }
-
-                    Section {
-                        HStack(spacing: 12) {
-                            Button {
-                                editorDraft = viewState.state.widgetAppearance
-                                showStyleEditor = true
-                            } label: {
-                                Text(AnyMetricsStrings.Addmetric.Design.editStyle)
-                                    .font(Constants.mainButtonFont)
-                                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                            }
-                            .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
-                            .cornerRadius(30)
-
-                            Button {
-                                showStyleImporter = true
-                            } label: {
-                                Text(AnyMetricsStrings.Addmetric.Design.importStyle)
-                                    .font(Constants.mainButtonFont)
-                                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                            }
-                            .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
-                            .cornerRadius(30)
+                        VStack(spacing: 12) {
+                            selectedDesignPreview
+                            designActionsMenu
+                                .fixedSize(horizontal: true, vertical: false)
                         }
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .frame(maxWidth: .infinity)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
                         .listRowBackground(Color.clear)
                     }
 
@@ -138,6 +114,16 @@ extension MetricFormView {
             .sheet(isPresented: $showStyleEditor) {
                 styleEditorSheet
             }
+            .sheet(isPresented: $showDesignGallery) {
+                WidgetDesignGalleryView(
+                    items: designGalleryItems,
+                    onSelect: { item in
+                        applyDesignChoice(item.id)
+                        showDesignGallery = false
+                    },
+                    onClose: { showDesignGallery = false }
+                )
+            }
             .fileImporter(
                 isPresented: $showStyleImporter,
                 allowedContentTypes: [.json, .plainText],
@@ -187,77 +173,87 @@ extension MetricFormView {
             .navigationViewStyle(.stack)
         }
 
-        private enum DesignCarouselItem: Hashable {
-            case custom
-            case preset(WidgetDesign)
-        }
-
-        private var designCarousel: some View {
-            VStack(spacing: 0) {
-                TabView(selection: carouselBinding) {
-                    if let custom = viewState.state.savedCustomAppearance {
-                        designCarouselPage(
-                            metric: previewMetric(
-                                for: viewState.state.widgetDesign,
-                                appearance: custom
-                            )
-                        )
-                        .tag(DesignCarouselItem.custom)
-                    }
-                    ForEach(WidgetDesign.allCases) { design in
-                        designCarouselPage(
-                            metric: previewMetric(for: design, appearance: .preset(design))
-                        )
-                        .tag(DesignCarouselItem.preset(design))
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .frame(height: Constants.designCarouselHeight)
-            }
-            .frame(maxWidth: .infinity)
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-        }
-
-        private func designCarouselPage(metric: Metric) -> some View {
-            VStack(spacing: 12) {
-                MetricWidgetDesignView(
-                    metric: metric,
-                    palette: .widget(),
-                    useGlassEffect: false,
-                    matchWidgetMetrics: true
-                )
-                    .frame(
-                        width: Constants.metricViewSize,
-                        height: Constants.metricViewSize,
-                        alignment: .center)
-                    .background(
-                        RoundedRectangle(cornerRadius: Constants.metricViewCorner)
-                            .fill(Color(uiColor: .systemBackground))
-                            .padding(Constants.metricViewPadding))
-            }
-        }
-
-        private var carouselBinding: Binding<DesignCarouselItem> {
-            Binding(
-                get: {
-                    if viewState.state.widgetAppearance.isCustom,
-                       viewState.state.savedCustomAppearance != nil {
-                        return .custom
-                    }
-                    return .preset(viewState.state.widgetDesign)
-                },
-                set: { item in
-                    switch item {
-                    case .custom:
-                        if let custom = viewState.state.savedCustomAppearance {
-                            viewState.trigger(.setWidgetAppearance(custom))
-                        }
-                    case .preset(let design):
-                        viewState.trigger(.setWidgetDesign(design))
-                    }
-                }
+        private var selectedDesignPreview: some View {
+            designPreview(
+                metric: previewMetric(
+                    for: viewState.state.widgetDesign,
+                    appearance: viewState.state.widgetAppearance
+                ),
+                size: Constants.metricViewSize
             )
+            .padding(.bottom, 4)
+        }
+
+        private var designGalleryItems: [WidgetDesignGalleryView.Item] {
+            WidgetDesign.allCases.map { design in
+                let isSelected = design == viewState.state.widgetDesign
+                return WidgetDesignGalleryView.Item(
+                    id: design.rawValue,
+                    metric: previewMetric(
+                        for: design,
+                        appearance: isSelected ? viewState.state.widgetAppearance : .preset(design)
+                    ),
+                    isSelected: isSelected
+                )
+            }
+        }
+
+        private func applyDesignChoice(_ id: String) {
+            guard let design = WidgetDesign(rawValue: id),
+                  design != viewState.state.widgetDesign
+            else { return }
+            viewState.trigger(.setWidgetDesign(design))
+        }
+
+        private func designPreview(metric: Metric, size: CGFloat) -> some View {
+            MetricWidgetDesignView(
+                metric: metric,
+                palette: .widget(),
+                useGlassEffect: metric.resolvedAppearance.small.background.usesGlassEffect,
+                matchWidgetMetrics: false
+            )
+            .frame(width: size, height: size, alignment: .center)
+            .background(
+                RoundedRectangle(cornerRadius: Constants.metricViewCorner)
+                    .fill(Color(uiColor: .systemBackground))
+                    .padding(Constants.metricViewPadding)
+            )
+        }
+
+        private var designActionsMenu: some View {
+            Menu {
+                Button(AnyMetricsStrings.Addmetric.Design.chooseDesign) {
+                    openAfterMenu { showDesignGallery = true }
+                }
+                Button(AnyMetricsStrings.Addmetric.Design.editDesign) {
+                    openAfterMenu {
+                        editorDraft = viewState.state.widgetAppearance
+                        showStyleEditor = true
+                    }
+                }
+                Button(AnyMetricsStrings.Addmetric.Design.importStyle) {
+                    openAfterMenu { showStyleImporter = true }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(AnyMetricsStrings.Addmetric.Design.editSelected)
+                        .font(Constants.mainButtonFont)
+                    Image(systemName: "chevron.down")
+                        .font(.footnote.weight(.semibold))
+                }
+                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 20)
+                .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
+                .clipShape(RoundedRectangle(cornerRadius: 30))
+                .contentShape(RoundedRectangle(cornerRadius: 30))
+            }
+            .buttonStyle(.plain)
+        }
+
+        /// Menu dismissal and a sheet in the same turn cancel each other.
+        private func openAfterMenu(_ present: @escaping () -> Void) {
+            DispatchQueue.main.async(execute: present)
         }
 
         private func previewMetric(

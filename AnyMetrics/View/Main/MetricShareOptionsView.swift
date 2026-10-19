@@ -24,7 +24,7 @@ struct MetricShareOptionsView: View {
     }
 
     let metric: Metric
-    var onShared: (MetricSharePayload) -> Void
+    var onShared: (MetricSharePayload, Bool) -> Void
     var onCancel: (() -> Void)?
 
     @State
@@ -195,7 +195,7 @@ struct MetricShareOptionsView: View {
             Button {
                 UIPasteboard.general.string = MetricShareComposer.appStoreURL.absoluteString
                 ImpactHelper.success()
-                AnalyticsEvents.metricShared(mode: "link")
+                AnalyticsEvents.appLinkCopied()
                 didCopyLink = true
             } label: {
                 Text(didCopyLink ? AnyMetricsStrings.Metric.Share.copied : AnyMetricsStrings.Metric.Share.copyLink)
@@ -223,7 +223,7 @@ struct MetricShareOptionsView: View {
             do {
                 let payload = try MetricShareComposer.writePayload(metric: metricToShare, options: options)
                 isSharing = false
-                onShared(payload)
+                onShared(payload, includeRequest)
             } catch {
                 isSharing = false
                 errorMessage = Self.message(for: error)
@@ -275,7 +275,7 @@ private struct ShareFittedSheetModifier: ViewModifier {
 
 #if DEBUG
 #Preview {
-    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _ in })
+    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _, _ in })
         .preferredColorScheme(.dark)
 }
 #endif

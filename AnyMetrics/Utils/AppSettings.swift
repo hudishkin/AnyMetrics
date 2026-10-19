@@ -11,6 +11,7 @@ enum AppSettings {
     private static let reviewStoreKitCountKey = "reviewStoreKitCount"
     private static let reviewStoreKitYearKey = "reviewStoreKitYear"
     private static let appLaunchCountKey = "appLaunchCount"
+    private static let reviewDeferredToNextLaunchKey = "reviewDeferredToNextLaunch"
 
     static var hasCompletedOnboarding: Bool {
         get { UserDefaults.standard.bool(forKey: onboardingCompletedKey) }
@@ -72,5 +73,11 @@ enum AppSettings {
     static var appLaunchCount: Int {
         get { UserDefaults.standard.integer(forKey: appLaunchCountKey) }
         set { UserDefaults.standard.set(newValue, forKey: appLaunchCountKey) }
+    }
+
+    /// Set when a metric is added, so the review prompt waits for a later launch.
+    static var reviewDeferredToNextLaunch: Bool {
+        get { UserDefaults.standard.bool(forKey: reviewDeferredToNextLaunchKey) }
+        set { UserDefaults.standard.set(newValue, forKey: reviewDeferredToNextLaunchKey) }
     }
 }

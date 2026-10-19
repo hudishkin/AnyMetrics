@@ -13,17 +13,20 @@ struct MetricFormView: View {
     private var requestViewState: ViewState<RequestFormView.Interactor>
     @State
     var showNext: Bool = false
+    var formSession: MetricFormSession
     var action: (Metric) -> Void
 
     init(
         allowDismissed: Binding<Bool>,
         metric: Metric? = nil,
+        formSession: MetricFormSession = .inactive,
         action: @escaping (Metric) -> Void
     ) {
         self._allowDismissed = allowDismissed
         let requestInteractor = RequestFormView.Interactor(metric: metric)
         self._requestViewState = .init(wrappedValue: .init(requestInteractor))
         self._viewState = .init(wrappedValue: .init(.init(metric: metric, requestInteractor: requestInteractor)))
+        self.formSession = formSession
         self.action = action
     }
 
@@ -53,6 +56,8 @@ struct MetricFormView: View {
                 } label: {
                     Button(action: {
                         showNext = true
+                        let step = goesToDisplay ? AnalyticsEvents.FormStep.display : AnalyticsEvents.FormStep.value
+                        formSession.advance(to: step)
                     }, label: {
                         Spacer()
                         Text(AnyMetricsStrings.Addmetric.Button.next)
@@ -76,6 +81,7 @@ struct MetricFormView: View {
         .onDisappear {
             allowDismissed = true
         }
+        .environment(\.metricFormSession, formSession)
     }
 
     func opacityButton() -> CGFloat {
@@ -84,6 +90,11 @@ struct MetricFormView: View {
 
     func enableNextButton() -> Bool {
         requestViewState.state.canSetupResponse
+    }
+
+    private var goesToDisplay: Bool {
+        if requestViewState.state.resultKind == .image { return true }
+        return requestViewState.state.typeMetric == .checkStatus
     }
 }
 

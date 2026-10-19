@@ -84,3 +84,6 @@ playground.xcworkspace
 
 # Code injection
 iOSInjectionProject/
+
+.props/*
+.cursor/*

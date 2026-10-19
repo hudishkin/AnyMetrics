@@ -21,6 +21,7 @@ extension MainView {
             AppSettings.completeOnboardingForExistingLibrary(hasMetrics: !metricStore.metrics.isEmpty)
             ReviewHandler.recordAppLaunchIfNeeded()
             initialState = .init(metrics: metricStore.metrics)
+            AnalyticsEvents.syncLibrary(metricStore.metrics)
         }
 
         @MainActor
@@ -31,14 +32,29 @@ extension MainView {
         ) {
             switch action {
             case .addOnboardingWidget(let metric):
+                let isNew = metricStore.metrics[metric.id] == nil
                 let metric = StarterMetric.installIfNeeded(metric, in: metricStore)
+                if isNew {
+                    AnalyticsEvents.metricAdded(
+                        source: AnalyticsEvents.Source.onboarding,
+                        type: metric.type,
+                        resultKind: metric.resultKind,
+                        galleryId: metric.id.uuidString
+                    )
+                }
                 Task { @MainActor in
                     await updater {
                         $0.metrics = self.metricStore.metrics
                     }
                     WidgetCenter.shared.reloadAllTimelines()
                     // This is an explicit request, even if automatic guides were disabled.
-                    self.notifications.send(.showWidgetInstructions(metric))
+                    AnalyticsEvents.syncLibrary(self.metricStore.metrics)
+                    self.notifications.send(
+                        .showWidgetInstructions(
+                            metric,
+                            offerSecondMetric: self.metricStore.metrics.count == 1
+                        )
+                    )
                     if !metric.hasResult {
                         self.refreshStoredMetric(id: metric.id, updater: updater)
                     }
@@ -59,12 +75,26 @@ extension MainView {
                                 $0.metrics = merged
                             }
                             WidgetCenter.shared.reloadAllTimelines()
+                            let failed = updatedMetrics.values.filter(\.refreshFailed).count
+                            if !updatedMetrics.isEmpty {
+                                AnalyticsEvents.libraryRefreshed(
+                                    librarySize: updatedMetrics.count,
+                                    failedCount: failed
+                                )
+                                if failed == 0 {
+                                    self.notifications.send(.reviewAfterSuccessfulRefresh)
+                                }
+                            }
                         }
                     }
                 }
             case .addMetric(let metric):
                 let isNew = metricStore.metrics[metric.id] == nil
                 metricStore.addMetric(metric: metric)
+                if !isNew {
+                    AnalyticsEvents.metricEdited(type: metric.type, resultKind: metric.resultKind)
+                }
+                AnalyticsEvents.syncLibrary(metricStore.metrics)
                 Task { @MainActor in
                     await updater {
                         $0.metrics = self.metricStore.metrics
@@ -76,6 +106,10 @@ extension MainView {
             case .addMetricAndRefresh(let metric):
                 let isNew = metricStore.metrics[metric.id] == nil
                 metricStore.addMetric(metric: metric)
+                if !isNew {
+                    AnalyticsEvents.metricEdited(type: metric.type, resultKind: metric.resultKind)
+                }
+                AnalyticsEvents.syncLibrary(metricStore.metrics)
                 let metricID = metric.id
                 Task { @MainActor in
                     await updater {
@@ -87,7 +121,10 @@ extension MainView {
                 }
 
             case .removeMetric(let id):
+                let isStarter = StarterMetric.isStarter(id)
                 metricStore.removeMetric(id: id)
+                AnalyticsEvents.metricDeleted(isStarter: isStarter)
+                AnalyticsEvents.syncLibrary(metricStore.metrics)
                 Task { @MainActor in
                     await updater {
                         $0.metrics = self.metricStore.metrics
@@ -109,6 +146,7 @@ extension MainView {
                                 $0.metrics = self.metricStore.metrics
                             }
                         }
+                        AnalyticsEvents.metricRefreshed(success: error == nil, error: error)
                         if let error {
                             self.notifications.send(.error(Self.refreshErrorMessage(metric: metric, error: error)))
                         }
@@ -120,11 +158,15 @@ extension MainView {
         private func notifyAfterSavingNewMetric(_ metric: Metric, isNew: Bool) {
             guard isNew else { return }
             if !StarterMetric.isStarter(metric.id) {
-                AnalyticsEvents.metricAdded(type: metric.type)
                 notifications.send(.askReview)
             }
             if !AppSettings.hideWidgetInstructions {
-                notifications.send(.showWidgetInstructions(metric))
+                notifications.send(
+                    .showWidgetInstructions(
+                        metric,
+                        offerSecondMetric: metricStore.metrics.count == 1
+                    )
+                )
             }
         }
 

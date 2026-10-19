@@ -26,7 +26,7 @@ enum MetricSharePresenter {
     private static let retryDelay: TimeInterval = 0.2
 
     enum Result {
-        case dismissed(completed: Bool)
+        case dismissed(completed: Bool, activity: String?)
         case failed
     }
 
@@ -69,11 +69,11 @@ enum MetricSharePresenter {
         }
         let state = PresentationState()
 
-        activity.completionWithItemsHandler = { _, completed, _, _ in
+        activity.completionWithItemsHandler = { activityType, completed, _, _ in
             DispatchQueue.main.async {
                 guard !state.finished else { return }
                 state.finished = true
-                completion?(.dismissed(completed: completed))
+                completion?(.dismissed(completed: completed, activity: activityType?.rawValue))
             }
         }
 

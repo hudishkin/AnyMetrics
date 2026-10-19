@@ -49,25 +49,25 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.06, y: 0.10, width: 0.88, height: 0.20),
+                    frame: NormalizedRect(x: 0.16, y: 0.08, width: 0.68, height: 0.12),
                     alignment: .center,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.08, y: 0.36, width: 0.84, height: 0.24),
+                    frame: NormalizedRect(x: 0.14, y: 0.21, width: 0.72, height: 0.46),
                     alignment: .center,
                     color: .adaptive(.value)
                 ),
                 .init(
                     kind: .measure,
-                    frame: NormalizedRect(x: 0.10, y: 0.62, width: 0.80, height: 0.14),
+                    frame: NormalizedRect(x: 0.18, y: 0.68, width: 0.64, height: 0.11),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 ),
                 .init(
                     kind: .updated,
-                    frame: NormalizedRect(x: 0.10, y: 0.76, width: 0.80, height: 0.12),
+                    frame: NormalizedRect(x: 0.18, y: 0.80, width: 0.64, height: 0.10),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 )
@@ -87,25 +87,25 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.06, y: 0.12, width: 0.88, height: 0.18),
+                    frame: NormalizedRect(x: 0.06, y: 0.045, width: 0.88, height: 0.13),
                     alignment: .center,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.08, y: 0.36, width: 0.84, height: 0.24),
+                    frame: NormalizedRect(x: 0.07, y: 0.185, width: 0.86, height: 0.52),
                     alignment: .center,
                     color: .adaptive(.value)
                 ),
                 .init(
                     kind: .measure,
-                    frame: NormalizedRect(x: 0.10, y: 0.62, width: 0.80, height: 0.14),
+                    frame: NormalizedRect(x: 0.08, y: 0.715, width: 0.84, height: 0.12),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 ),
                 .init(
                     kind: .updated,
-                    frame: NormalizedRect(x: 0.10, y: 0.76, width: 0.80, height: 0.12),
+                    frame: NormalizedRect(x: 0.08, y: 0.845, width: 0.84, height: 0.11),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 )
@@ -125,13 +125,13 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.08, y: 0.08, width: 0.84, height: 0.22),
+                    frame: NormalizedRect(x: 0.08, y: 0.06, width: 0.84, height: 0.16),
                     alignment: .leading,
                     color: .adaptive(.primary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.08, y: 0.42, width: 0.84, height: 0.28),
+                    frame: NormalizedRect(x: 0.08, y: 0.24, width: 0.84, height: 0.48),
                     alignment: .leading,
                     color: .adaptive(.value)
                 ),
@@ -158,13 +158,13 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.05, y: 0.08, width: 0.90, height: 0.22),
+                    frame: NormalizedRect(x: 0.05, y: 0.06, width: 0.90, height: 0.14),
                     alignment: .leading,
                     color: .adaptive(.primary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.05, y: 0.42, width: 0.90, height: 0.30),
+                    frame: NormalizedRect(x: 0.05, y: 0.21, width: 0.90, height: 0.54),
                     alignment: .leading,
                     color: .adaptive(.value)
                 ),
@@ -195,25 +195,25 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.08, y: 0.10, width: 0.84, height: 0.20),
+                    frame: NormalizedRect(x: 0.08, y: 0.05, width: 0.84, height: 0.12),
                     alignment: .center,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.08, y: 0.36, width: 0.84, height: 0.32),
+                    frame: NormalizedRect(x: 0.08, y: 0.18, width: 0.84, height: 0.56),
                     alignment: .center,
                     color: .adaptive(.value)
                 ),
                 .init(
                     kind: .measure,
-                    frame: NormalizedRect(x: 0.10, y: 0.72, width: 0.80, height: 0.12),
+                    frame: NormalizedRect(x: 0.10, y: 0.76, width: 0.80, height: 0.10),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 ),
                 .init(
                     kind: .updated,
-                    frame: NormalizedRect(x: 0.10, y: 0.84, width: 0.80, height: 0.10),
+                    frame: NormalizedRect(x: 0.10, y: 0.87, width: 0.80, height: 0.09),
                     alignment: .center,
                     color: .adaptive(.onPastelSecondary)
                 )
@@ -232,13 +232,13 @@ public extension WidgetAppearance {
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.05, y: 0.08, width: 0.90, height: 0.22),
+                    frame: NormalizedRect(x: 0.05, y: 0.05, width: 0.90, height: 0.13),
                     alignment: .leading,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.05, y: 0.42, width: 0.90, height: 0.30),
+                    frame: NormalizedRect(x: 0.05, y: 0.19, width: 0.90, height: 0.56),
                     alignment: .leading,
                     color: .adaptive(.value)
                 ),
