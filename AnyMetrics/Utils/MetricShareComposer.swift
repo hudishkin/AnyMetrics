@@ -3,22 +3,39 @@ import SwiftUI
 import UIKit
 import AnyMetricsShared
 
+enum MetricShareKind: Equatable, Sendable {
+    /// Card image plus the importable metric file.
+    case file
+    /// Card image only. No metric file and no request.
+    case image
+}
+
 struct MetricSharePayload {
     let image: UIImage
     let imageURL: URL
-    let metricURL: URL
+    let metricURL: URL?
     let caption: String
+    let kind: MetricShareKind
+    let includesRequest: Bool
+
+    var includesFile: Bool { kind == .file }
 
     var activityItems: [Any] {
-        [
-            MetricShareImageItem(image: image, title: caption),
-            MetricShareFileItem(fileURL: metricURL),
-            MetricShareTextItem(caption: caption)
-        ]
+        switch kind {
+        case .image:
+            return [MetricShareImageItem(image: image, title: caption)]
+        case .file:
+            var items: [Any] = [MetricShareImageItem(image: image, title: caption)]
+            if let metricURL {
+                items.append(MetricShareFileItem(fileURL: metricURL))
+            }
+            items.append(MetricShareTextItem(caption: caption))
+            return items
+        }
     }
 
     var fileURLs: [URL] {
-        [imageURL, metricURL]
+        [imageURL, metricURL].compactMap { $0 }
     }
 }
 
@@ -78,27 +95,41 @@ enum MetricShareComposer {
     @MainActor
     static func writePayload(
         metric: Metric,
-        options: MetricExportOptions = .default
+        options: MetricExportOptions = .default,
+        kind: MetricShareKind = .file
     ) throws -> MetricSharePayload {
         let rendered = try writeShareImage(metric: metric)
-        let metricURL: URL
-        do {
-            metricURL = try MetricItemImportData.writeFile(for: metric, options: options)
-        } catch {
-            try? FileManager.default.removeItem(at: rendered.url)
-            throw error
+        let metricURL: URL?
+        let includesRequest: Bool
+        if kind == .file {
+            do {
+                metricURL = try MetricItemImportData.writeFile(for: metric, options: options)
+            } catch {
+                try? FileManager.default.removeItem(at: rendered.url)
+                throw error
+            }
+            includesRequest = options.includeRequest
+        } else {
+            metricURL = nil
+            includesRequest = false
         }
         return MetricSharePayload(
             image: rendered.image,
             imageURL: rendered.url,
             metricURL: metricURL,
-            caption: caption(title: metric.title)
+            caption: caption(title: metric.title),
+            kind: kind,
+            includesRequest: includesRequest
         )
     }
 
     @MainActor
     static func writeShareImage(metric: Metric) throws -> (image: UIImage, url: URL) {
-        guard let image = renderCard(metric: metric), let data = image.pngData() else {
+        guard let rendered = renderCard(metric: metric) else {
+            throw MetricShareWriteError.renderFailed
+        }
+        let image = opaqueImage(rendered)
+        guard let data = image.pngData() else {
             throw MetricShareWriteError.renderFailed
         }
         let fileURL = FileManager.default.temporaryDirectory
@@ -109,6 +140,30 @@ enum MetricShareComposer {
             throw MetricShareWriteError.writeFailed
         }
         return (image, fileURL)
+    }
+
+    /// ImageRenderer always emits premultiplied alpha. The card is fully opaque, so keep RGB only.
+    /// Otherwise ImageIO logs an error on every encode, including the share sheet's second pass.
+    private static func opaqueImage(_ image: UIImage) -> UIImage {
+        guard let cgImage = image.cgImage else { return image }
+        let width = cgImage.width
+        let height = cgImage.height
+        guard width > 0, height > 0 else { return image }
+
+        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.noneSkipFirst.rawValue
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: bitmapInfo
+        ) else { return image }
+
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let stripped = context.makeImage() else { return image }
+        return UIImage(cgImage: stripped, scale: image.scale, orientation: image.imageOrientation)
     }
 
     @MainActor

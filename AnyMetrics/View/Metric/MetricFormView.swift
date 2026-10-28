@@ -2,6 +2,11 @@ import SwiftUI
 import AnyMetricsShared
 import VVSI
 
+enum MetricFormEntry {
+    case request
+    case theme
+}
+
 struct MetricFormView: View {
 
     @Binding
@@ -14,12 +19,14 @@ struct MetricFormView: View {
     @State
     var showNext: Bool = false
     var formSession: MetricFormSession
+    var entry: MetricFormEntry
     var action: (Metric) -> Void
 
     init(
         allowDismissed: Binding<Bool>,
         metric: Metric? = nil,
         formSession: MetricFormSession = .inactive,
+        entry: MetricFormEntry = .request,
         action: @escaping (Metric) -> Void
     ) {
         self._allowDismissed = allowDismissed
@@ -27,13 +34,43 @@ struct MetricFormView: View {
         self._requestViewState = .init(wrappedValue: .init(requestInteractor))
         self._viewState = .init(wrappedValue: .init(.init(metric: metric, requestInteractor: requestInteractor)))
         self.formSession = formSession
+        self.entry = entry
         self.action = action
     }
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            RequestFormView()
+        Group {
+            switch entry {
+            case .request:
+                requestStep
+            case .theme:
+                DisplayView(
+                    allowDismissed: $allowDismissed,
+                    action: action,
+                    screenTitle: AnyMetricsStrings.Metric.Actions.editTheme
+                )
+                .environmentObject(viewState)
                 .environmentObject(requestViewState)
+            }
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onAppear {
+            allowDismissed = false
+        }
+        .onDisappear {
+            allowDismissed = true
+        }
+        .environment(\.metricFormSession, formSession)
+    }
+
+    private var requestStep: some View {
+        ZStack(alignment: .bottomTrailing) {
+            RequestFormView(
+                screenTitle: viewState.state.isEdited
+                    ? AnyMetricsStrings.Metric.Actions.editRequest
+                    : AnyMetricsStrings.Addmetric.titleRequest
+            )
+            .environmentObject(requestViewState)
 
             HStack(alignment: .center, spacing: Constants.zero, content: {
                 NavigationLink(isActive: $showNext) {
@@ -74,14 +111,6 @@ struct MetricFormView: View {
             })
             .padding()
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
-        .onAppear {
-            allowDismissed = false
-        }
-        .onDisappear {
-            allowDismissed = true
-        }
-        .environment(\.metricFormSession, formSession)
     }
 
     func opacityButton() -> CGFloat {

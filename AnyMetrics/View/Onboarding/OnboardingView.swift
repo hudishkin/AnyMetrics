@@ -8,7 +8,6 @@ fileprivate enum Constants {
     static let buttonCorner: CGFloat = 30
     static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
     static let secondaryColor = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
-    static let buttonBackground = AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor
 
     static let fontTitle = Font.system(size: 32, weight: .bold, design: .default)
     static let fontSubtitle = Font.system(size: 17, weight: .regular, design: .default)
@@ -28,13 +27,23 @@ struct OnboardingView: View {
     @EnvironmentObject
     private var mainState: ViewState<MainView.Interactor>
     @State private var selectedMetric = StarterMetric.make()
-    @State private var selectedStyle = StarterMetric.QuoteStyle.dusk
+    @State private var selectedStyle = StarterMetric.QuoteStyle.space
     @State private var isLoadingPreview = false
     @State private var previewFailed = false
     @State private var hasCompleted = false
     @State private var showGallery = false
     @State private var didLogShown = false
     @State private var previewTask: Task<Void, Never>?
+
+    /// Count shown before the network request returns. Not saved with the metric.
+    private var previewMetric: Metric {
+        guard selectedMetric.id == StarterMetric.id, !selectedMetric.hasResult else {
+            return selectedMetric
+        }
+        var metric = selectedMetric
+        metric.result = AnyMetricsStrings.Onboarding.sampleValue
+        return metric
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -52,44 +61,33 @@ struct OnboardingView: View {
             .padding(.top, 16)
             .padding(.bottom, 8)
 
-            VStack(spacing: 28) {
-                VStack(spacing: Constants.titleSubtitleSpacing) {
-                    Text(AnyMetricsStrings.Onboarding.Page4.title)
-                        .font(Constants.fontTitle)
-                        .foregroundColor(Constants.textColor)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
-                        .fixedSize(horizontal: false, vertical: true)
+            ScrollView {
+                VStack(spacing: 28) {
+                    VStack(spacing: Constants.titleSubtitleSpacing) {
+                        Text(AnyMetricsStrings.Onboarding.Page4.title)
+                            .font(Constants.fontTitle)
+                            .foregroundColor(Constants.textColor)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    Text(AnyMetricsStrings.Onboarding.Page4.subtitle)
-                        .font(Constants.fontSubtitle)
-                        .foregroundColor(Constants.secondaryColor)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text(AnyMetricsStrings.Onboarding.Page4.subtitle)
+                            .font(Constants.fontSubtitle)
+                            .foregroundColor(Constants.secondaryColor)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    widgetPreview(side: 168)
                 }
-
-                widgetPreview(side: 168)
+                .padding(.horizontal, Constants.horizontalPadding)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
             }
-            .padding(.horizontal, Constants.horizontalPadding)
-            .padding(.top, 12)
-
-            Spacer(minLength: 20)
-
-            Button(action: addWidget) {
-                Text(AnyMetricsStrings.Onboarding.addWidget)
-                    .font(Constants.fontButton)
-                    .foregroundColor(Constants.textColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-            }
-            .background(Constants.buttonBackground)
-            .cornerRadius(Constants.buttonCorner)
-            .accessibilityIdentifier("onboarding.addWidget")
-            .disabled(hasCompleted)
-            .padding(.horizontal, Constants.horizontalPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 32)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            actionBar
         }
         .sheet(isPresented: $showGallery) {
             GalleryView(allowDismissed: .constant(true), onPickMetric: { metric in
@@ -106,13 +104,49 @@ struct OnboardingView: View {
         }
     }
 
+    private var actionBar: some View {
+        VStack(spacing: 12) {
+            Text(AnyMetricsStrings.Onboarding.widgetHint)
+                .font(.footnote)
+                .foregroundColor(Constants.secondaryColor)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button(action: addWidget) {
+                Text(AnyMetricsStrings.Onboarding.addWidget)
+                    .font(Constants.fontButton)
+                    .foregroundColor(AnyMetricsAsset.Assets.addMetricTint.swiftUIColor)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+            }
+            .background(Constants.textColor)
+            .cornerRadius(Constants.buttonCorner)
+            .accessibilityIdentifier("onboarding.addWidget")
+            .disabled(hasCompleted)
+
+            Button {
+                showGallery = true
+            } label: {
+                Text(AnyMetricsStrings.Onboarding.chooseFromGallery)
+                    .font(Constants.fontSkip)
+                    .foregroundColor(Constants.secondaryColor)
+                    .padding(.top, 12)
+            }
+            .accessibilityIdentifier("onboarding.chooseFromGallery")
+            .disabled(hasCompleted)
+        }
+        .padding(.horizontal, Constants.horizontalPadding)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .background(Color(.systemBackground).ignoresSafeArea(edges: .bottom))
+    }
+
     private func widgetPreview(side: CGFloat) -> some View {
         VStack(spacing: 16) {
             ZStack {
-                MetricContentView(metric: selectedMetric)
-                    .opacity(isLoadingPreview && !selectedMetric.hasResult ? 0.35 : 1)
+                MetricContentView(metric: previewMetric)
 
-                if isLoadingPreview && !selectedMetric.hasResult {
+                if isLoadingPreview && !previewMetric.hasResult {
                     ProgressView()
                 }
             }
@@ -127,10 +161,15 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("onboarding.starter.title")
 
-                if isLoadingPreview {
+                Text(selectedMetric.measure)
+                    .font(.footnote)
+                    .foregroundColor(Constants.secondaryColor)
+                    .multilineTextAlignment(.center)
+
+                if isLoadingPreview && !previewMetric.hasResult {
                     ProgressView(AnyMetricsStrings.Onboarding.previewLoading)
                         .font(.footnote)
-                } else if previewFailed {
+                } else if previewFailed && selectedMetric.id != StarterMetric.id {
                     Button {
                         loadPreview()
                     } label: {
@@ -138,31 +177,12 @@ struct OnboardingView: View {
                             .font(.footnote)
                     }
                     .foregroundColor(Constants.secondaryColor)
-                } else {
-                    Text(selectedMetric.measure)
-                        .font(.footnote)
-                        .foregroundColor(Constants.secondaryColor)
-                        .multilineTextAlignment(.center)
                 }
             }
 
             if selectedMetric.id == StarterMetric.id {
                 gradientPicker
             }
-
-            Button {
-                showGallery = true
-            } label: {
-                Text(AnyMetricsStrings.Onboarding.chooseFromGallery)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Constants.textColor)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
-                    .background(Constants.buttonBackground)
-                    .clipShape(Capsule())
-            }
-            .accessibilityIdentifier("onboarding.chooseFromGallery")
-            .disabled(hasCompleted)
         }
         .padding(.top, 16)
         .padding(.bottom, 16)
@@ -177,17 +197,28 @@ struct OnboardingView: View {
 
     private var gradientPicker: some View {
         VStack(spacing: 8) {
-            Text(NSLocalizedString("onboarding.gradient.title", comment: ""))
+            Text(AnyMetricsStrings.Onboarding.Gradient.title)
                 .font(.caption)
                 .foregroundColor(Constants.secondaryColor)
 
-            HStack(spacing: 12) {
-                ForEach(StarterMetric.QuoteStyle.allCases) { style in
-                    gradientSwatch(style)
+            gradientSwatchRows
+        }
+        .accessibilityIdentifier("onboarding.gradients")
+    }
+
+    private var gradientSwatchRows: some View {
+        let styles = Array(StarterMetric.QuoteStyle.allCases)
+        let rowSize = 5
+        let rowCount = (styles.count + rowSize - 1) / rowSize
+        return VStack(spacing: 12) {
+            ForEach(0..<rowCount, id: \.self) { row in
+                HStack(spacing: 12) {
+                    ForEach(styles.dropFirst(row * rowSize).prefix(rowSize)) { style in
+                        gradientSwatch(style)
+                    }
                 }
             }
         }
-        .accessibilityIdentifier("onboarding.gradients")
     }
 
     private func gradientSwatch(_ style: StarterMetric.QuoteStyle) -> some View {
@@ -195,18 +226,21 @@ struct OnboardingView: View {
         return Button {
             applyStyle(style)
         } label: {
-            Circle()
-                .fill(style.swatch)
-                .frame(width: 28, height: 28)
-                .padding(3)
-                .overlay {
-                    Circle()
-                        .strokeBorder(selected ? Constants.textColor : Color.clear, lineWidth: 1.5)
-                }
+            WidgetGradientFill(
+                colors: style.colors.map { Color(quoteHex: $0) },
+                mesh: style.mesh
+            )
+            .frame(width: 28, height: 28)
+            .clipShape(Circle())
+            .padding(3)
+            .overlay {
+                Circle()
+                    .strokeBorder(selected ? Constants.textColor : Color.clear, lineWidth: 1.5)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("onboarding.gradient.\(style.rawValue)")
-        .accessibilityLabel(Text(NSLocalizedString(style.localizationKey, comment: "")))
+        .accessibilityLabel(Text(style.localizedName))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -254,6 +288,9 @@ struct OnboardingView: View {
     private func completeOnboarding(_ completion: Completion) {
         guard !hasCompleted else { return }
         hasCompleted = true
+        if case .skipped = completion {
+            AnalyticsEvents.onboardingSkipped()
+        }
         ImpactHelper.success()
         onComplete(completion)
     }
@@ -262,16 +299,6 @@ struct OnboardingView: View {
         guard !didLogShown else { return }
         didLogShown = true
         AnalyticsEvents.onboardingShown()
-    }
-}
-
-private extension StarterMetric.QuoteStyle {
-    var swatch: LinearGradient {
-        LinearGradient(
-            colors: colors.map { Color(quoteHex: $0) },
-            startPoint: .topTrailing,
-            endPoint: .bottomLeading
-        )
     }
 }
 

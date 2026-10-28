@@ -3,50 +3,52 @@ import SwiftUI
 struct MetricActionsMenuView: View {
 
     private enum Constants {
-        static let contentSpacing: CGFloat = 4
-        static let sectionSpacing: CGFloat = 16
-        static let rowSpacing: CGFloat = 8
+        static let sectionSpacing: CGFloat = 8
+        static let rowSpacing: CGFloat = 2
         static let iconSize: CGFloat = 20
         static let iconWidth: CGFloat = 24
         static let horizontalPadding: CGFloat = 16
-        static let topPadding: CGFloat = 16
-        static let bottomPadding: CGFloat = 16
-        static let rowHeight: CGFloat = 52
-        static let closeSize: CGFloat = 30
+        static let topPadding: CGFloat = 8
+        static let bottomPadding: CGFloat = 12
+        static let rowHeight: CGFloat = 44
         static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
-        static let secondaryColor = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
         static let deleteColor = AnyMetricsAsset.Assets.red.swiftUIColor
-        static let fontTitle = Font.system(size: 28, weight: .bold, design: .default)
-        static let fontSubtitle = Font.system(size: 16, weight: .regular, design: .default)
         static let fontRow = Font.system(size: 17, weight: .regular, design: .default)
     }
 
-    let metricTitle: String
     var onRefresh: () -> Void
-    var onEdit: () -> Void
+    var onEditRequest: () -> Void
+    var onEditTheme: () -> Void
     var onExport: () -> Void
     var onShare: () -> Void
     var onDelete: () -> Void
 
     @State
     private var sheetHeight: CGFloat = 360
-    @Environment(\.dismiss)
-    private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
-            header
+            VStack(alignment: .leading, spacing: Constants.rowSpacing) {
+                actionRow(
+                    title: AnyMetricsStrings.Metric.Actions.editRequest,
+                    icon: "link",
+                    action: onEditRequest
+                )
+                actionRow(
+                    title: AnyMetricsStrings.Metric.Actions.editTheme,
+                    icon: "paintpalette",
+                    action: onEditTheme
+                )
+            }
+
+            Divider()
+                .padding(.vertical, 4)
 
             VStack(alignment: .leading, spacing: Constants.rowSpacing) {
                 actionRow(
                     title: AnyMetricsStrings.Metric.Actions.updateValue,
                     icon: "arrow.clockwise",
                     action: onRefresh
-                )
-                actionRow(
-                    title: AnyMetricsStrings.Metric.Actions.edit,
-                    icon: "pencil",
-                    action: onEdit
                 )
                 actionRow(
                     title: AnyMetricsStrings.Metric.Actions.export,
@@ -61,7 +63,7 @@ struct MetricActionsMenuView: View {
             }
 
             Divider()
-                .padding(.vertical, 8)
+                .padding(.vertical, 4)
 
             actionRow(
                 title: AnyMetricsStrings.Metric.Actions.delete,
@@ -85,35 +87,6 @@ struct MetricActionsMenuView: View {
             sheetHeight = height
         }
         .modifier(ActionsFittedSheetModifier(height: sheetHeight))
-    }
-
-    private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: Constants.contentSpacing) {
-                Text(AnyMetricsStrings.Metric.Actions.menuTitle)
-                    .font(Constants.fontTitle)
-                    .foregroundColor(Constants.textColor)
-
-                Text(metricTitle)
-                    .font(Constants.fontSubtitle)
-                    .foregroundColor(Constants.secondaryColor)
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: 12)
-
-            Button {
-                ImpactHelper.impactLight()
-                dismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: Constants.closeSize))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(Constants.secondaryColor)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(AnyMetricsStrings.Common.close)
-        }
     }
 
     private func actionRow(
@@ -163,9 +136,9 @@ private struct ActionsFittedSheetModifier: ViewModifier {
 #if DEBUG
 #Preview {
     MetricActionsMenuView(
-        metricTitle: "Bitcoin",
         onRefresh: {},
-        onEdit: {},
+        onEditRequest: {},
+        onEditTheme: {},
         onExport: {},
         onShare: {},
         onDelete: {}

@@ -30,6 +30,7 @@ extension MetricFormView {
         @EnvironmentObject
         var requestViewState: ViewState<RequestFormView.Interactor>
         var action: (Metric) -> Void
+        var screenTitle: String = AnyMetricsStrings.Addmetric.titleDisplay
 
         var body: some View {
 
@@ -54,6 +55,7 @@ extension MetricFormView {
                                 text: formBinding(for: \.title, set: MetricFormView.VAction.setTitle))
                             .multilineTextAlignment(.trailing)
                         }
+                        .disabled(!isShownInDesign(.title))
                         HStack {
                             Text(AnyMetricsStrings.Addmetric.Field.paramMeasure)
                             TextField(
@@ -61,6 +63,11 @@ extension MetricFormView {
                                 text: formBinding(for: \.measure, set: MetricFormView.VAction.setMeasure))
                             .multilineTextAlignment(.trailing)
                         }
+                        .disabled(!isShownInDesign(.measure))
+                    } header: {
+                        Text(AnyMetricsStrings.Addmetric.Field.labels)
+                    } footer: {
+                        Text(AnyMetricsStrings.Addmetric.Field.labelsFooter)
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
@@ -94,7 +101,7 @@ extension MetricFormView {
                 .padding()
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
-            .navigationTitle(AnyMetricsStrings.Addmetric.titleDisplay)
+            .navigationTitle(screenTitle)
             .alert(AnyMetricsStrings.Common.error, isPresented: $showSaveError) {
                 Button(AnyMetricsStrings.Common.ok, role: .cancel) {}
             } message: {
@@ -184,6 +191,13 @@ extension MetricFormView {
             .padding(.bottom, 4)
         }
 
+        private func isShownInDesign(_ kind: WidgetElementKind) -> Bool {
+            let appearance = viewState.state.widgetAppearance
+            let small = appearance.small.element(kind: kind)?.isVisible ?? true
+            let medium = appearance.medium.element(kind: kind)?.isVisible ?? true
+            return small || medium
+        }
+
         private var designGalleryItems: [WidgetDesignGalleryView.Item] {
             WidgetDesign.allCases.map { design in
                 let isSelected = design == viewState.state.widgetDesign
@@ -202,7 +216,7 @@ extension MetricFormView {
             guard let design = WidgetDesign(rawValue: id),
                   design != viewState.state.widgetDesign
             else { return }
-            viewState.trigger(.setWidgetDesign(design))
+            viewState.trigger(.setWidgetAppearance(.preset(design)))
         }
 
         private func designPreview(metric: Metric, size: CGFloat) -> some View {

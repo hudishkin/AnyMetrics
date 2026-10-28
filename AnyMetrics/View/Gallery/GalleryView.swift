@@ -61,6 +61,7 @@ struct GalleryView: View {
                         .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         .listRowSeparator(.hidden)
                         .buttonStyle(PlainButtonStyle())
+                        .galleryListRowSurface()
 
                         NavigationLink(isActive: $showImportMenu) {
                             ImportMetricView(onImported: { metric in
@@ -85,6 +86,7 @@ struct GalleryView: View {
                         .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                         .listRowSeparator(.hidden)
                         .buttonStyle(PlainButtonStyle())
+                        .galleryListRowSurface()
                     }
 
                     if !viewState.state.showSendRequestMetric {
@@ -104,10 +106,13 @@ struct GalleryView: View {
                                         }, alreadyAdded: !isPicker && mainState.state.metrics[metric.id] != nil)
                                     .buttonStyle(PlainButtonStyle())
                                     .listRowSeparator(.hidden)
+                                    .galleryListRowSurface()
+                                    .galleryMetricRowSpacing()
                                 }
                             } header: {
                                 Text(group.name).font(Constants.sectionFont)
                             }
+                            .galleryListRowSurface()
                         }
                     }
 
@@ -223,6 +228,10 @@ struct GalleryView: View {
         galleryGroup: String? = nil,
         dismissGallery: Bool = false
     ) {
+        var metric = metric
+        if source == AnalyticsEvents.Source.gallery {
+            metric = StarterMetric.applyingCollectionGradient(to: metric)
+        }
         ImpactHelper.success()
         if let onPickMetric {
             onPickMetric(metric)
@@ -244,6 +253,28 @@ struct GalleryView: View {
         }
     }
 
+}
+
+private extension View {
+    /// iOS 26 рисует у секций и строк List стеклянный фон. На старых версиях фон строки не трогаем.
+    @ViewBuilder
+    func galleryListRowSurface() -> some View {
+        if #available(iOS 26.0, *) {
+            listRowBackground(Color.clear)
+        } else {
+            self
+        }
+    }
+
+    /// На iOS 26 у строки большой системный отступ. Оставляем только узкий зазор между карточками.
+    @ViewBuilder
+    func galleryMetricRowSpacing() -> some View {
+        if #available(iOS 26.0, *) {
+            listRowInsets(.vertical, GalleryView.Constants.itemRowSpacing)
+        } else {
+            self
+        }
+    }
 }
 
 #if DEBUG

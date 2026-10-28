@@ -30,6 +30,14 @@ public extension WidgetAppearance {
         }
     }
 
+    /// Coarse design kept beside the full appearance so older files still resolve a layout.
+    /// Circle maps to `glassCircle`. Otherwise `plain` is kept, and every other design falls back to `roundedCard`.
+    func compatibleWidgetDesign(previous: WidgetDesign) -> WidgetDesign {
+        if isRoundSmallWidget { return .glassCircle }
+        if previous == .plain { return .plain }
+        return .roundedCard
+    }
+
     private func markingCustom() -> WidgetAppearance {
         var copy = self
         copy.presetId = WidgetAppearancePreset.custom.rawValue

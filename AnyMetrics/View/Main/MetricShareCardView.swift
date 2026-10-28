@@ -16,41 +16,27 @@ struct MetricShareCardView: View {
         static let hintFont = Font.system(size: 12, weight: .medium, design: .default)
         static let textColor = Color(red: 0.12, green: 0.14, blue: 0.16)
         static let secondaryText = Color(red: 0.12, green: 0.14, blue: 0.16).opacity(0.58)
-        /// Same pastel used on App Store screenshots / default widget fill.
-        static let background = LinearGradient(
-            colors: [
-                Color(red: 0.961, green: 0.835, blue: 0.808),
-                Color(red: 0.98, green: 0.89, blue: 0.714),
-                Color(red: 0.911, green: 0.992, blue: 0.847),
-                Color(red: 0.886, green: 0.949, blue: 0.973)
-            ],
-            startPoint: .topTrailing,
-            endPoint: .bottomLeading
-        )
     }
 
     let metric: Metric
     let qrImage: UIImage?
 
     var body: some View {
-        ZStack {
-            Constants.background
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
 
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
+            widgetPreview
+                .frame(width: Constants.widgetSide, height: Constants.widgetSide)
+                .shadow(color: Color.black.opacity(0.16), radius: 22, y: 12)
 
-                widgetPreview
-                    .frame(width: Constants.widgetSide, height: Constants.widgetSide)
-                    .shadow(color: Color.black.opacity(0.16), radius: 22, y: 12)
+            Spacer(minLength: 0)
 
-                Spacer(minLength: 0)
-
-                footer
-                    .padding(.horizontal, Constants.horizontalPadding)
-                    .padding(.bottom, Constants.bottomPadding)
-            }
+            footer
+                .padding(.horizontal, Constants.horizontalPadding)
+                .padding(.bottom, Constants.bottomPadding)
         }
         .frame(width: MetricShareComposer.cardSize.width, height: MetricShareComposer.cardSize.height)
+        .background(WidgetShareBackdrop(metric: metric))
         .clipped()
     }
 

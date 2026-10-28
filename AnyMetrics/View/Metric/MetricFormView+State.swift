@@ -73,8 +73,8 @@ extension MetricFormView {
         var isEdited: Bool = false
         var hasParseRuleError: Bool = false
         var parseErrorMessage: String = ""
-        var widgetDesign: WidgetDesign = .default
-        var widgetAppearance: WidgetAppearance = .preset(.default)
+        var widgetDesign: WidgetDesign = .roundedCard
+        var widgetAppearance: WidgetAppearance = .roundedCard
         /// Last edited/imported custom look; kept when browsing presets so it can be reselected.
         var savedCustomAppearance: WidgetAppearance?
         var created: Date = Date()
@@ -94,7 +94,6 @@ extension MetricFormView {
         case setParseRules(String)
         case setFormatType(MetricFormatterType)
         case setMaxLengthValue(Int)
-        case setWidgetDesign(WidgetDesign)
         case setWidgetAppearance(WidgetAppearance)
     }
 
@@ -185,7 +184,7 @@ extension Metric {
             description: formState.description,
             website: formState.website,
             interval: requestState.refreshInterval.interval,
-            widgetDesign: appearance.matchingWidgetDesign ?? formState.widgetDesign,
+            widgetDesign: appearance.compatibleWidgetDesign(previous: formState.widgetDesign),
             widgetAppearance: appearance
         )
     }

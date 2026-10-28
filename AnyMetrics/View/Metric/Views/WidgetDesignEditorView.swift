@@ -30,9 +30,18 @@ struct WidgetDesignEditorView: View {
         static let metricViewPadding: CGFloat = MetricFormView.Constants.metricViewPadding
 
         static let fontCaption = Font.system(size: 12, weight: .regular, design: .default)
-        static let fontAction = Font.system(size: 13, weight: .semibold, design: .default)
         static let fontRow = Font.system(size: 17, weight: .regular, design: .default)
-        static let fontRowSelected = Font.system(size: 17, weight: .semibold, design: .default)
+        static let fontTab = Font.system(size: 15, weight: .regular, design: .default)
+        static let fontSubtab = Font.system(size: 11, weight: .regular, design: .default)
+        static let sizeIconSize: CGFloat = 14
+        static let tabTrack = Color(uiColor: .tertiarySystemFill)
+        static let switchTint = Color(uiColor: .systemGreen)
+        static let historyLimit = 30
+    }
+
+    private enum EditorTab: Hashable {
+        case text
+        case background
     }
 
     @Binding var appearance: WidgetAppearance
@@ -40,6 +49,7 @@ struct WidgetDesignEditorView: View {
     let metricId: UUID
 
     @State private var sizeKey: WidgetSizeKey = .small
+    @State private var editorTab: EditorTab = .text
     @State private var selectedKind: WidgetElementKind? = .value
     @State private var dragOrigins: [WidgetElementKind: NormalizedRect] = [:]
     @State private var imagePanOrigins: [WidgetElementKind: (x: Double, y: Double)] = [:]
@@ -60,6 +70,16 @@ struct WidgetDesignEditorView: View {
     @State private var backgroundURLTask: URLSessionDataTask?
     @State private var backgroundURLRequestID = UUID()
     @State private var backgroundApplyError: String?
+    @State private var showLayoutSettings = false
+    @State private var syncSizes = true
+    /// Source image path already copied onto a size, so live sync does not write a new file each frame.
+    @State private var copiedImageSourcePath: [WidgetSizeKey: String] = [:]
+    @State private var undoStack: [WidgetSizeKey: SizeHistory] = [:]
+    /// Appearance before the current drag, pinch, slider, or color gesture.
+    @State private var editBaseline: WidgetAppearance?
+    @State private var editBaselineSynced = false
+    @State private var openEditIDs: Set<String> = []
+    @State private var colorCommit: DispatchWorkItem?
 
     private var palette: MetricWidgetPalette { .widget() }
 
@@ -109,54 +129,58 @@ struct WidgetDesignEditorView: View {
         usesResultImageAsBackground || currentBackgroundKind == .image
     }
 
+    private var textElementKinds: [WidgetElementKind] {
+        WidgetElementKind.allCases.filter { !($0 == .value && usesResultImageAsBackground) }
+    }
+
     var body: some View {
         Form {
-            if let selectedKind, selectedElement != nil, !usesResultImageAsBackground || selectedKind != .value {
+            switch editorTab {
+            case .text:
+                if let selectedKind, textElementKinds.contains(selectedKind), selectedElement != nil {
+                    Section {
+                        visibilityToggle(for: selectedKind)
+                        if selectedElement?.isVisible != false {
+                            if selectedShowsResultImage {
+                                imageScaleControls(for: selectedKind)
+                                Button(L10n.resetImageTransform) {
+                                    resetImageTransform(kind: selectedKind)
+                                }
+                                .foregroundColor(Constants.textColor)
+                                .disabled(isDefaultImageTransform(selectedElement))
+                            } else {
+                                alignmentControls(for: selectedKind)
+                                fontControls(for: selectedKind)
+                                fontScaleControls(for: selectedKind)
+                                textColorControl(for: selectedKind)
+                                Button(L10n.resetTextSize) {
+                                    updateFontScale(kind: selectedKind, WidgetElementSpec.defaultFontScale)
+                                }
+                                .foregroundColor(Constants.textColor)
+                                .disabled(
+                                    abs((selectedElement?.resolvedFontScale ?? 1) - WidgetElementSpec.defaultFontScale) < 0.01
+                                )
+                            }
+                        }
+                    } footer: {
+                        Text(selectedShowsResultImage ? L10n.imageElementsFooter : L10n.elementsFooter)
+                            .foregroundColor(Constants.secondaryColor)
+                    }
+                    .animation(.easeInOut(duration: 0.25), value: selectedElement?.isVisible)
+                }
+            case .background:
                 Section {
-                    if selectedShowsResultImage {
-                        imageScaleControls(for: selectedKind)
-                        Button(L10n.resetImageTransform) {
-                            resetImageTransform(kind: selectedKind)
-                        }
-                        .disabled(isDefaultImageTransform(selectedElement))
-                    } else {
-                        alignmentControls(for: selectedKind)
-                        fontScaleControls(for: selectedKind)
-                        textColorControl(for: selectedKind)
-                        Button(L10n.resetTextSize) {
-                            updateFontScale(kind: selectedKind, WidgetElementSpec.defaultFontScale)
-                        }
-                        .disabled(
-                            abs((selectedElement?.resolvedFontScale ?? 1) - WidgetElementSpec.defaultFontScale) < 0.01
-                        )
+                    backgroundOptions
+                } footer: {
+                    if usesResultImageAsBackground {
+                        Text(L10n.useAsBackgroundFooter)
+                            .foregroundColor(Constants.secondaryColor)
                     }
-                } header: {
-                    Text(L10n.selectedFormat(label(for: selectedKind)))
-                }
-            }
-
-            Section {
-                ForEach(WidgetElementKind.allCases) { kind in
-                    if !(kind == .value && usesResultImageAsBackground) {
-                        elementRow(kind)
-                    }
-                }
-            } header: {
-                Text(L10n.elements)
-            } footer: {
-                Text(selectedShowsResultImage || usesResultImageAsBackground ? L10n.imageElementsFooter : L10n.elementsFooter)
-            }
-
-            Section {
-                backgroundOptions
-            } header: {
-                Text(L10n.background)
-            } footer: {
-                if usesResultImageAsBackground {
-                    Text(L10n.useAsBackgroundFooter)
                 }
             }
         }
+        .tint(Constants.textColor)
+        .foregroundColor(Constants.textColor)
         .safeAreaInset(edge: .top, spacing: 0) {
             previewChrome
                 .padding(.horizontal, Constants.horizontalPadding)
@@ -167,17 +191,29 @@ struct WidgetDesignEditorView: View {
                         .ignoresSafeArea(edges: .top)
                 )
         }
-        .onAppear(perform: syncControlsFromAppearance)
+        .onAppear {
+            ensureTextSelection()
+            syncControlsFromAppearance()
+        }
         .onDisappear {
             backgroundURLTask?.cancel()
             backgroundURLTask = nil
+            colorCommit?.cancel()
+            colorCommit = nil
         }
         .onChange(of: sizeKey) { _ in
+            commitBaseline()
             dragOrigins = [:]
             imagePanOrigins = [:]
             backgroundPanOrigin = nil
             pinchBaseScale = nil
+            ensureTextSelection()
             syncControlsFromAppearance()
+        }
+        .onChange(of: editorTab) { tab in
+            if tab == .text {
+                ensureTextSelection()
+            }
         }
         .onChange(of: selectedKind) { _ in
             syncControlsFromAppearance()
@@ -187,6 +223,10 @@ struct WidgetDesignEditorView: View {
                 guard let image else { return }
                 applyBackgroundImage(image)
             }
+        }
+        .sheet(isPresented: $showLayoutSettings) {
+            layoutSettingsSheet
+                .presentationDetents([.medium])
         }
         .alert(
             AnyMetricsStrings.Common.error,
@@ -205,36 +245,212 @@ struct WidgetDesignEditorView: View {
 
     private var previewChrome: some View {
         VStack(spacing: Constants.previewSpacing) {
-            Picker("", selection: $sizeKey) {
-                Text(L10n.sizeSmall).tag(WidgetSizeKey.small)
-                Text(L10n.sizeMedium).tag(WidgetSizeKey.medium)
+            HStack(alignment: .center, spacing: 8) {
+                layoutSettingsButton
+                Spacer(minLength: 8)
+                historyControls
+                sizeToggle
             }
-            .pickerStyle(.segmented)
 
-            canvas
-                .frame(height: sizeKey == .small ? Constants.smallCanvasHeight : Constants.mediumCanvasHeight)
+            VStack(spacing: 4) {
+                canvas
+                    .frame(height: max(Constants.smallCanvasHeight, Constants.mediumCanvasHeight))
 
-            HStack(spacing: Constants.controlSpacing) {
-                Label(
+                Text(
                     usesResultImageAsBackground || selectedShowsResultImage
                         ? L10n.imageDragHintShort
-                        : L10n.dragHintShort,
-                    systemImage: "hand.draw"
+                        : L10n.dragHintShort
                 )
                 .font(Constants.fontCaption)
                 .foregroundColor(Constants.secondaryColor)
-                .labelStyle(.titleAndIcon)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+            }
 
-                Spacer(minLength: 8)
+            editorTabs
 
-                Button(sizeKey == .small ? L10n.copyToMedium : L10n.copyToSmall) {
-                    copyLayoutToOtherSize()
-                }
-                .font(Constants.fontAction)
-                .foregroundColor(Constants.textColor)
-                .buttonStyle(.bordered)
+            if editorTab == .text {
+                textSubtabs
             }
         }
+    }
+
+    private var historyControls: some View {
+        HStack(spacing: 2) {
+            historyButton(
+                systemImage: "arrow.uturn.backward",
+                enabled: canUndo,
+                label: L10n.undo,
+                action: undoAppearance
+            )
+            historyButton(
+                systemImage: "arrow.uturn.forward",
+                enabled: canRedo,
+                label: L10n.redo,
+                action: redoAppearance
+            )
+        }
+        .padding(2)
+        .background(Capsule().fill(Color(uiColor: .tertiarySystemFill)))
+    }
+
+    private func historyButton(
+        systemImage: String,
+        enabled: Bool,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: Constants.sizeIconSize, weight: .medium))
+                .frame(width: 30, height: 26)
+                .foregroundColor(Constants.textColor)
+                .opacity(enabled ? 1 : 0.35)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(Text(label))
+    }
+
+    private var layoutSettingsButton: some View {
+        Button {
+            showLayoutSettings = true
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+                .font(.system(size: Constants.sizeIconSize, weight: .medium))
+                .frame(width: 30, height: 26)
+                .foregroundColor(Constants.textColor)
+                .background(
+                    Capsule().fill(showLayoutSettings ? Constants.selectedRowBackground : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
+        .padding(2)
+        .background(Capsule().fill(Color(uiColor: .tertiarySystemFill)))
+        .accessibilityLabel(Text(L10n.layoutSettings))
+    }
+
+    private var layoutSettingsSheet: some View {
+        NavigationView {
+            Form {
+                Section {
+                    Toggle(L10n.round, isOn: roundSmallBinding)
+                        .tint(Constants.switchTint)
+                } footer: {
+                    Text(L10n.roundFooter)
+                        .foregroundColor(Constants.secondaryColor)
+                }
+
+                Section {
+                    Toggle(L10n.syncSizes, isOn: syncSizesBinding)
+                        .tint(Constants.switchTint)
+                    if !syncSizes {
+                        Button(L10n.copyToSmall) {
+                            copyLayout(to: .small)
+                        }
+                        .foregroundColor(Constants.textColor)
+                        Button(L10n.copyToMedium) {
+                            copyLayout(to: .medium)
+                        }
+                        .foregroundColor(Constants.textColor)
+                    }
+                } footer: {
+                    if syncSizes {
+                        Text(L10n.syncSizesFooter)
+                            .foregroundColor(Constants.secondaryColor)
+                    }
+                }
+            }
+            .navigationTitle(L10n.layoutSettings)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(AnyMetricsStrings.Common.close) {
+                        showLayoutSettings = false
+                    }
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    private var sizeToggle: some View {
+        HStack(spacing: 2) {
+            sizeButton(.small, systemImage: "widget.small", label: L10n.sizeSmall)
+            sizeButton(.medium, systemImage: "widget.medium", label: L10n.sizeMedium)
+        }
+        .padding(2)
+        .background(Capsule().fill(Color(uiColor: .tertiarySystemFill)))
+    }
+
+    private func sizeButton(_ key: WidgetSizeKey, systemImage: String, label: String) -> some View {
+        let selected = sizeKey == key
+        return Button {
+            sizeKey = key
+        } label: {
+            Image(systemName: systemImage)
+                .font(.system(size: Constants.sizeIconSize, weight: .medium))
+                .frame(width: 30, height: 26)
+                .foregroundColor(Constants.textColor)
+                .background(Capsule().fill(selected ? Constants.selectedRowBackground : Color.clear))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(label))
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private var editorTabs: some View {
+        HStack(spacing: 4) {
+            textTab(title: L10n.elements, isSelected: editorTab == .text, labelFont: Constants.fontTab, verticalPadding: 10) {
+                editorTab = .text
+            }
+            textTab(title: L10n.background, isSelected: editorTab == .background, labelFont: Constants.fontTab, verticalPadding: 10) {
+                editorTab = .background
+            }
+        }
+        .padding(4)
+        .background(Capsule().fill(Constants.tabTrack))
+    }
+
+    private var textSubtabs: some View {
+        HStack(spacing: 2) {
+            ForEach(textElementKinds) { kind in
+                textTab(
+                    title: label(for: kind),
+                    isSelected: selectedKind == kind,
+                    labelFont: Constants.fontSubtab,
+                    verticalPadding: 6
+                ) {
+                    selectedKind = kind
+                }
+            }
+        }
+        .padding(2)
+        .background(Capsule().fill(Constants.tabTrack))
+    }
+
+    private func textTab(
+        title: String,
+        isSelected: Bool,
+        labelFont: Font,
+        verticalPadding: CGFloat,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(labelFont)
+                .fontWeight(isSelected ? .semibold : .regular)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .foregroundColor(Constants.textColor)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, verticalPadding)
+                .padding(.horizontal, 8)
+                .background(Capsule().fill(isSelected ? Constants.textColor.opacity(0.16) : Color.clear))
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var canvas: some View {
@@ -251,9 +467,13 @@ struct WidgetDesignEditorView: View {
             matchWidgetMetrics: true,
             updatedAt: metric.updated ?? Date().addingTimeInterval(-120),
             isEditing: true,
-            selectedKind: selectedKind,
-            onSelect: { selectedKind = $0 },
+            selectedKind: editorTab == .text ? selectedKind : nil,
+            onSelect: { kind in
+                selectedKind = kind
+                editorTab = .text
+            },
             onDrag: { kind, translation, canvas in
+                beginEdit("drag")
                 if shouldPanResultImageContent(kind: kind) {
                     panResultImage(kind: kind, translation: translation, canvas: canvas)
                 } else {
@@ -263,12 +483,15 @@ struct WidgetDesignEditorView: View {
             onDragEnd: { kind in
                 dragOrigins[kind] = nil
                 imagePanOrigins[kind] = nil
+                endEdit("drag")
             },
             onBackgroundDrag: { translation, canvas in
+                beginEdit("background-drag")
                 panBackgroundImage(translation: translation, canvas: canvas)
             },
             onBackgroundDragEnd: {
                 backgroundPanOrigin = nil
+                endEdit("background-drag")
             },
             onFittedSizes: { sizes, _ in
                 fittedSizes = sizes
@@ -287,7 +510,10 @@ struct WidgetDesignEditorView: View {
     private var pinchToZoom: some Gesture {
         MagnificationGesture()
             .onChanged { magnification in
-                if let selectedKind, !(usesResultImageAsBackground && selectedKind == .value) {
+                beginEdit("pinch")
+                if editorTab == .text,
+                   let selectedKind,
+                   !(usesResultImageAsBackground && selectedKind == .value) {
                     if shouldZoomResultImage(kind: selectedKind) {
                         if pinchBaseScale == nil {
                             pinchBaseScale = sizeAppearance.element(kind: selectedKind)?.imageScale
@@ -314,6 +540,7 @@ struct WidgetDesignEditorView: View {
             }
             .onEnded { _ in
                 pinchBaseScale = nil
+                endEdit("pinch")
             }
     }
 
@@ -399,27 +626,55 @@ struct WidgetDesignEditorView: View {
         if isImageResult {
             Toggle(isOn: useAsBackgroundBinding) {
                 Label(L10n.useAsBackground, systemImage: "photo.on.rectangle.angled")
-                    .foregroundColor(Constants.textColor)
             }
-            .tint(Color.accentColor)
+            .tint(Constants.switchTint)
             .disabled(!canUseResultImageAsBackground && !sizeAppearance.background.usesResultImageAsBackground)
         }
 
         if !usesResultImageAsBackground {
             backgroundRow(
                 title: L10n.bgStatusGradient,
-                kind: .statusGradient,
-                systemImage: "circle.lefthalf.filled"
+                systemImage: "circle.lefthalf.filled",
+                isSelected: currentBackgroundKind == .statusGradient
             ) {
                 setFill(.statusGradient)
             }
 
-            gradientOptions
+            backgroundRow(
+                title: L10n.bgGradients,
+                systemImage: "circle.grid.2x2.fill",
+                isSelected: showsPresetGradients
+            ) {
+                selectPresetGradients()
+            }
+
+            if showsPresetGradients {
+                gradientPresetRows
+                    .padding(.vertical, Constants.controlVerticalPadding)
+            }
+
+            backgroundRow(
+                title: L10n.bgCustomGradient,
+                systemImage: "slider.horizontal.3",
+                isSelected: isCustomGradient
+            ) {
+                beginCustomGradient()
+            }
+
+            if isCustomGradient {
+                ForEach(0..<3, id: \.self) { index in
+                    ColorPicker(
+                        L10n.bgGradientStop(index + 1),
+                        selection: gradientStopBinding(index),
+                        supportsOpacity: true
+                    )
+                }
+            }
 
             backgroundRow(
                 title: L10n.bgSystem,
-                kind: .system,
-                systemImage: "square.fill"
+                systemImage: "square.fill",
+                isSelected: currentBackgroundKind == .system
             ) {
                 setFill(.system)
             }
@@ -427,11 +682,12 @@ struct WidgetDesignEditorView: View {
             HStack(spacing: Constants.controlSpacing) {
                 selectionMark(currentBackgroundKind == .solid)
                 Image(systemName: "paintpalette.fill")
-                    .foregroundColor(Constants.secondaryColor)
+                    .foregroundColor(Constants.textColor)
                     .frame(width: Constants.iconWidth)
                 ColorPicker(L10n.bgSolid, selection: $solidColor, supportsOpacity: true)
                     .onChange(of: solidColor) { newValue in
                         guard !isSyncingControls else { return }
+                        noteColorEdit()
                         setFill(.solid(.hex(newValue.hexString)))
                     }
             }
@@ -446,7 +702,7 @@ struct WidgetDesignEditorView: View {
                 HStack(spacing: Constants.controlSpacing) {
                     selectionMark(currentBackgroundKind == .image && !isRemoteImageBackground)
                     Image(systemName: "photo")
-                        .foregroundColor(Constants.secondaryColor)
+                        .foregroundColor(Constants.textColor)
                         .frame(width: Constants.iconWidth)
                     Text(L10n.bgPhoto)
                         .font(Constants.fontRow)
@@ -454,6 +710,7 @@ struct WidgetDesignEditorView: View {
                     Spacer()
                 }
             }
+            .buttonStyle(.plain)
 
             DisclosureGroup(isExpanded: $showURLField) {
                 HStack {
@@ -464,13 +721,15 @@ struct WidgetDesignEditorView: View {
                     Button(L10n.bgApplyUrl) {
                         applyBackgroundURL(backgroundURLText)
                     }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(Constants.textColor)
                     .disabled(backgroundURLText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             } label: {
                 HStack(spacing: Constants.controlSpacing) {
                     selectionMark(isRemoteImageBackground)
                     Image(systemName: "link")
-                        .foregroundColor(Constants.secondaryColor)
+                        .foregroundColor(Constants.textColor)
                         .frame(width: Constants.iconWidth)
                     Text(L10n.bgFromUrl)
                         .font(Constants.fontRow)
@@ -485,9 +744,22 @@ struct WidgetDesignEditorView: View {
                 Text(L10n.imageFit).tag(WidgetImageContentMode.fit)
             }
             .pickerStyle(.segmented)
+            .tint(Constants.textColor)
 
             backgroundImageScaleControls
         }
+    }
+
+    private var roundSmallBinding: Binding<Bool> {
+        Binding(
+            get: { appearance.isRoundSmallWidget },
+            set: { isRound in
+                var copy = appearance
+                copy.setRoundSmallWidget(isRound)
+                storeAppearance(copy)
+                sizeKey = .small
+            }
+        )
     }
 
     private var useAsBackgroundBinding: Binding<Bool> {
@@ -515,7 +787,6 @@ struct WidgetDesignEditorView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(L10n.imageScale)
-                    .foregroundColor(Constants.textColor)
                 Spacer()
                 Text("\(Int((scale * 100).rounded()))%")
                     .foregroundColor(Constants.secondaryColor)
@@ -527,8 +798,10 @@ struct WidgetDesignEditorView: View {
                     set: { updateBackgroundImageScale($0) }
                 ),
                 in: WidgetBackgroundSpec.minImageScale...WidgetBackgroundSpec.maxImageScale,
-                step: 0.05
+                step: 0.05,
+                onEditingChanged: sliderEditingChanged
             )
+            .tint(Constants.textColor)
             Button(L10n.resetImageTransform) {
                 mutateSize { size in
                     size.background.imageScale = WidgetBackgroundSpec.defaultImageScale
@@ -536,6 +809,7 @@ struct WidgetDesignEditorView: View {
                     size.background.imageOffsetY = 0
                 }
             }
+            .foregroundColor(Constants.textColor)
             .disabled(
                 abs(scale - WidgetBackgroundSpec.defaultImageScale) < 0.01
                     && abs(sizeAppearance.background.imageOffsetX) < 0.01
@@ -545,43 +819,23 @@ struct WidgetDesignEditorView: View {
         .padding(.vertical, Constants.controlVerticalPadding)
     }
 
-    private var gradientOptions: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(L10n.bgGradients)
-                .font(Constants.fontRow)
-                .foregroundColor(Constants.textColor)
+    private var showsPresetGradients: Bool {
+        currentGradientSpec != nil && StarterMetric.QuoteStyle.allCases.contains(where: matchesPreset)
+    }
 
-            HStack(spacing: 12) {
-                ForEach(StarterMetric.QuoteStyle.allCases) { style in
-                    gradientPresetButton(style)
-                }
-            }
-
-            Button(action: beginCustomGradient) {
-                HStack(spacing: Constants.controlSpacing) {
-                    selectionMark(isCustomGradient)
-                    Image(systemName: "slider.horizontal.3")
-                        .foregroundColor(Constants.secondaryColor)
-                        .frame(width: Constants.iconWidth)
-                    Text(L10n.bgCustomGradient)
-                        .font(Constants.fontRow)
-                        .foregroundColor(Constants.textColor)
-                    Spacer()
-                }
-            }
-            .buttonStyle(.plain)
-
-            if currentGradientSpec != nil {
-                ForEach(0..<3, id: \.self) { index in
-                    ColorPicker(
-                        L10n.bgGradientStop(index + 1),
-                        selection: gradientStopBinding(index),
-                        supportsOpacity: true
-                    )
+    private var gradientPresetRows: some View {
+        let styles = Array(StarterMetric.QuoteStyle.allCases)
+        let rowSize = 5
+        let rowCount = (styles.count + rowSize - 1) / rowSize
+        return VStack(alignment: .leading, spacing: 12) {
+            ForEach(0..<rowCount, id: \.self) { row in
+                HStack(spacing: 12) {
+                    ForEach(styles.dropFirst(row * rowSize).prefix(rowSize)) { style in
+                        gradientPresetButton(style)
+                    }
                 }
             }
         }
-        .padding(.vertical, Constants.controlVerticalPadding)
     }
 
     private func gradientPresetButton(_ style: StarterMetric.QuoteStyle) -> some View {
@@ -589,23 +843,20 @@ struct WidgetDesignEditorView: View {
         return Button {
             applyPreset(style)
         } label: {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: style.colors.compactMap { Color(hex: $0) },
-                        startPoint: .topTrailing,
-                        endPoint: .bottomLeading
-                    )
-                )
-                .frame(width: 28, height: 28)
-                .padding(3)
-                .overlay {
-                    Circle()
-                        .strokeBorder(selected ? Constants.textColor : Color.clear, lineWidth: 1.5)
-                }
+            WidgetGradientFill(
+                colors: style.colors.compactMap { Color(hex: $0) },
+                mesh: style.mesh
+            )
+            .frame(width: 28, height: 28)
+            .clipShape(Circle())
+            .padding(3)
+            .overlay {
+                Circle()
+                    .strokeBorder(selected ? Constants.textColor : Color.clear, lineWidth: 1.5)
+            }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(NSLocalizedString(style.localizationKey, comment: "")))
+        .accessibilityLabel(Text(style.localizedName))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -619,7 +870,10 @@ struct WidgetDesignEditorView: View {
     }
 
     private func matchesPreset(_ style: StarterMetric.QuoteStyle) -> Bool {
-        guard let spec = currentGradientSpec, spec.colors.count == style.colors.count else { return false }
+        guard let spec = currentGradientSpec,
+              spec.mesh == style.mesh,
+              spec.colors.count == style.colors.count
+        else { return false }
         return zip(spec.colors, style.colors).allSatisfy { pair in
             normalizeHex(pair.0) == normalizeHex(pair.1)
         }
@@ -635,12 +889,32 @@ struct WidgetDesignEditorView: View {
             startX: 1,
             startY: 0,
             endX: 0,
-            endY: 1
+            endY: 1,
+            mesh: style.mesh
         )))
+        guard style.usesDarkText else { return }
+        mutateSize { size in
+            for kind in WidgetElementKind.allCases {
+                size.updateElement(kind: kind) { element in
+                    switch kind {
+                    case .title, .value:
+                        element.color = .hex("#1C1917")
+                    case .measure, .updated:
+                        element.color = .hex("#B31C1917")
+                    }
+                }
+            }
+        }
+    }
+
+    private func selectPresetGradients() {
+        guard !showsPresetGradients else { return }
+        guard let style = StarterMetric.QuoteStyle.allCases.first else { return }
+        applyPreset(style)
     }
 
     private func beginCustomGradient() {
-        guard currentGradientSpec == nil else { return }
+        guard !isCustomGradient else { return }
         let colors = ["#1C1C1E", "#3A3A3C", "#8E8E93"]
         gradientStops = colors.compactMap { Color(hex: $0) }
         setFill(.gradient(WidgetGradientSpec(
@@ -659,6 +933,7 @@ struct WidgetDesignEditorView: View {
                 guard gradientStops.indices.contains(index) else { return }
                 gradientStops[index] = newColor
                 guard !isSyncingControls else { return }
+                noteColorEdit()
                 var spec = currentGradientSpec ?? WidgetGradientSpec(
                     colors: [],
                     startX: 1,
@@ -692,15 +967,15 @@ struct WidgetDesignEditorView: View {
 
     private func backgroundRow(
         title: String,
-        kind: BackgroundKind,
         systemImage: String,
+        isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: Constants.controlSpacing) {
-                selectionMark(currentBackgroundKind == kind)
+                selectionMark(isSelected)
                 Image(systemName: systemImage)
-                    .foregroundColor(Constants.secondaryColor)
+                    .foregroundColor(Constants.textColor)
                     .frame(width: Constants.iconWidth)
                 Text(title)
                     .font(Constants.fontRow)
@@ -708,11 +983,12 @@ struct WidgetDesignEditorView: View {
                 Spacer()
             }
         }
+        .buttonStyle(.plain)
     }
 
     private func selectionMark(_ selected: Bool) -> some View {
         Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-            .foregroundColor(selected ? Constants.textColor : Constants.secondaryColor.opacity(0.45))
+            .foregroundColor(Constants.textColor)
             .imageScale(.medium)
     }
 
@@ -732,40 +1008,16 @@ struct WidgetDesignEditorView: View {
 
     // MARK: - Elements
 
-    private func elementRow(_ kind: WidgetElementKind) -> some View {
+    private func visibilityToggle(for kind: WidgetElementKind) -> some View {
         let visible = sizeAppearance.element(kind: kind)?.isVisible ?? true
-        let isSelected = selectedKind == kind
-
-        return HStack(spacing: Constants.controlSpacing) {
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(isSelected ? Constants.textColor : Constants.secondaryColor.opacity(0.45))
-                .frame(width: Constants.iconWidth)
-
-            Text(label(for: kind))
-                .font(isSelected ? Constants.fontRowSelected : Constants.fontRow)
-                .foregroundColor(Constants.textColor)
-
-            Spacer(minLength: 8)
-
-            Toggle(
-                "",
-                isOn: Binding(
-                    get: { visible },
-                    set: { setVisible(kind: kind, $0) }
-                )
+        return Toggle(
+            L10n.showBlock,
+            isOn: Binding(
+                get: { visible },
+                set: { setVisible(kind: kind, $0) }
             )
-            .labelsHidden()
-            .tint(Color.accentColor)
-        }
-        .contentShape(Rectangle())
-        .listRowBackground(
-            isSelected
-                ? Constants.selectedRowBackground
-                : Color(uiColor: .secondarySystemGroupedBackground)
         )
-        .onTapGesture {
-            selectedKind = kind
-        }
+        .tint(Constants.switchTint)
     }
 
     private func alignmentControls(for kind: WidgetElementKind) -> some View {
@@ -779,6 +1031,47 @@ struct WidgetDesignEditorView: View {
             Image(systemName: "text.alignright").tag(WidgetTextAlignment.trailing)
         }
         .pickerStyle(.segmented)
+        .tint(Constants.textColor)
+    }
+
+    private func fontControls(for kind: WidgetElementKind) -> some View {
+        Picker(L10n.font, selection: Binding(
+            get: { selectedFontDesign(for: kind) },
+            set: { setFontDesign(kind: kind, $0) }
+        )) {
+            fontOption(L10n.fontSystem, design: .system)
+            fontOption(L10n.fontRounded, design: .rounded)
+            fontOption(L10n.fontSerif, design: .serif)
+            fontOption(L10n.fontMonospaced, design: .monospaced)
+        }
+        .pickerStyle(.menu)
+        .tint(Constants.textColor)
+    }
+
+    private func fontOption(_ title: String, design: WidgetFontDesign) -> some View {
+        Text(title)
+            .font(.system(.body, design: fontFace(design)))
+            .tag(design)
+    }
+
+    private func fontFace(_ design: WidgetFontDesign) -> Font.Design {
+        switch design {
+        case .system: return .default
+        case .rounded: return .rounded
+        case .serif: return .serif
+        case .monospaced: return .monospaced
+        }
+    }
+
+    /// Matches the renderer when the element has no saved face yet.
+    private func selectedFontDesign(for kind: WidgetElementKind) -> WidgetFontDesign {
+        if let stored = sizeAppearance.element(kind: kind)?.fontDesign {
+            return stored
+        }
+        guard kind == .value else { return .system }
+        let isStatus = metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
+        if isStatus { return .rounded }
+        return metric.result.count >= 15 ? .system : .monospaced
     }
 
     private func fontScaleControls(for kind: WidgetElementKind) -> some View {
@@ -786,7 +1079,6 @@ struct WidgetDesignEditorView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(L10n.fontScale)
-                    .foregroundColor(Constants.textColor)
                 Spacer()
                 Text("\(Int((scale * 100).rounded()))%")
                     .foregroundColor(Constants.secondaryColor)
@@ -806,8 +1098,10 @@ struct WidgetDesignEditorView: View {
                         set: { updateFontScale(kind: kind, $0) }
                     ),
                     in: WidgetElementSpec.minFontScale...WidgetElementSpec.maxFontScale,
-                    step: 0.05
+                    step: 0.05,
+                    onEditingChanged: sliderEditingChanged
                 )
+                .tint(Constants.textColor)
 
                 Button {
                     updateFontScale(kind: kind, scale + 0.1)
@@ -817,6 +1111,7 @@ struct WidgetDesignEditorView: View {
                 .disabled(scale >= WidgetElementSpec.maxFontScale)
             }
             .buttonStyle(.borderless)
+            .foregroundColor(Constants.textColor)
         }
         .padding(.vertical, Constants.controlVerticalPadding)
     }
@@ -829,6 +1124,7 @@ struct WidgetDesignEditorView: View {
                 set: { newValue in
                     elementTextColor = newValue
                     guard !isSyncingControls else { return }
+                    noteColorEdit()
                     setElementColor(kind: kind, .hex(newValue.hexString))
                 }
             ),
@@ -841,7 +1137,6 @@ struct WidgetDesignEditorView: View {
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(L10n.imageScale)
-                    .foregroundColor(Constants.textColor)
                 Spacer()
                 Text("\(Int((scale * 100).rounded()))%")
                     .foregroundColor(Constants.secondaryColor)
@@ -861,8 +1156,10 @@ struct WidgetDesignEditorView: View {
                         set: { updateImageScale(kind: kind, $0) }
                     ),
                     in: WidgetElementSpec.minImageScale...WidgetElementSpec.maxImageScale,
-                    step: 0.05
+                    step: 0.05,
+                    onEditingChanged: sliderEditingChanged
                 )
+                .tint(Constants.textColor)
 
                 Button {
                     updateImageScale(kind: kind, scale + 0.1)
@@ -872,11 +1169,17 @@ struct WidgetDesignEditorView: View {
                 .disabled(scale >= WidgetElementSpec.maxImageScale)
             }
             .buttonStyle(.borderless)
+            .foregroundColor(Constants.textColor)
         }
         .padding(.vertical, Constants.controlVerticalPadding)
     }
 
     // MARK: - Mutations
+
+    private func ensureTextSelection() {
+        if let selectedKind, textElementKinds.contains(selectedKind) { return }
+        selectedKind = textElementKinds.first ?? .title
+    }
 
     private func label(for kind: WidgetElementKind) -> String {
         switch kind {
@@ -916,12 +1219,202 @@ struct WidgetDesignEditorView: View {
         }
     }
 
+    // MARK: - History
+
+    private func sliderEditingChanged(_ editing: Bool) {
+        if editing {
+            beginEdit("slider")
+        } else {
+            endEdit("slider")
+        }
+    }
+
+    private func beginEdit(_ id: String) {
+        if editBaseline == nil {
+            editBaseline = appearance
+            editBaselineSynced = syncSizes
+        }
+        openEditIDs.insert(id)
+    }
+
+    private func endEdit(_ id: String) {
+        openEditIDs.remove(id)
+        guard openEditIDs.isEmpty else { return }
+        commitBaseline()
+    }
+
+    private func noteColorEdit() {
+        beginEdit("color")
+        colorCommit?.cancel()
+        let work = DispatchWorkItem { endEdit("color") }
+        colorCommit = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: work)
+    }
+
+    private func commitBaseline() {
+        colorCommit?.cancel()
+        colorCommit = nil
+        guard let baseline = editBaseline else { return }
+        editBaseline = nil
+        openEditIDs.removeAll()
+        guard baseline != appearance else { return }
+        recordUndo(before: baseline)
+    }
+
+    private var canUndo: Bool {
+        if hasPendingEdit { return true }
+        if syncSizes {
+            return WidgetSizeKey.allCases.contains { !(undoStack[$0]?.undo.isEmpty ?? true) }
+        }
+        return !(undoStack[sizeKey]?.undo.isEmpty ?? true)
+    }
+
+    private var canRedo: Bool {
+        guard editBaseline == nil else { return false }
+        if syncSizes {
+            return WidgetSizeKey.allCases.contains { !(undoStack[$0]?.redo.isEmpty ?? true) }
+        }
+        return !(undoStack[sizeKey]?.redo.isEmpty ?? true)
+    }
+
+    private var hasPendingEdit: Bool {
+        guard let baseline = editBaseline else { return false }
+        if editBaselineSynced || syncSizes {
+            return baseline != appearance
+        }
+        return baseline.appearance(for: sizeKey) != appearance.appearance(for: sizeKey)
+    }
+
+    private func recordUndo(before baseline: WidgetAppearance) {
+        let keys = WidgetSizeKey.allCases.filter {
+            baseline.appearance(for: $0) != appearance.appearance(for: $0)
+        }
+        guard !keys.isEmpty else { return }
+        let group = (undoStack.values.flatMap(\.undo).map(\.group).max() ?? 0) + 1
+        for key in keys {
+            pushUndo(baseline.appearance(for: key), for: key, group: group)
+        }
+    }
+
+    private func pushUndo(_ snapshot: WidgetSizeAppearance, for key: WidgetSizeKey, group: Int) {
+        var bucket = undoStack[key] ?? SizeHistory()
+        bucket.undo.append(SizeHistory.Entry(value: snapshot, group: group))
+        if bucket.undo.count > Constants.historyLimit {
+            bucket.undo.removeFirst(bucket.undo.count - Constants.historyLimit)
+        }
+        bucket.redo.removeAll()
+        undoStack[key] = bucket
+    }
+
+    private func storeAppearance(_ copy: WidgetAppearance) {
+        guard copy != appearance else { return }
+        if editBaseline != nil {
+            appearance = copy
+            return
+        }
+        let before = appearance
+        appearance = copy
+        recordUndo(before: before)
+    }
+
+    private func undoAppearance() {
+        commitBaseline()
+        if syncSizes {
+            restoreGroupedStep(fromUndo: true)
+        } else {
+            restoreStep(for: sizeKey, fromUndo: true)
+        }
+    }
+
+    private func redoAppearance() {
+        let hadOpenEdit = editBaseline != nil
+        commitBaseline()
+        if hadOpenEdit { return }
+        if syncSizes {
+            restoreGroupedStep(fromUndo: false)
+        } else {
+            restoreStep(for: sizeKey, fromUndo: false)
+        }
+    }
+
+    private func restoreStep(for key: WidgetSizeKey, fromUndo: Bool) {
+        var bucket = undoStack[key] ?? SizeHistory()
+        let entry: SizeHistory.Entry?
+        if fromUndo {
+            entry = bucket.undo.popLast()
+        } else {
+            entry = bucket.redo.popLast()
+        }
+        guard let entry else { return }
+        let current = appearance.appearance(for: key)
+        if fromUndo {
+            bucket.redo.append(SizeHistory.Entry(value: current, group: entry.group))
+        } else {
+            bucket.undo.append(SizeHistory.Entry(value: current, group: entry.group))
+        }
+        trim(&bucket)
+        undoStack[key] = bucket
+        var copy = appearance
+        copy.setAppearance(entry.value, for: key)
+        appearance = copy
+        syncControlsFromAppearance()
+    }
+
+    private func restoreGroupedStep(fromUndo: Bool) {
+        let group = WidgetSizeKey.allCases.compactMap { key -> Int? in
+            let bucket = undoStack[key]
+            return fromUndo ? bucket?.undo.last?.group : bucket?.redo.last?.group
+        }.max()
+        guard let group else { return }
+        var copy = appearance
+        for key in WidgetSizeKey.allCases {
+            var bucket = undoStack[key] ?? SizeHistory()
+            let top = fromUndo ? bucket.undo.last : bucket.redo.last
+            guard top?.group == group else { continue }
+            let entry = fromUndo ? bucket.undo.removeLast() : bucket.redo.removeLast()
+            let current = copy.appearance(for: key)
+            if fromUndo {
+                bucket.redo.append(SizeHistory.Entry(value: current, group: entry.group))
+            } else {
+                bucket.undo.append(SizeHistory.Entry(value: current, group: entry.group))
+            }
+            trim(&bucket)
+            undoStack[key] = bucket
+            copy.setAppearance(entry.value, for: key)
+        }
+        appearance = copy
+        syncControlsFromAppearance()
+    }
+
+    private func trim(_ bucket: inout SizeHistory) {
+        if bucket.undo.count > Constants.historyLimit {
+            bucket.undo.removeFirst(bucket.undo.count - Constants.historyLimit)
+        }
+        if bucket.redo.count > Constants.historyLimit {
+            bucket.redo.removeFirst(bucket.redo.count - Constants.historyLimit)
+        }
+    }
+
+    private struct SizeHistory {
+        struct Entry {
+            var value: WidgetSizeAppearance
+            var group: Int
+        }
+
+        var undo: [Entry] = []
+        var redo: [Entry] = []
+    }
+
     private func mutateSize(_ update: (inout WidgetSizeAppearance) -> Void) {
         var copy = appearance
         var size = copy.appearance(for: sizeKey)
         update(&size)
         copy.setAppearance(size, for: sizeKey)
-        appearance = copy
+        if syncSizes {
+            let target: WidgetSizeKey = sizeKey == .small ? .medium : .small
+            copy = copiedAppearance(from: sizeKey, to: target, in: copy, reportError: false)
+        }
+        storeAppearance(copy)
     }
 
     private func updateFrame(kind: WidgetElementKind, frame: NormalizedRect) {
@@ -978,14 +1471,22 @@ struct WidgetDesignEditorView: View {
     }
 
     private func setVisible(kind: WidgetElementKind, _ visible: Bool) {
-        mutateSize { size in
-            size.updateElement(kind: kind) { $0.isVisible = visible }
+        withAnimation(.easeInOut(duration: 0.25)) {
+            mutateSize { size in
+                size.updateElement(kind: kind) { $0.isVisible = visible }
+            }
         }
     }
 
     private func setAlignment(kind: WidgetElementKind, _ alignment: WidgetTextAlignment) {
         mutateSize { size in
             size.updateElement(kind: kind) { $0.alignment = alignment }
+        }
+    }
+
+    private func setFontDesign(kind: WidgetElementKind, _ design: WidgetFontDesign) {
+        mutateSize { size in
+            size.updateElement(kind: kind) { $0.fontDesign = design }
         }
     }
 
@@ -1000,28 +1501,67 @@ struct WidgetDesignEditorView: View {
             size.background.usesResultImageAsBackground = false
             size.background.fill = fill
             if case .system = fill {
-                size.background.shape = .rectangle
                 size.background.usesGlassEffect = false
             }
         }
     }
 
-    private func copyLayoutToOtherSize() {
+    private var syncSizesBinding: Binding<Bool> {
+        Binding(
+            get: { syncSizes },
+            set: { enabled in
+                syncSizes = enabled
+                guard enabled else { return }
+                let target: WidgetSizeKey = sizeKey == .small ? .medium : .small
+                storeAppearance(copiedAppearance(from: sizeKey, to: target, in: appearance, reportError: true))
+                ImpactHelper.success()
+            }
+        )
+    }
+
+    private func copyLayout(to target: WidgetSizeKey) {
+        let source: WidgetSizeKey = target == .small ? .medium : .small
+        storeAppearance(copiedAppearance(from: source, to: target, in: appearance, reportError: true))
+        ImpactHelper.success()
+        withAnimation(.easeInOut(duration: 0.25)) {
+            sizeKey = target
+        }
+    }
+
+    private func copiedAppearance(
+        from sourceKey: WidgetSizeKey,
+        to targetKey: WidgetSizeKey,
+        in appearance: WidgetAppearance,
+        reportError: Bool
+    ) -> WidgetAppearance {
         var copy = appearance
-        var source = copy.appearance(for: sizeKey)
-        let targetKey: WidgetSizeKey = sizeKey == .small ? .medium : .small
+        var source = copy.appearance(for: sourceKey)
+        if targetKey == .medium, source.background.shape == .circle {
+            source.background.shape = .roundedRect
+        } else if copy.small.background.shape == .circle {
+            source.background.shape = .circle
+        }
         if case .image(.file(let path)) = source.background.fill {
-            if let image = WidgetBackgroundStore.shared.loadImage(relativePath: path),
-               let newPath = try? WidgetBackgroundStore.shared.saveImage(image, metricId: metricId, size: targetKey) {
+            let targetFill = copy.appearance(for: targetKey).background.fill
+            let targetHasFile: Bool = {
+                if case .image(.file) = targetFill { return true }
+                return false
+            }()
+            if !reportError, copiedImageSourcePath[targetKey] == path, targetHasFile {
+                source.background.fill = targetFill
+            } else if let image = WidgetBackgroundStore.shared.loadImage(relativePath: path),
+                      let newPath = try? WidgetBackgroundStore.shared.saveImage(image, metricId: metricId, size: targetKey) {
                 source.background.fill = .image(.file(newPath))
+                copiedImageSourcePath[targetKey] = path
             } else {
-                // Avoid sharing one file across sizes when copy fails.
                 source.background.fill = .system
-                backgroundApplyError = L10n.importStyleError
+                if reportError {
+                    backgroundApplyError = L10n.importStyleError
+                }
             }
         }
         copy.setAppearance(source, for: targetKey)
-        appearance = copy
+        return copy
     }
 
     private func applyBackgroundImage(_ image: UIImage) {

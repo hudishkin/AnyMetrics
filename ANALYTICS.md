@@ -18,13 +18,14 @@ Event names with short technical parameters:
 | Event | When | Parameters |
 |---|---|---|
 | `onboarding_shown` | Onboarding opened | — |
+| `onboarding_skipped` | Onboarding closed without adding a metric | — |
 | `gallery_opened` | Gallery opened | `entry`: `main` / `onboarding` |
 | `metric_added` | A new metric is added | `source`: `gallery` / `custom` / `import` / `onboarding`, `type`, `result_kind`; for gallery items also `gallery_id`, `gallery_group` |
 | `metric_form_started`, `metric_form_step`, `metric_form_saved`, `metric_form_abandoned` | Creating a custom metric | `step`: `request` / `value` / `display` |
 | `metric_request_tested` | Test request in the form | `success`, `error_kind`: `network` / `http` / `parse` / `unknown` |
 | `metric_refreshed`, `library_refreshed` | Metrics refreshed | `success`, `error_kind`, `library_size`, `failed_count` |
 | `metric_edited`, `metric_deleted` | Metric edited or removed | `type`, `result_kind`, `is_starter` |
-| `metric_shared`, `metric_share_cancelled`, `app_link_copied` | Sharing | `include_request`, `activity` (share target, e.g. Messages) |
+| `metric_shared`, `metric_share_cancelled`, `app_link_copied` | Sharing | `include_request`, `includes_file`, `activity` (share target, e.g. Messages) |
 | `widget_guide_shown`, `widget_guide_dismissed` | Widget guide | `dont_show_again` |
 | `review_shown`, `review_later`, `review_completed`, `review_declined` | Rating prompt | `trigger`, `library_size`, `source` |
 

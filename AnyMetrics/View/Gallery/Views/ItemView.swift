@@ -10,37 +10,33 @@ extension GalleryView {
         var alreadyAdded: Bool
 
         var body: some View {
-            ZStack(alignment: .topTrailing ) {
+            let description = metric.description.flatMap { $0.isEmpty ? nil : $0 }
+
+            return ZStack(alignment: .topTrailing) {
                 VStack(alignment: .leading, spacing: Constants.itemContentSpacing) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: Constants.itemContentSpacing) {
-                            Text(metric.title)
-                                .font(Constants.itemTitleFont)
-                            Text(metric.measure)
-                                .font(Constants.itemDefaultBoldFont)
-                                .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
+                    Text(metric.title)
+                        .font(Constants.itemTitleFont)
+                    Text(metric.measure)
+                        .font(Constants.itemDefaultBoldFont)
+                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
 
-                        }
-                        Spacer()
-                    }
-
-                    if let description = metric.description, !description.isEmpty {
+                    if let description {
                         Text(description)
-                            .lineLimit(nil)
-
                             .font(Constants.itemDefaultFont)
                             .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
-                            .padding(Constants.descriptionInset)
+                            .padding(.top, Constants.bodyTopInset)
                     }
 
                     if let website = metric.website {
                         Link(website.absoluteString, destination: website)
                             .font(Constants.itemDefaultFont)
+                            .padding(.top, description == nil ? Constants.bodyTopInset : 0)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Constants.itemContentPadding)
-                .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
-                .cornerRadius(Constants.itemCorner)
+                .padding(.trailing, Constants.itemAccessoryTrailing)
+                .modifier(GalleryItemCardBackground())
                 if alreadyAdded {
                     Button {
                         removeMetric(metric.id)
@@ -76,4 +72,21 @@ extension GalleryView {
         }
     }
 
+}
+
+/// На iOS 26 карточка — отдельное стекло. На старых версиях остаётся прежний цвет.
+private struct GalleryItemCardBackground: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(
+                .regular,
+                in: RoundedRectangle(cornerRadius: GalleryView.Constants.itemCorner, style: .continuous)
+            )
+        } else {
+            content
+                .background(AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor)
+                .cornerRadius(GalleryView.Constants.itemCorner)
+        }
+    }
 }
