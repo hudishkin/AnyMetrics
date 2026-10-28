@@ -84,6 +84,68 @@ final class StarterMetricTests: XCTestCase {
         )
     }
 
+    func testGalleryAsBackgroundFillsTheWidgetAndSkipsCollectionGradient() throws {
+        let json = """
+        {
+          "id": "81C8A603-E56E-486F-8A81-B7EF404482EC",
+          "title": "Picture of the Day",
+          "measure": "Bing Wallpaper",
+          "type": "web",
+          "resultKind": "image",
+          "widgetAppearance": {
+            "presetId": "custom",
+            "small": {
+              "background": {
+                "shape": "roundedRect",
+                "fill": { "type": "statusGradient" },
+                "usesResultImageAsBackground": true
+              },
+              "elements": [
+                { "kind": "title", "isVisible": false, "frame": { "x": 0.06, "y": 0.045, "width": 0.88, "height": 0.13 } }
+              ]
+            },
+            "medium": {
+              "background": {
+                "shape": "roundedRect",
+                "fill": { "type": "statusGradient" },
+                "usesResultImageAsBackground": true
+              },
+              "elements": []
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let metric = try JSONDecoder().decode(Metric.self, from: json)
+        let prepared = StarterMetric.applyingCollectionGradient(to: metric)
+
+        XCTAssertTrue(prepared.resolvedAppearance.small.background.usesResultImageAsBackground)
+        XCTAssertTrue(prepared.resolvedAppearance.medium.background.usesResultImageAsBackground)
+        XCTAssertEqual(prepared.widgetAppearance, metric.widgetAppearance)
+        XCTAssertEqual(
+            prepared.resolvedAppearance.small.element(kind: .title)?.isVisible,
+            false
+        )
+    }
+
+    func testLegacyResultBackgroundKeyStillDecodes() throws {
+        let json = """
+        {
+          "shape": "roundedRect",
+          "fill": { "type": "statusGradient" },
+          "usesResultImageAsBackground": true
+        }
+        """.data(using: .utf8)!
+
+        let background = try JSONDecoder().decode(WidgetBackgroundSpec.self, from: json)
+        XCTAssertTrue(background.usesResultImageAsBackground)
+
+        let encoded = try JSONEncoder().encode(background)
+        let object = try JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        XCTAssertEqual(object?["usesResultImageAsBackground"] as? Bool, true)
+        XCTAssertNil(object?["asBackground"])
+    }
+
     func testCollectionMetricKeepsAuthoredAppearance() {
         var metric = Metric(id: UUID(), title: "Styled", measure: "", type: .json)
         metric.widgetAppearance = StarterMetric.appearance(for: .mono)
