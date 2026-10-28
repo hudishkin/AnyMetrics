@@ -92,13 +92,15 @@ public struct MetricWidgetAdaptiveView: View {
     }
 
     private var valueText: String {
-        MetricDisplayHelpers.valueString(
+        let value = MetricDisplayHelpers.valueString(
             for: metric,
             goodLabel: palette.statusGoodLabel,
             badLabel: palette.statusBadLabel,
             emptyLabel: palette.emptyLabel,
             errorLabel: palette.errorLabel
         )
+        guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
+        return "\(value) · \(MetricDisplayHelpers.staleMark())"
     }
 
     private var isStatusMetric: Bool {

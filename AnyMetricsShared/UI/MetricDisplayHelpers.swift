@@ -44,16 +44,19 @@ public enum MetricDisplayHelpers {
         return !metric.result.isEmpty
     }
 
-    public static func staleMark() -> String {
-        AnyMetricsSharedStrings.Metric.Value.stale
+    public static func staleMark(bundle: Bundle = Bundle(for: MetricStore.self)) -> String {
+        NSLocalizedString("metric.value.stale", bundle: bundle, comment: "")
     }
 
-    public static func relativeUpdatedString(for date: Date?) -> String? {
+    public static func relativeUpdatedString(
+        for date: Date?,
+        bundle: Bundle = Bundle(for: MetricStore.self)
+    ) -> String? {
         guard let date else { return nil }
         let now = Date()
         let age = now.timeIntervalSince(date)
         if abs(age) < justNowThreshold {
-            return AnyMetricsSharedStrings.Metric.Updated.justNow
+            return NSLocalizedString("metric.updated.just-now", bundle: bundle, comment: "")
         }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated

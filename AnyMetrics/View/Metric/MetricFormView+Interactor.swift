@@ -115,7 +115,11 @@ extension MetricFormView {
                             appearance.presetId = WidgetAppearancePreset.custom.rawValue
                             $0.savedCustomAppearance = appearance
                         }
-                        $0.widgetDesign = appearance.compatibleWidgetDesign(previous: $0.widgetDesign)
+                        if let matched = appearance.matchingWidgetDesign {
+                            $0.widgetDesign = matched
+                        } else {
+                            $0.widgetDesign = appearance.compatibleWidgetDesign(previous: $0.widgetDesign)
+                        }
                         $0.widgetAppearance = appearance
                     }
                 }

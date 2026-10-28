@@ -205,7 +205,7 @@ struct MainView: View {
         .sheet(item: $shareMetric, onDismiss: {
             presentMetricShareSheetIfNeeded()
         }) { metric in
-            MetricShareOptionsView(metric: metric) { payload in
+            MetricShareOptionsView(metric: metric) { payload, _ in
                 sharePayload = payload
                 shareMetric = nil
             }

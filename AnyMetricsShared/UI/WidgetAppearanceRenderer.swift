@@ -285,17 +285,21 @@ public struct WidgetAppearanceRenderer: View {
         case .title:
             return metric.title.isEmpty ? "—" : metric.title
         case .value:
-            return MetricDisplayHelpers.valueString(
+            let value = MetricDisplayHelpers.valueString(
                 for: metric,
                 goodLabel: palette.statusGoodLabel,
                 badLabel: palette.statusBadLabel,
                 emptyLabel: palette.emptyLabel,
                 errorLabel: palette.errorLabel
             )
+            guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
+            return "\(value) · \(MetricDisplayHelpers.staleMark())"
         case .measure:
             return metric.measure.isEmpty ? "—" : metric.measure
         case .updated:
-            return MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
+            let time = MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
+            guard showsStaleUpdate, updatedAt != nil else { return time }
+            return "\(MetricDisplayHelpers.staleMark()) · \(time)"
         }
     }
 

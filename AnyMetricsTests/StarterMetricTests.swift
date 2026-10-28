@@ -105,6 +105,35 @@ final class StarterMetricTests: XCTestCase {
         XCTAssertEqual(spec.colors, StarterMetric.QuoteStyle.space.colors.map { .hex($0) })
     }
 
+    func testQuoteWidgetFitsFourLinesOnBothSizes() throws {
+        let metric = StarterMetric.make()
+        let small = metric.resolvedAppearance.small
+        let mediumValue = try XCTUnwrap(metric.resolvedAppearance.medium.elements.first { $0.kind == .value })
+        XCTAssertGreaterThanOrEqual(mediumValue.frame.height, 0.52)
+        let elements = Dictionary(uniqueKeysWithValues: small.elements.map { ($0.kind, $0) })
+        let title = try XCTUnwrap(elements[.title]).frame
+        let value = try XCTUnwrap(elements[.value])
+        let measure = try XCTUnwrap(elements[.measure]).frame
+        let updated = try XCTUnwrap(elements[.updated]).frame
+
+        XCTAssertGreaterThanOrEqual(value.frame.height, 0.50)
+        XCTAssertLessThanOrEqual(title.y + title.height, value.frame.y + 0.001)
+        XCTAssertLessThanOrEqual(value.frame.y + value.frame.height, measure.y + 0.001)
+        XCTAssertLessThanOrEqual(measure.y + measure.height, updated.y + 0.001)
+
+        guard case .gradient(let spec) = small.background.fill else {
+            return XCTFail("Quote widget should use a custom gradient")
+        }
+        XCTAssertEqual(spec.colors.count, 3)
+        XCTAssertEqual(value.color, .hex("#FFFFFF"))
+        XCTAssertEqual(StarterMetric.QuoteStyle.allCases.count, 13)
+        XCTAssertTrue(StarterMetric.QuoteStyle.allCases.contains(.mono))
+        guard case .gradient(let mono) = StarterMetric.appearance(for: .mono).small.background.fill else {
+            return XCTFail("Monochrome style should be a gradient")
+        }
+        XCTAssertEqual(mono.colors, StarterMetric.QuoteStyle.mono.colors.map { .hex($0) })
+    }
+
     func testOpeningAppDoesNotInstallMetricBeforeOnboardingChoice() {
         let interactor = MainView.Interactor(di: DI(metricStore: store))
 

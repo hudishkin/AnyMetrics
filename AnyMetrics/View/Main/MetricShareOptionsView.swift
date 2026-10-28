@@ -24,7 +24,7 @@ struct MetricShareOptionsView: View {
     }
 
     let metric: Metric
-    var onShared: (MetricSharePayload) -> Void
+    var onShared: (MetricSharePayload, Bool) -> Void
     var onCancel: (() -> Void)?
 
     @State
@@ -39,6 +39,8 @@ struct MetricShareOptionsView: View {
     private var showShareInfo = false
     @State
     private var errorMessage: String?
+    @State
+    private var didCopyLink = false
     @State
     private var contentHeight: CGFloat = 0
     @State
@@ -240,26 +242,43 @@ struct MetricShareOptionsView: View {
     }
 
     private var shareButton: some View {
-        Button {
-            ImpactHelper.impactButton()
-            share()
-        } label: {
-            Group {
-                if isSharing {
-                    ProgressView()
-                } else {
-                    Text(AnyMetricsStrings.Metric.Share.button)
-                        .font(Constants.fontButton)
-                        .foregroundColor(Constants.textColor)
+        VStack(spacing: 0) {
+            Button {
+                ImpactHelper.impactButton()
+                share()
+            } label: {
+                Group {
+                    if isSharing {
+                        ProgressView()
+                    } else {
+                        Text(AnyMetricsStrings.Metric.Share.button)
+                            .font(Constants.fontButton)
+                            .foregroundColor(Constants.textColor)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .background(Constants.buttonBackground)
+            .cornerRadius(Constants.buttonCorner)
+            .disabled(isSharing)
+            .accessibilityIdentifier("metricShare.share")
+
+            Button {
+                UIPasteboard.general.string = MetricShareComposer.appStoreURL.absoluteString
+                ImpactHelper.success()
+                AnalyticsEvents.appLinkCopied()
+                didCopyLink = true
+            } label: {
+                Text(didCopyLink ? AnyMetricsStrings.Metric.Share.copied : AnyMetricsStrings.Metric.Share.copyLink)
+                    .font(Constants.fontSecondary)
+                    .foregroundColor(Constants.secondaryColor)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 12)
+            }
+            .disabled(isSharing)
+            .accessibilityIdentifier("metricShare.copyLink")
         }
-        .background(Constants.buttonBackground)
-        .cornerRadius(Constants.buttonCorner)
-        .disabled(isSharing)
-        .accessibilityIdentifier("metricShare.share")
     }
 
     private func share() {
@@ -280,7 +299,7 @@ struct MetricShareOptionsView: View {
                     kind: kind
                 )
                 isSharing = false
-                onShared(payload)
+                onShared(payload, includeRequest)
             } catch {
                 isSharing = false
                 errorMessage = Self.message(for: error)
@@ -349,7 +368,7 @@ private extension MetricShareOptionsView {
 
 #if DEBUG
 #Preview {
-    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _ in })
+    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _, _ in })
         .preferredColorScheme(.dark)
 }
 #endif

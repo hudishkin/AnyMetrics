@@ -45,10 +45,10 @@ public struct MetricWidgetPalette {
             textColor: Color("metricText", bundle: bundle),
             textErrorColor: Color("red", bundle: bundle),
             secondaryText: Color("secondaryText", bundle: bundle),
-            statusGoodLabel: AnyMetricsSharedStrings.Metric.Value.good,
-            statusBadLabel: AnyMetricsSharedStrings.Metric.Value.bad,
-            emptyLabel: AnyMetricsSharedStrings.Metric.Value.empty,
-            errorLabel: AnyMetricsSharedStrings.Metric.Value.error
+            statusGoodLabel: NSLocalizedString("metric.value.good", bundle: bundle, comment: ""),
+            statusBadLabel: NSLocalizedString("metric.value.bad", bundle: bundle, comment: ""),
+            emptyLabel: NSLocalizedString("metric.value.empty", bundle: bundle, comment: ""),
+            errorLabel: NSLocalizedString("metric.value.error", bundle: bundle, comment: "")
         )
     }
 }

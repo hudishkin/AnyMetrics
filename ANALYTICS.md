@@ -25,7 +25,7 @@ Event names with short technical parameters:
 | `metric_request_tested` | Test request in the form | `success`, `error_kind`: `network` / `http` / `parse` / `unknown` |
 | `metric_refreshed`, `library_refreshed` | Metrics refreshed | `success`, `error_kind`, `library_size`, `failed_count` |
 | `metric_edited`, `metric_deleted` | Metric edited or removed | `type`, `result_kind`, `is_starter` |
-| `metric_shared`, `metric_share_cancelled`, `app_link_copied` | Sharing | `include_request`, `activity` (share target, e.g. Messages) |
+| `metric_shared`, `metric_share_cancelled`, `app_link_copied` | Sharing | `include_request`, `includes_file`, `activity` (share target, e.g. Messages) |
 | `widget_guide_shown`, `widget_guide_dismissed` | Widget guide | `dont_show_again` |
 | `review_shown`, `review_later`, `review_completed`, `review_declined` | Rating prompt | `trigger`, `library_size`, `source` |
 
