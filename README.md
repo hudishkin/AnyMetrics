@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="preview.png" alt="AnyMetrics — HTTP endpoints as home screen widgets" width="720" />
+  <img src="preview.jpg" alt="AnyMetrics — HTTP endpoints as home screen widgets" width="720" />
 </p>
 
 <h1 align="center">AnyMetrics</h1>

@@ -18,6 +18,7 @@ Event names with short technical parameters:
 | Event | When | Parameters |
 |---|---|---|
 | `onboarding_shown` | Onboarding opened | — |
+| `onboarding_skipped` | Onboarding closed without adding a metric | — |
 | `gallery_opened` | Gallery opened | `entry`: `main` / `onboarding` |
 | `metric_added` | A new metric is added | `source`: `gallery` / `custom` / `import` / `onboarding`, `type`, `result_kind`; for gallery items also `gallery_id`, `gallery_group` |
 | `metric_form_started`, `metric_form_step`, `metric_form_saved`, `metric_form_abandoned` | Creating a custom metric | `step`: `request` / `value` / `display` |

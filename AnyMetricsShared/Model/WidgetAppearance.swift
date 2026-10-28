@@ -40,6 +40,23 @@ public struct WidgetAppearance: Hashable, Sendable, Codable {
         presetId = WidgetAppearancePreset.custom.rawValue
     }
 
+    /// Small widget clipped to a circle. Medium stays a rounded rectangle.
+    public var isRoundSmallWidget: Bool {
+        small.background.shape == .circle
+    }
+
+    public mutating func setRoundSmallWidget(_ isRound: Bool) {
+        var size = small
+        if isRound {
+            size.background.shape = .circle
+        } else if size.background.shape == .circle {
+            size.background.shape = .roundedRect
+        } else {
+            return
+        }
+        setAppearance(size, for: .small)
+    }
+
     /// Full-bleed result image; text overlays off until the user re-enables them.
     public mutating func applyImageResultPresentation() {
         small.applyImageResultPresentation()
@@ -207,25 +224,80 @@ public enum WidgetBackgroundFill: Hashable, Sendable {
     case image(WidgetImageRef)
 }
 
+/// iOS 18 mesh layout. Missing on older saved gradients, which keep the even mesh.
+public enum WidgetMeshVariant: String, Codable, Hashable, Sendable {
+    /// Cyan limb in the upper-right of a black field.
+    case cosmos
+    /// Accent pool in the lower-left corner.
+    case bloom
+    /// Bright streak along the bottom edge.
+    case ribbon
+    /// Accent tucked into the upper-left, dark center.
+    case orbit
+    /// Soft peach and lilac blobs.
+    case haze
+    /// Cream, yellow, and magenta wave.
+    case wave
+    /// Cyan field with a plum wave.
+    case tide
+    /// Violet into magenta and blue.
+    case gleam
+
+    /// Painted mesh with its own grid. The three stored stops are only the linear fallback.
+    public var isDesigned: Bool {
+        switch self {
+        case .haze, .wave, .tide, .gleam: return true
+        case .cosmos, .bloom, .ribbon, .orbit: return false
+        }
+    }
+}
+
 public struct WidgetGradientSpec: Hashable, Sendable, Codable {
     public var colors: [WidgetColorSpec]
     public var startX: Double
     public var startY: Double
     public var endX: Double
     public var endY: Double
+    public var mesh: WidgetMeshVariant?
 
     public init(
         colors: [WidgetColorSpec],
         startX: Double = 0,
         startY: Double = 0,
         endX: Double = 1,
-        endY: Double = 1
+        endY: Double = 1,
+        mesh: WidgetMeshVariant? = nil
     ) {
         self.colors = colors
         self.startX = startX
         self.startY = startY
         self.endX = endX
         self.endY = endY
+        self.mesh = mesh
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case colors, startX, startY, endX, endY, mesh
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        colors = try container.decode([WidgetColorSpec].self, forKey: .colors)
+        startX = try container.decodeIfPresent(Double.self, forKey: .startX) ?? 0
+        startY = try container.decodeIfPresent(Double.self, forKey: .startY) ?? 0
+        endX = try container.decodeIfPresent(Double.self, forKey: .endX) ?? 1
+        endY = try container.decodeIfPresent(Double.self, forKey: .endY) ?? 1
+        mesh = try container.decodeIfPresent(WidgetMeshVariant.self, forKey: .mesh)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(colors, forKey: .colors)
+        try container.encode(startX, forKey: .startX)
+        try container.encode(startY, forKey: .startY)
+        try container.encode(endX, forKey: .endX)
+        try container.encode(endY, forKey: .endY)
+        try container.encodeIfPresent(mesh, forKey: .mesh)
     }
 }
 
@@ -261,6 +333,8 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
     public var frame: NormalizedRect
     public var alignment: WidgetTextAlignment
     public var color: WidgetColorSpec
+    /// System font design. `nil` keeps the built-in face for this element.
+    public var fontDesign: WidgetFontDesign?
     /// Multiplier for base font size (`1` = default). Persisted in appearance JSON.
     public var fontScale: Double
     /// Zoom for result image drawn in the value slot (`1` = fit).
@@ -285,6 +359,7 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
         frame: NormalizedRect,
         alignment: WidgetTextAlignment = .center,
         color: WidgetColorSpec = .adaptive(.palettePrimary),
+        fontDesign: WidgetFontDesign? = nil,
         fontScale: Double = WidgetElementSpec.defaultFontScale,
         imageScale: Double = WidgetElementSpec.defaultImageScale,
         imageOffsetX: Double = 0,
@@ -295,6 +370,7 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
         self.frame = frame
         self.alignment = alignment
         self.color = color
+        self.fontDesign = fontDesign
         self.fontScale = fontScale
         self.imageScale = imageScale
         self.imageOffsetX = imageOffsetX
@@ -302,7 +378,7 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case kind, isVisible, frame, alignment, color, fontScale
+        case kind, isVisible, frame, alignment, color, fontDesign, fontScale
         case imageScale, imageOffsetX, imageOffsetY
     }
 
@@ -313,6 +389,7 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
         frame = try container.decode(NormalizedRect.self, forKey: .frame)
         alignment = try container.decodeIfPresent(WidgetTextAlignment.self, forKey: .alignment) ?? .center
         color = try container.decodeIfPresent(WidgetColorSpec.self, forKey: .color) ?? .adaptive(.palettePrimary)
+        fontDesign = try container.decodeIfPresent(WidgetFontDesign.self, forKey: .fontDesign)
         fontScale = try container.decodeIfPresent(Double.self, forKey: .fontScale) ?? Self.defaultFontScale
         imageScale = try container.decodeIfPresent(Double.self, forKey: .imageScale) ?? Self.defaultImageScale
         imageOffsetX = try container.decodeIfPresent(Double.self, forKey: .imageOffsetX) ?? 0
@@ -326,6 +403,7 @@ public struct WidgetElementSpec: Hashable, Sendable, Identifiable, Codable {
         try container.encode(frame, forKey: .frame)
         try container.encode(alignment, forKey: .alignment)
         try container.encode(color, forKey: .color)
+        try container.encodeIfPresent(fontDesign, forKey: .fontDesign)
         try container.encode(fontScale, forKey: .fontScale)
         try container.encode(imageScale, forKey: .imageScale)
         try container.encode(imageOffsetX, forKey: .imageOffsetX)
@@ -387,6 +465,16 @@ public struct NormalizedRect: Hashable, Sendable, Codable {
     }
 
     public static let unit = NormalizedRect(x: 0, y: 0, width: 1, height: 1)
+}
+
+/// Faces built into every iOS version: SF Pro, SF Rounded, New York, and SF Mono.
+public enum WidgetFontDesign: String, Codable, Hashable, Sendable, CaseIterable, Identifiable {
+    case system
+    case rounded
+    case serif
+    case monospaced
+
+    public var id: String { rawValue }
 }
 
 public enum WidgetTextAlignment: String, Codable, Hashable, Sendable {

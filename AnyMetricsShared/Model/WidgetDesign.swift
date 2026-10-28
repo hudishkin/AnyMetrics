@@ -7,7 +7,7 @@ public enum WidgetDesign: String, Codable, CaseIterable, Hashable, Sendable, Ide
 
     public var id: String { rawValue }
 
-    public static let `default`: WidgetDesign = .glassCircle
+    public static let `default`: WidgetDesign = .roundedCard
 
     public var usesMediumGradient: Bool {
         self != .plain

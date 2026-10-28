@@ -9,7 +9,8 @@ struct MainView: View {
         var id: String { "\(self)" }
         case addMetrics
         case info
-        case editMetric(Metric)
+        case editRequest(Metric)
+        case editTheme(Metric)
     }
 
     @StateObject
@@ -34,8 +35,6 @@ struct MainView: View {
     var shareMetric: Metric?
     @State
     var sharePayload: MetricSharePayload?
-    @State
-    var shareIncludesRequest = false
     @State
     var widgetGuideDontShowAgain = false
     @State
@@ -106,8 +105,11 @@ struct MainView: View {
                                 deletehMetric: { uuid in
                                     viewState.trigger(.removeMetric(uuid))
                                 },
-                                editMetric: { metric in
-                                    sheetType = .editMetric(metric)
+                                editRequest: { metric in
+                                    sheetType = .editRequest(metric)
+                                },
+                                editTheme: { metric in
+                                    sheetType = .editTheme(metric)
                                 },
                                 shareMetric: { metric in
                                     shareMetric = metric
@@ -161,26 +163,18 @@ struct MainView: View {
                     .environmentObject(viewState)
             case .info:
                 InfoView()
-            case .editMetric(let metric):
-                NavigationView {
-                    MetricFormView(
-                        allowDismissed: $allowDismissed,
-                        metric: metric,
-                        action: { updatedMetric in
-                            viewState.trigger(.addMetricAndRefresh(updatedMetric))
-                            sheetType = nil
-                        }
-                    )
-                    .navigationTitle(AnyMetricsStrings.Metric.Actions.edit)
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        Button(AnyMetricsStrings.Common.close) {
-                            sheetType = nil
-                        }
-                    }
-                }
-                .interactiveDismiss(canDismissSheet: .constant(false))
-                .environmentObject(viewState)
+            case .editRequest(let metric):
+                metricEditor(
+                    metric: metric,
+                    entry: .request,
+                    title: AnyMetricsStrings.Metric.Actions.editRequest
+                )
+            case .editTheme(let metric):
+                metricEditor(
+                    metric: metric,
+                    entry: .theme,
+                    title: AnyMetricsStrings.Metric.Actions.editTheme
+                )
             }
         }
         .sheet(item: $widgetInstructionsMetric, onDismiss: {
@@ -211,8 +205,7 @@ struct MainView: View {
         .sheet(item: $shareMetric, onDismiss: {
             presentMetricShareSheetIfNeeded()
         }) { metric in
-            MetricShareOptionsView(metric: metric) { payload, includeRequest in
-                shareIncludesRequest = includeRequest
+            MetricShareOptionsView(metric: metric) { payload in
                 sharePayload = payload
                 shareMetric = nil
             }
@@ -348,6 +341,29 @@ struct MainView: View {
             && errorMessage == nil
     }
 
+    private func metricEditor(metric: Metric, entry: MetricFormEntry, title: String) -> some View {
+        NavigationView {
+            MetricFormView(
+                allowDismissed: $allowDismissed,
+                metric: metric,
+                entry: entry,
+                action: { updatedMetric in
+                    viewState.trigger(.addMetricAndRefresh(updatedMetric))
+                    sheetType = nil
+                }
+            )
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                Button(AnyMetricsStrings.Common.close) {
+                    sheetType = nil
+                }
+            }
+        }
+        .interactiveDismiss(canDismissSheet: .constant(false))
+        .environmentObject(viewState)
+    }
+
     private func presentWidgetInstructions(_ metric: Metric) {
         if canPresentWidgetInstructions {
             showWidgetGuide(metric)
@@ -440,11 +456,17 @@ struct MainView: View {
             presentQueuedSurfaces()
             return
         }
+        let includesRequest = payload.includesRequest
+        let includesFile = payload.includesFile
         MetricSharePresenter.present(items: payload.activityItems) { result in
             cleanupShareFiles()
             switch result {
             case .dismissed(completed: true, let activity):
-                AnalyticsEvents.metricShared(includeRequest: shareIncludesRequest, activity: activity)
+                AnalyticsEvents.metricShared(
+                    includeRequest: includesRequest,
+                    includesFile: includesFile,
+                    activity: activity
+                )
             case .failed:
                 presentError(AnyMetricsStrings.Metric.Share.failed)
             case .dismissed(completed: false, _):

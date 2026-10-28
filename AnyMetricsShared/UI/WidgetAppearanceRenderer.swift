@@ -285,43 +285,61 @@ public struct WidgetAppearanceRenderer: View {
         case .title:
             return metric.title.isEmpty ? "—" : metric.title
         case .value:
-            let value = MetricDisplayHelpers.valueString(
+            return MetricDisplayHelpers.valueString(
                 for: metric,
                 goodLabel: palette.statusGoodLabel,
                 badLabel: palette.statusBadLabel,
                 emptyLabel: palette.emptyLabel,
                 errorLabel: palette.errorLabel
             )
-            guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
-            return "\(value) · \(MetricDisplayHelpers.staleMark())"
         case .measure:
             return metric.measure.isEmpty ? "—" : metric.measure
         case .updated:
-            let time = MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
-            guard showsStaleUpdate, updatedAt != nil else { return time }
-            return "\(MetricDisplayHelpers.staleMark()) · \(time)"
+            return MetricDisplayHelpers.relativeUpdatedString(for: updatedAt) ?? "—"
         }
     }
 
     private func font(for element: WidgetElementSpec, text: String) -> Font {
         let scale = CGFloat(element.resolvedFontScale)
         let inWidget = usesWidgetChrome
+        let design = resolvedDesign(for: element, text: text)
         switch element.kind {
         case .title:
             let base: CGFloat = inWidget ? (sizeKey == .medium ? 16 : 15) : (sizeKey == .medium ? 17 : 16)
-            return .system(size: base * scale, weight: .semibold)
+            return .system(size: base * scale, weight: .semibold, design: design)
         case .measure:
             let base: CGFloat = inWidget ? 12 : 13
-            return .system(size: base * scale, weight: .medium)
+            return .system(size: base * scale, weight: .medium, design: design)
         case .updated:
             let base: CGFloat = inWidget ? 10 : 11
-            return .system(size: base * scale, weight: .medium)
+            return .system(size: base * scale, weight: .medium, design: design)
         case .value:
-            return valueFont(for: text, scale: scale)
+            return valueFont(for: text, scale: scale, design: design)
         }
     }
 
-    private func valueFont(for text: String, scale: CGFloat) -> Font {
+    private func resolvedDesign(for element: WidgetElementSpec, text: String) -> Font.Design {
+        if let fontDesign = element.fontDesign {
+            return systemDesign(fontDesign)
+        }
+        switch element.kind {
+        case .value:
+            return valueDesign(for: text)
+        case .title, .measure, .updated:
+            return .default
+        }
+    }
+
+    private func systemDesign(_ design: WidgetFontDesign) -> Font.Design {
+        switch design {
+        case .system: return .default
+        case .rounded: return .rounded
+        case .serif: return .serif
+        case .monospaced: return .monospaced
+        }
+    }
+
+    private func valueFont(for text: String, scale: CGFloat, design: Font.Design) -> Font {
         let inWidget = usesWidgetChrome
         let base: CGFloat
         if sizeKey == .medium {
@@ -342,7 +360,7 @@ public struct WidgetAppearanceRenderer: View {
             }
         }
         let size = base * scale
-        return .system(size: size, weight: size < 22 ? .medium : .semibold, design: valueDesign(for: text))
+        return .system(size: size, weight: size < 22 ? .medium : .semibold, design: design)
     }
 
     /// Short values stay monospaced counters. Long prose (quotes) uses the system face so more words fit on a line.
@@ -381,9 +399,24 @@ public struct WidgetAppearanceRenderer: View {
         MetricDisplayHelpers.showsStaleUpdate(for: metric)
     }
 
+    /// Darker red on a light status fill; the asset red on photos and designed gradients.
+    private var valueFailureColor: Color {
+        let onStatusGradient = appearance.background.fill == .statusGradient
+        if onStatusGradient && colorScheme != .dark {
+            return Color(red: 0.78, green: 0.16, blue: 0.16)
+        }
+        return palette.textErrorColor
+    }
+
     private func resolveColor(_ spec: WidgetColorSpec, for kind: WidgetElementKind) -> Color {
         if kind == .updated && showsStaleUpdate {
             return palette.textErrorColor
+        }
+        // Designed gradients store a hex, so they never reach the adaptive value token.
+        // Status keeps Good/Bad; only a stale number or an empty error is recolored.
+        if kind == .value, !isStatusMetric,
+           showsValueError || MetricDisplayHelpers.showsStaleValue(for: metric) {
+            return valueFailureColor
         }
         switch spec {
         case .hex(let hex):
@@ -422,11 +455,6 @@ public struct WidgetAppearanceRenderer: View {
                         : palette.textErrorColor
                 }
                 return palette.textSuccessColor
-            }
-            if showsValueError || MetricDisplayHelpers.showsStaleValue(for: metric) {
-                return onStatusGradient && !onDarkGradient
-                    ? Color(red: 0.78, green: 0.16, blue: 0.16)
-                    : palette.textErrorColor
             }
             if onDarkGradient { return .white }
             if appearance.background.fill == .system { return Color.primary }
@@ -525,25 +553,35 @@ public struct WidgetAppearanceRenderer: View {
             case .solid(let color):
                 resolveColor(color, for: .title)
             case .gradient(let spec):
-                LinearGradient(
+                gradientFill(
                     colors: spec.colors.map { resolveColor($0, for: .title) },
-                    startPoint: UnitPoint(x: spec.startX, y: spec.startY),
-                    endPoint: UnitPoint(x: spec.endX, y: spec.endY)
+                    start: UnitPoint(x: spec.startX, y: spec.startY),
+                    end: UnitPoint(x: spec.endX, y: spec.endY),
+                    mesh: spec.mesh
                 )
             case .statusGradient:
-                statusGradient
+                LinearGradient(
+                    colors: statusPalette.colors,
+                    startPoint: statusPalette.start,
+                    endPoint: statusPalette.end
+                )
             case .image(let ref):
                 imageFill(ref)
             }
         }
     }
 
-    private var statusGradient: LinearGradient {
-        WidgetStatusGradients.gradient(
-            for: metric,
-            colorScheme: colorScheme,
-            sizeKey: sizeKey
-        )
+    private func gradientFill(
+        colors: [Color],
+        start: UnitPoint,
+        end: UnitPoint,
+        mesh: WidgetMeshVariant? = nil
+    ) -> some View {
+        WidgetGradientFill(colors: colors, start: start, end: end, mesh: mesh)
+    }
+
+    private var statusPalette: WidgetStatusGradients.Palette {
+        WidgetStatusGradients.palette(for: metric, colorScheme: colorScheme)
     }
 
     @ViewBuilder
@@ -687,151 +725,412 @@ private struct CanvasEditGestureModifier: ViewModifier {
     }
 }
 
-// MARK: - Status gradients (legacy parity)
+// MARK: - Status gradients
 
 enum WidgetStatusGradients {
-    static func gradient(for metric: Metric, colorScheme: ColorScheme, sizeKey: WidgetSizeKey) -> LinearGradient {
+    struct Palette {
+        var colors: [Color]
+        var start: UnitPoint
+        var end: UnitPoint
+    }
+
+    static func palette(for metric: Metric, colorScheme: ColorScheme) -> Palette {
         let isDark = colorScheme == .dark
         let hasStatus = metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
         // Empty + failed refresh (not status Bad); stale refresh keeps previous gradient.
         let showsError = metric.refreshFailed && metric.result.isEmpty
             && metric.resultKind != .image && !hasStatus
 
-        if sizeKey == .small {
-            if hasStatus {
-                if metric.resultWithError {
-                    return isDark ? smallDarkBad : smallBad
-                }
-                return isDark ? smallDarkGood : smallGood
-            }
-            if showsError { return isDark ? smallDarkBad : smallBad }
-            return isDark ? smallDarkDefault : smallDefault
-        }
-
         if hasStatus {
             if metric.resultWithError {
-                return isDark ? mediumDarkBad : mediumLightBad
+                return isDark ? darkBad : lightBad
             }
-            return isDark ? mediumDarkGood : mediumLightGood
+            return isDark ? darkGood : lightGood
         }
-        if showsError {
-            return isDark ? mediumDarkBad : mediumLightBad
-        }
-        return isDark ? mediumDarkDefault : mediumLightDefault
+        if showsError { return isDark ? darkBad : lightBad }
+        return isDark ? darkDefault : lightDefault
     }
 
-    private static let smallDefault = LinearGradient(
+    private static let diagonalStart = UnitPoint.topTrailing
+    private static let diagonalEnd = UnitPoint.bottomLeading
+
+    private static let lightDefault = Palette(
         colors: [
-            Color(red: 0.961, green: 0.835, blue: 0.808),
-            Color(red: 0.98, green: 0.89, blue: 0.714),
-            Color(red: 0.911, green: 0.992, blue: 0.847),
-            Color(red: 0.886, green: 0.949, blue: 0.973)
+            Color(red: 0.99, green: 0.94, blue: 0.86),
+            Color(red: 0.96, green: 0.86, blue: 0.76)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
 
-    private static let smallDarkDefault = LinearGradient(
+    private static let darkDefault = Palette(
         colors: [
-            Color(red: 0.18, green: 0.12, blue: 0.10),
-            Color(red: 0.08, green: 0.22, blue: 0.14),
-            Color(red: 0.28, green: 0.10, blue: 0.08)
+            Color(red: 0.22, green: 0.16, blue: 0.12),
+            Color(red: 0.14, green: 0.10, blue: 0.08)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
 
-    private static let smallGood = LinearGradient(
+    private static let lightGood = Palette(
         colors: [
             Color(red: 0.873, green: 0.962, blue: 0.802),
             Color(red: 0.709, green: 0.871, blue: 0.577)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
 
-    private static let smallDarkGood = LinearGradient(
+    private static let darkGood = Palette(
         colors: [
             Color(red: 0.10, green: 0.22, blue: 0.12),
             Color(red: 0.14, green: 0.28, blue: 0.16)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
 
-    private static let smallBad = LinearGradient(
+    private static let lightBad = Palette(
         colors: [
             Color(red: 1, green: 0.908, blue: 0.887),
             Color(red: 0.917, green: 0.716, blue: 0.672)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
 
-    private static let smallDarkBad = LinearGradient(
+    private static let darkBad = Palette(
         colors: [
             Color(red: 0.24, green: 0.12, blue: 0.10),
             Color(red: 0.32, green: 0.14, blue: 0.12)
         ],
-        startPoint: .topTrailing,
-        endPoint: .bottomLeading
+        start: diagonalStart,
+        end: diagonalEnd
     )
+}
 
-    private static let mediumLightDefault = LinearGradient(
-        colors: [
-            Color(red: 0.98, green: 0.95, blue: 0.75),
-            Color(red: 0.88, green: 0.96, blue: 0.82),
-            Color(red: 0.96, green: 0.84, blue: 0.78)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+/// Mesh on iOS 18. Earlier systems keep the linear ramp.
+public struct WidgetGradientFill: View {
+    public let colors: [Color]
+    public var start: UnitPoint
+    public var end: UnitPoint
+    public var mesh: WidgetMeshVariant?
+    /// Pulls the same gradient toward white. Used by the share card, not the widget.
+    public var lightened: Bool
 
-    private static let mediumDarkDefault = LinearGradient(
-        colors: [
-            Color(red: 0.18, green: 0.12, blue: 0.10),
-            Color(red: 0.08, green: 0.22, blue: 0.14),
-            Color(red: 0.28, green: 0.10, blue: 0.08)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    public init(
+        colors: [Color],
+        start: UnitPoint = .topTrailing,
+        end: UnitPoint = .bottomLeading,
+        mesh: WidgetMeshVariant? = nil,
+        lightened: Bool = false
+    ) {
+        self.colors = colors
+        self.start = start
+        self.end = end
+        self.mesh = mesh
+        self.lightened = lightened
+    }
 
-    private static let mediumLightGood = LinearGradient(
-        colors: [
-            Color(red: 0.87, green: 0.96, blue: 0.80),
-            Color(red: 0.71, green: 0.87, blue: 0.58)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    public var body: some View {
+        let display = lightened ? colors.map(ShareGradientLighten.color) : colors
+        if #available(iOS 18.0, *) {
+            if let mesh, mesh.isDesigned {
+                DesignedMeshFill(variant: mesh, lightened: lightened)
+            } else {
+                WidgetMeshFill(colors: display, mesh: mesh)
+            }
+        } else {
+            LinearGradient(colors: display, startPoint: start, endPoint: end)
+        }
+    }
+}
 
-    private static let mediumDarkGood = LinearGradient(
-        colors: [
-            Color(red: 0.10, green: 0.22, blue: 0.12),
-            Color(red: 0.14, green: 0.28, blue: 0.16)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+/// Share-card field: the widget gradient, light enough for dark caption text.
+public struct WidgetShareBackdrop: View {
+    public let metric: Metric
 
-    private static let mediumLightBad = LinearGradient(
-        colors: [
-            Color(red: 1.0, green: 0.91, blue: 0.89),
-            Color(red: 0.92, green: 0.72, blue: 0.67)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    public init(metric: Metric) {
+        self.metric = metric
+    }
 
-    private static let mediumDarkBad = LinearGradient(
-        colors: [
-            Color(red: 0.24, green: 0.12, blue: 0.10),
-            Color(red: 0.32, green: 0.14, blue: 0.12)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    public var body: some View {
+        switch metric.resolvedAppearance.small.background.fill {
+        case .statusGradient:
+            let palette = WidgetStatusGradients.palette(for: metric, colorScheme: .light)
+            LinearGradient(
+                colors: palette.colors.map(ShareGradientLighten.color),
+                startPoint: palette.start,
+                endPoint: palette.end
+            )
+        case .gradient(let spec):
+            WidgetGradientFill(
+                colors: spec.colors.map { color(from: $0) },
+                start: UnitPoint(x: spec.startX, y: spec.startY),
+                end: UnitPoint(x: spec.endX, y: spec.endY),
+                mesh: spec.mesh,
+                lightened: true
+            )
+        case .solid(let spec):
+            ShareGradientLighten.color(color(from: spec))
+        case .system, .image:
+            let palette = WidgetStatusGradients.palette(for: metric, colorScheme: .light)
+            LinearGradient(
+                colors: palette.colors.map(ShareGradientLighten.color),
+                startPoint: palette.start,
+                endPoint: palette.end
+            )
+        }
+    }
+
+    private func color(from spec: WidgetColorSpec) -> Color {
+        switch spec {
+        case .hex(let hex):
+            return Color(hex: hex) ?? Self.fallback
+        case .adaptiveHex(let light, _):
+            return Color(hex: light) ?? Self.fallback
+        case .adaptive:
+            return Self.fallback
+        }
+    }
+
+    private static let fallback = Color(red: 0.96, green: 0.93, blue: 0.88)
+}
+
+enum ShareGradientLighten {
+    /// Keeps the hue, but raises dark stops so the card stays light.
+    static func color(_ color: Color) -> Color {
+        let resolved = UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard resolved.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return color }
+
+        let luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+        let floor: CGFloat = 0.8
+        var mix: CGFloat = 0.22
+        if luminance < floor {
+            mix = max(mix, (floor - luminance) / max(1 - luminance, 0.01))
+        }
+        mix = min(mix, 0.84)
+        return Color(
+            .sRGB,
+            red: Double(red + (1 - red) * mix),
+            green: Double(green + (1 - green) * mix),
+            blue: Double(blue + (1 - blue) * mix)
+        )
+    }
+}
+
+/// Static mesh. Home Screen widgets snapshot this once.
+@available(iOS 18.0, *)
+private struct WidgetMeshFill: View {
+    let colors: [Color]
+    var mesh: WidgetMeshVariant?
+
+    var body: some View {
+        MeshGradient(
+            width: 3,
+            height: 3,
+            points: Self.points(for: mesh),
+            colors: Self.vertices(from: colors, mesh: mesh)
+        )
+    }
+
+    private static func points(for mesh: WidgetMeshVariant?) -> [SIMD2<Float>] {
+        switch mesh {
+        case .cosmos:
+            return [
+                SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
+                SIMD2(0, 0.5), SIMD2(0.82, 0.18), SIMD2(1, 0.4),
+                SIMD2(0, 1), SIMD2(0.5, 1), SIMD2(1, 1)
+            ]
+        case .bloom:
+            return [
+                SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
+                SIMD2(0, 0.62), SIMD2(0.2, 0.8), SIMD2(1, 0.5),
+                SIMD2(0, 1), SIMD2(0.42, 1), SIMD2(1, 1)
+            ]
+        case .ribbon:
+            return [
+                SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
+                SIMD2(0, 0.55), SIMD2(0.48, 0.74), SIMD2(1, 0.62),
+                SIMD2(0, 1), SIMD2(0.28, 1), SIMD2(1, 1)
+            ]
+        case .orbit:
+            return [
+                SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
+                SIMD2(0, 0.5), SIMD2(0.4, 0.44), SIMD2(1, 0.5),
+                SIMD2(0, 1), SIMD2(0.5, 1), SIMD2(1, 1)
+            ]
+        case nil, .haze, .wave, .tide, .gleam:
+            return [
+                SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
+                SIMD2(0, 0.5), SIMD2(0.32, 0.36), SIMD2(1, 0.5),
+                SIMD2(0, 1), SIMD2(0.5, 1), SIMD2(1, 1)
+            ]
+        }
+    }
+
+    private static func vertices(from colors: [Color], mesh: WidgetMeshVariant?) -> [Color] {
+        let source = colors.isEmpty ? [Color.gray] : colors
+        let indices: [Int]
+        switch mesh {
+        case .cosmos:
+            indices = [0, 0, 1, 0, 2, 1, 0, 0, 1]
+        case .bloom:
+            indices = [0, 0, 0, 1, 2, 0, 1, 2, 0]
+        case .ribbon:
+            indices = [0, 0, 0, 0, 1, 0, 1, 2, 2]
+        case .orbit:
+            indices = [2, 1, 0, 1, 0, 0, 0, 0, 1]
+        case nil, .haze, .wave, .tide, .gleam:
+            return legacyVertices(from: source)
+        }
+        return indices.map { source[$0 % source.count] }
+    }
+
+    private static func legacyVertices(from source: [Color]) -> [Color] {
+        if source.count == 1 {
+            return Array(repeating: source[0], count: 9)
+        }
+        if source.count == 2 {
+            let a = source[0], b = source[1]
+            return [
+                a, b, a,
+                b, a, b,
+                a, b, a
+            ]
+        }
+        if source.count == 3 {
+            let a = source[0], b = source[1], c = source[2]
+            return [
+                a, b, c,
+                b, c, a,
+                c, a, b
+            ]
+        }
+        return (0..<9).map { source[$0 % source.count] }
+    }
+}
+
+/// Bezier meshes painted to match the preset references. Corners stay pinned so the fill covers the widget.
+@available(iOS 18.0, *)
+private struct DesignedMeshFill: View {
+    let variant: WidgetMeshVariant
+    var lightened = false
+
+    var body: some View {
+        let grid = Self.grid(for: variant)
+        let colors = lightened ? grid.colors.map(ShareGradientLighten.color) : grid.colors
+        MeshGradient(
+            width: grid.width,
+            height: grid.height,
+            bezierPoints: grid.points,
+            colors: colors,
+            background: colors.first ?? .clear,
+            smoothsColors: true,
+            colorSpace: .perceptual
+        )
+    }
+
+    private static func grid(for variant: WidgetMeshVariant) -> (width: Int, height: Int, points: [MeshGradient.BezierPoint], colors: [Color]) {
+        let rows: [[Vertex]]
+        let hx: Float
+        let hy: Float
+        switch variant {
+        case .haze:
+            hx = 0.1
+            hy = 0.08
+            rows = [
+                [Vertex(0, 0, 0xEDE4FF), Vertex(0.36, 0, 0xF3E8FF), Vertex(0.68, 0, 0xE9D5FF), Vertex(1, 0, 0xFDBA74)],
+                [Vertex(0, 0.32, 0xFB923C), Vertex(0.22, 0.46, 0xFED7AA), Vertex(0.64, 0.34, 0xDDD6FE), Vertex(1, 0.40, 0xF5D0FE)],
+                [Vertex(0, 0.64, 0xF97316), Vertex(0.38, 0.78, 0xFB923C), Vertex(0.72, 0.62, 0xFECACA), Vertex(1, 0.70, 0xE9D5FF)],
+                [Vertex(0, 1, 0xE9D5FF), Vertex(0.32, 1, 0xFB923C), Vertex(0.66, 1, 0xF97316), Vertex(1, 1, 0xF5D0FE)]
+            ]
+        case .wave:
+            hx = 0.12
+            hy = 0.07
+            rows = [
+                [Vertex(0, 0, 0xFFB067), Vertex(0.34, 0, 0xFFE6C4), Vertex(0.67, 0, 0xFFD8B0), Vertex(1, 0, 0xFF2E6A)],
+                [Vertex(0, 0.22, 0xFF8A3C), Vertex(0.30, 0.42, 0xFFE14A), Vertex(0.68, 0.30, 0xFFC44A), Vertex(1, 0.18, 0xFF4A3A)],
+                [Vertex(0, 0.58, 0xFF3D6A), Vertex(0.36, 0.78, 0xFFCC33), Vertex(0.70, 0.64, 0xFF7A30), Vertex(1, 0.50, 0xFF2A62)],
+                [Vertex(0, 1, 0xFF1F6A), Vertex(0.34, 1, 0xFF2D78), Vertex(0.67, 1, 0xFF2458), Vertex(1, 1, 0xFF3A6E)]
+            ]
+        case .tide:
+            hx = 0.1
+            hy = 0.05
+            rows = [
+                [Vertex(0, 0, 0xD5FFFB), Vertex(0.34, 0, 0x7DD3FC), Vertex(0.67, 0, 0x3B82F6), Vertex(1, 0, 0x1D4ED8)],
+                [Vertex(0, 0.26, 0xA5F3FC), Vertex(0.28, 0.34, 0x38BDF8), Vertex(0.66, 0.28, 0x2563EB), Vertex(1, 0.22, 0x1E40AF)],
+                [Vertex(0, 0.72, 0x7A3A62), Vertex(0.40, 0.48, 0x6B3058), Vertex(0.72, 0.58, 0x3730A3), Vertex(1, 0.66, 0x2563EB)],
+                [Vertex(0, 1, 0x5C2A52), Vertex(0.34, 1, 0x4C1D6B), Vertex(0.67, 1, 0x1E3A8A), Vertex(1, 1, 0x3B82F6)]
+            ]
+        case .gleam:
+            hx = 0.1
+            hy = 0.08
+            rows = [
+                [Vertex(0, 0, 0x3B0764), Vertex(0.34, 0, 0x4C1D95), Vertex(0.67, 0, 0x6D28D9), Vertex(1, 0, 0x7E22CE)],
+                [Vertex(0, 0.34, 0x5B21B6), Vertex(0.30, 0.42, 0x7C3AED), Vertex(0.70, 0.30, 0xC026D3), Vertex(1, 0.36, 0xD946EF)],
+                [Vertex(0, 0.66, 0x4338CA), Vertex(0.36, 0.72, 0x6366F1), Vertex(0.68, 0.60, 0xA855F7), Vertex(1, 0.64, 0xC026D3)],
+                [Vertex(0, 1, 0x1D4ED8), Vertex(0.34, 1, 0x2563EB), Vertex(0.67, 1, 0x4F46E5), Vertex(1, 1, 0x6D28D9)]
+            ]
+        case .cosmos, .bloom, .ribbon, .orbit:
+            rows = []
+            hx = 0.1
+            hy = 0.08
+        }
+        return meshGrid(rows: rows, hx: hx, hy: hy)
+    }
+
+    private static func meshGrid(
+        rows: [[Vertex]],
+        hx: Float,
+        hy: Float
+    ) -> (width: Int, height: Int, points: [MeshGradient.BezierPoint], colors: [Color]) {
+        let height = rows.count
+        let width = rows.first?.count ?? 0
+        var points: [MeshGradient.BezierPoint] = []
+        var colors: [Color] = []
+        points.reserveCapacity(width * height)
+        colors.reserveCapacity(width * height)
+        for row in rows {
+            for vertex in row {
+                points.append(
+                    MeshGradient.BezierPoint(
+                        position: SIMD2(vertex.x, vertex.y),
+                        leadingControlPoint: SIMD2(vertex.x - hx, vertex.y),
+                        topControlPoint: SIMD2(vertex.x, vertex.y - hy),
+                        trailingControlPoint: SIMD2(vertex.x + hx, vertex.y),
+                        bottomControlPoint: SIMD2(vertex.x, vertex.y + hy)
+                    )
+                )
+                colors.append(vertex.color)
+            }
+        }
+        return (width, height, points, colors)
+    }
+
+    private struct Vertex {
+        var x: Float
+        var y: Float
+        var hex: UInt32
+        var color: Color {
+            Color(
+                .sRGB,
+                red: Double((hex >> 16) & 0xFF) / 255,
+                green: Double((hex >> 8) & 0xFF) / 255,
+                blue: Double(hex & 0xFF) / 255
+            )
+        }
+
+        init(_ x: Float, _ y: Float, _ hex: UInt32) {
+            self.x = x
+            self.y = y
+            self.hex = hex
+        }
+    }
 }
 
 private struct AppearanceSurfaceModifier: ViewModifier {

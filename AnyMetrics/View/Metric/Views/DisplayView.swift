@@ -14,8 +14,6 @@ extension MetricFormView {
         @State
         private var showStyleEditor = false
         @State
-        private var showDesignGallery = false
-        @State
         private var showStyleImporter = false
         @State
         private var styleImportError: String?
@@ -30,6 +28,7 @@ extension MetricFormView {
         @EnvironmentObject
         var requestViewState: ViewState<RequestFormView.Interactor>
         var action: (Metric) -> Void
+        var screenTitle: String = AnyMetricsStrings.Addmetric.titleDisplay
 
         var body: some View {
 
@@ -54,6 +53,7 @@ extension MetricFormView {
                                 text: formBinding(for: \.title, set: MetricFormView.VAction.setTitle))
                             .multilineTextAlignment(.trailing)
                         }
+                        .disabled(!isShownInDesign(.title))
                         HStack {
                             Text(AnyMetricsStrings.Addmetric.Field.paramMeasure)
                             TextField(
@@ -61,6 +61,11 @@ extension MetricFormView {
                                 text: formBinding(for: \.measure, set: MetricFormView.VAction.setMeasure))
                             .multilineTextAlignment(.trailing)
                         }
+                        .disabled(!isShownInDesign(.measure))
+                    } header: {
+                        Text(AnyMetricsStrings.Addmetric.Field.labels)
+                    } footer: {
+                        Text(AnyMetricsStrings.Addmetric.Field.labelsFooter)
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
@@ -94,7 +99,7 @@ extension MetricFormView {
                 .padding()
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
-            .navigationTitle(AnyMetricsStrings.Addmetric.titleDisplay)
+            .navigationTitle(screenTitle)
             .alert(AnyMetricsStrings.Common.error, isPresented: $showSaveError) {
                 Button(AnyMetricsStrings.Common.ok, role: .cancel) {}
             } message: {
@@ -113,16 +118,6 @@ extension MetricFormView {
             }
             .sheet(isPresented: $showStyleEditor) {
                 styleEditorSheet
-            }
-            .sheet(isPresented: $showDesignGallery) {
-                WidgetDesignGalleryView(
-                    items: designGalleryItems,
-                    onSelect: { item in
-                        applyDesignChoice(item.id)
-                        showDesignGallery = false
-                    },
-                    onClose: { showDesignGallery = false }
-                )
             }
             .fileImporter(
                 isPresented: $showStyleImporter,
@@ -184,25 +179,11 @@ extension MetricFormView {
             .padding(.bottom, 4)
         }
 
-        private var designGalleryItems: [WidgetDesignGalleryView.Item] {
-            WidgetDesign.allCases.map { design in
-                let isSelected = design == viewState.state.widgetDesign
-                return WidgetDesignGalleryView.Item(
-                    id: design.rawValue,
-                    metric: previewMetric(
-                        for: design,
-                        appearance: isSelected ? viewState.state.widgetAppearance : .preset(design)
-                    ),
-                    isSelected: isSelected
-                )
-            }
-        }
-
-        private func applyDesignChoice(_ id: String) {
-            guard let design = WidgetDesign(rawValue: id),
-                  design != viewState.state.widgetDesign
-            else { return }
-            viewState.trigger(.setWidgetDesign(design))
+        private func isShownInDesign(_ kind: WidgetElementKind) -> Bool {
+            let appearance = viewState.state.widgetAppearance
+            let small = appearance.small.element(kind: kind)?.isVisible ?? true
+            let medium = appearance.medium.element(kind: kind)?.isVisible ?? true
+            return small || medium
         }
 
         private func designPreview(metric: Metric, size: CGFloat) -> some View {
@@ -222,10 +203,7 @@ extension MetricFormView {
 
         private var designActionsMenu: some View {
             Menu {
-                Button(AnyMetricsStrings.Addmetric.Design.chooseDesign) {
-                    openAfterMenu { showDesignGallery = true }
-                }
-                Button(AnyMetricsStrings.Addmetric.Design.editDesign) {
+                Button(AnyMetricsStrings.Addmetric.Design.openEditor) {
                     openAfterMenu {
                         editorDraft = viewState.state.widgetAppearance
                         showStyleEditor = true
@@ -236,7 +214,7 @@ extension MetricFormView {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(AnyMetricsStrings.Addmetric.Design.editSelected)
+                    Text(AnyMetricsStrings.Addmetric.Design.editDesign)
                         .font(Constants.mainButtonFont)
                     Image(systemName: "chevron.down")
                         .font(.footnote.weight(.semibold))

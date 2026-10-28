@@ -13,10 +13,12 @@ extension GalleryView {
         static let itemButtonSize: CGFloat = 46
         static let itemAddButtonCorner: CGFloat = Self.itemButtonSize / 2
         static let itemButtonLine: CGFloat = 1
-        static let descriptionInset = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 52)
+        static let bodyTopInset: CGFloat = 8
+        static let itemAccessoryTrailing: CGFloat = 52
         static let itemContentSpacing: CGFloat = 4
         static let itemContentPadding: CGFloat = 14
         static let itemCorner: CGFloat = 18
+        static let itemRowSpacing: CGFloat = 6
         static let contentInset = EdgeInsets(top: 4, leading: 12, bottom: 0, trailing: 12)
         static let sectionFont = Font.system(size: 17, weight: .semibold, design: .default)
         static let sectionInset = EdgeInsets(top: 4, leading: 2, bottom: 4, trailing: 2)

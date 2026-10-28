@@ -27,6 +27,8 @@
 "metric.actions.update-value" = "Обновить значение";
 "metric.actions.delete" = "Удалить метрику";
 "metric.actions.edit" = "Редактировать";
+"metric.actions.edit-request" = "Редактирование запроса";
+"metric.actions.edit-theme" = "Редактирование темы";
 "metric.actions.title" = "Что хотите сделать с метрикой «%@»?";
 "metric.actions.menu-title" = "Действия";
 "metric.actions.share" = "Поделиться";
@@ -42,6 +44,10 @@
 "metric.share.card-brand" = "AnyMetrics";
 "metric.share.card-hint" = "Наведите камеру — и себе такой";
 "metric.share.failed" = "Не удалось создать картинку. Попробуйте ещё раз.";
+"metric.share.kind" = "Что отправить";
+"metric.share.kind-file" = "Карточка и файл";
+"metric.share.kind-image" = "Только картинка";
+"metric.share.image-only-subtitle" = "Отправляется только картинка карточки. Файл метрики и запрос остаются на устройстве.";
 "metric.export.title" = "Экспорт";
 "metric.export.include-request" = "Экспортировать запрос";
 "metric.export.include-widget-style" = "Экспортировать стиль виджета";
@@ -92,6 +98,8 @@
 "addmetric.field.http-method" = "HTTP Метод";
 "addmetric.field.url" = "URL";
 "addmetric.field.url-placeholder" = "https://yourapi.com/";
+"addmetric.field.labels" = "Подписи";
+"addmetric.field.labels-footer" = "Название — имя метрики в системном списке при добавлении виджета и на самом виджете. Мера — подпись под значением на виджете. Оба поля попадают в файл при экспорте.";
 "addmetric.field.title" = "Название";
 "addmetric.field.title-placeholder" = "Bitcoin";
 "addmetric.field.param-measure" = "Мера";
@@ -142,20 +150,34 @@
 "addmetric.design.rounded-card" = "Карточка";
 "addmetric.design.minimal" = "Минимализм";
 "addmetric.design.ring" = "Кольцо";
+"addmetric.design.round" = "Круглый";
+"addmetric.design.round-footer" = "Только маленький виджет. Средний остаётся скруглённым прямоугольником.";
+"addmetric.design.layout-settings" = "Настройки";
+"addmetric.design.sync-sizes" = "Синхронизировать размеры";
+"addmetric.design.sync-sizes-footer" = "Правки сразу копируются в другой размер.";
+"addmetric.design.undo" = "Отменить";
+"addmetric.design.redo" = "Вернуть";
 "addmetric.design.plain" = "Без заливки";
 "addmetric.design.choose-design" = "Выбрать дизайн";
 "addmetric.design.custom" = "Свой";
 "addmetric.design.edit-selected" = "Редактировать";
 "addmetric.design.edit-design" = "Редактировать дизайн";
+"addmetric.design.open-editor" = "Открыть редактор";
 "addmetric.design.preview" = "Превью";
 "addmetric.design.presets" = "Шаблоны";
 "addmetric.design.background" = "Фон";
-"addmetric.design.elements" = "Элементы";
+"addmetric.design.elements" = "Текст";
 "addmetric.design.drag-hint" = "Нажмите элемент, чтобы выбрать, затем перетащите. Pinch или ползунок меняют размер текста. Small и medium — отдельно.";
 "addmetric.design.drag-hint-short" = "Перетащите · Pinch для масштаба";
 "addmetric.design.image-drag-hint-short" = "Перетащите · Pinch для зума";
-"addmetric.design.elements-footer" = "Нажмите строку, чтобы выбрать. Переключатель показывает или скрывает элемент.";
+"addmetric.design.elements-footer" = "Переключатель показывает или скрывает этот блок.";
+"addmetric.design.show-block" = "Показывать на виджете";
 "addmetric.design.image-elements-footer" = "Перетаскивайте картинку и зумите жестом. Переключатель Use as Background ставит её на фон.";
+"addmetric.design.font" = "Шрифт";
+"addmetric.design.font-system" = "Системный";
+"addmetric.design.font-rounded" = "Скруглённый";
+"addmetric.design.font-serif" = "С засечками";
+"addmetric.design.font-monospaced" = "Моноширинный";
 "addmetric.design.font-scale" = "Размер текста";
 "addmetric.design.text-color" = "Цвет текста";
 "addmetric.design.alignment" = "Выравнивание";
@@ -168,7 +190,7 @@
 "addmetric.design.size-small" = "Маленький";
 "addmetric.design.size-medium" = "Средний";
 "addmetric.design.bg-status-gradient" = "Градиент по статусу";
-"addmetric.design.bg-gradients" = "Градиенты";
+"addmetric.design.bg-gradients" = "Готовый градиент";
 "addmetric.design.bg-custom-gradient" = "Свой градиент";
 "addmetric.design.bg-gradient-stop" = "Цвет %@";
 "addmetric.design.bg-system" = "Системный фон";
@@ -185,7 +207,7 @@
 "addmetric.design.element-title" = "Заголовок";
 "addmetric.design.element-value" = "Значение";
 "addmetric.design.element-measure" = "Подзаголовок";
-"addmetric.design.element-updated" = "Время обновления";
+"addmetric.design.element-updated" = "Время";
 "addmetric.design.customize" = "Настроить расположение";
 "addmetric.design.edit-style" = "Редактировать стиль";
 "addmetric.design.import-style" = "Импорт стиля";
@@ -240,8 +262,9 @@
 
 // MARK: - Onboarding
 
-"onboarding.add-widget" = "Добавить виджет";
+"onboarding.add-widget" = "Добавить этот виджет";
 "onboarding.choose-from-gallery" = "Выбрать из галереи";
+"onboarding.sample-value" = "12";
 "onboarding.widget-hint" = "Сохраним метрику и покажем, как добавить виджет на домашний экран.";
 "onboarding.preview-loading" = "Загружаем…";
 "onboarding.preview-retry" = "Не загрузилось. Повторить";
@@ -254,8 +277,16 @@
 "onboarding.page3.title" = "Кастомные\nвиджеты";
 "onboarding.page3.subtitle" = "Выберите шаблон или оформите сами — расположение, цвета и фото на фоне.";
 "onboarding.page4.title" = "Добавьте\nпервый виджет";
-"onboarding.page4.subtitle" = "Начните с «Цитаты дня» или выберите другую метрику из галереи.";
+"onboarding.page4.subtitle" = "Начните с «Люди в космосе» или выберите другую метрику из галереи.";
 "onboarding.gradient.title" = "Фон";
+"onboarding.gradient.space" = "Космос";
+"onboarding.gradient.haze" = "Дымка";
+"onboarding.gradient.wave" = "Волна";
+"onboarding.gradient.tide" = "Прилив";
+"onboarding.gradient.gleam" = "Зарево";
+"onboarding.gradient.nebula" = "Туманность";
+"onboarding.gradient.comet" = "Комета";
+"onboarding.gradient.eclipse" = "Затмение";
 "onboarding.gradient.dusk" = "Фиолетовый";
 "onboarding.gradient.sunset" = "Закат";
 "onboarding.gradient.ocean" = "Океан";
@@ -264,8 +295,8 @@
 
 // MARK: - Starter Metric
 
-"starter-metric.title" = "Цитата дня";
-"starter-metric.measure" = "Английский · ZenQuotes";
+"starter-metric.title" = "Люди в космосе";
+"starter-metric.measure" = "Сейчас";
 
 // MARK: - Widget Guide
 

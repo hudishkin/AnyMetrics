@@ -137,12 +137,13 @@ struct MetricView: View {
     @State private var pendingAction: PendingAction?
 
     private enum PendingAction {
-        case edit, share, export, delete
+        case editRequest, editTheme, share, export, delete
     }
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
-    var editMetric: ((Metric) -> Void)?
+    var editRequest: ((Metric) -> Void)?
+    var editTheme: ((Metric) -> Void)?
     var shareMetric: ((Metric) -> Void)?
     var exportMetric: ((Metric) -> Void)?
     var onOverlayChange: ((Bool) -> Void)?
@@ -156,12 +157,12 @@ struct MetricView: View {
         .buttonStyle(.plain)
         .sheet(isPresented: $showActionMenu, onDismiss: performPendingAction) {
             MetricActionsMenuView(
-                metricTitle: metric.title,
                 onRefresh: {
                     showActionMenu = false
                     refreshMetric?(metric.id)
                 },
-                onEdit: { queueAction(.edit) },
+                onEditRequest: { queueAction(.editRequest) },
+                onEditTheme: { queueAction(.editTheme) },
                 onExport: { queueAction(.export) },
                 onShare: { queueAction(.share) },
                 onDelete: { queueAction(.delete) }
@@ -172,13 +173,14 @@ struct MetricView: View {
                 onOverlayChange?(true)
             }
         }
-        .confirmationDialog(
+        .alert(
             AnyMetricsStrings.Metric.Actions.sure,
             isPresented: $showConfirmationDelete
         ) {
             Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
                 deletehMetric?(metric.id)
             }
+            Button(AnyMetricsStrings.Common.close, role: .cancel) {}
         }
         .onChange(of: showConfirmationDelete) { presented in
             if !presented {
@@ -204,8 +206,10 @@ struct MetricView: View {
 
     private func performPendingAction() {
         switch pendingAction {
-        case .edit:
-            editMetric?(metric)
+        case .editRequest:
+            editRequest?(metric)
+        case .editTheme:
+            editTheme?(metric)
         case .share:
             shareMetric?(metric)
         case .export:

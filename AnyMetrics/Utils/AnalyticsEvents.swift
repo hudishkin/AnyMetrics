@@ -32,6 +32,10 @@ enum AnalyticsEvents {
         log("onboarding_shown")
     }
 
+    static func onboardingSkipped() {
+        log("onboarding_skipped")
+    }
+
     static func galleryOpened(entry: String) {
         log("gallery_opened", parameters: ["entry": entry])
     }
@@ -93,8 +97,11 @@ enum AnalyticsEvents {
         log("app_link_copied")
     }
 
-    static func metricShared(includeRequest: Bool, activity: String?) {
-        var parameters: [String: Any] = ["include_request": flag(includeRequest)]
+    static func metricShared(includeRequest: Bool, includesFile: Bool, activity: String?) {
+        var parameters: [String: Any] = [
+            "include_request": flag(includeRequest),
+            "includes_file": flag(includesFile)
+        ]
         if let activity, !activity.isEmpty {
             parameters["activity"] = clipped(activity)
         }

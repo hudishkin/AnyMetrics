@@ -24,54 +24,80 @@ struct MetricShareOptionsView: View {
     }
 
     let metric: Metric
-    var onShared: (MetricSharePayload, Bool) -> Void
+    var onShared: (MetricSharePayload) -> Void
     var onCancel: (() -> Void)?
 
     @State
     private var qrImage: UIImage?
     @State
-    private var sheetHeight: CGFloat = 560
+    private var shareKind: MetricShareKind = .image
     @State
     private var includeRequest = true
     @State
     private var isSharing = false
     @State
-    private var didCopyLink = false
-    @State
     private var showShareInfo = false
     @State
     private var errorMessage: String?
+    @State
+    private var contentHeight: CGFloat = 0
+    @State
+    private var footerHeight: CGFloat = 0
     @Environment(\.dismiss)
     private var dismiss
 
+    private var lockedHeight: CGFloat {
+        contentHeight + footerHeight
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
-                header
-                preview
-                requestToggle
-                Divider()
-                MetricRequestNotice(includesRequest: includeRequest, showsBackground: false)
-                Divider()
-                actions
-            }
-            .padding(.horizontal, Constants.horizontalPadding)
-            .padding(.top, Constants.topPadding)
-            .padding(.bottom, Constants.bottomPadding)
-            .fixedSize(horizontal: false, vertical: true)
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .preference(key: ShareSheetHeightPreferenceKey.self, value: proxy.size.height)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
+                    header
+                    preview
+                    kindPicker
+                    modeDetails
                 }
-            )
+                .padding(.horizontal, Constants.horizontalPadding)
+                .padding(.top, Constants.topPadding)
+                .padding(.bottom, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: ShareContentHeightKey.self, value: proxy.size.height)
+                    }
+                )
+            }
+            .scrollIndicators(.hidden)
+
+            shareButton
+                .padding(.horizontal, Constants.horizontalPadding)
+                .padding(.top, 8)
+                .padding(.bottom, Constants.bottomPadding)
+                .frame(maxWidth: .infinity)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: ShareFooterHeightKey.self, value: proxy.size.height)
+                    }
+                )
+                .background(Color(uiColor: .systemBackground))
         }
-        .frame(maxHeight: sheetHeight)
-        .onPreferenceChange(ShareSheetHeightPreferenceKey.self) { height in
+        .background(Color(uiColor: .systemBackground))
+        .frame(height: lockedHeight > 0 ? min(lockedHeight, Self.sheetCap) : nil)
+        .onPreferenceChange(ShareContentHeightKey.self) { height in
             guard height > 0 else { return }
-            sheetHeight = height
+            contentHeight = max(contentHeight, height)
         }
-        .modifier(ShareFittedSheetModifier(height: sheetHeight))
+        .onPreferenceChange(ShareFooterHeightKey.self) { height in
+            guard height > 0 else { return }
+            footerHeight = height
+        }
+        .animation(nil, value: shareKind)
+        .modifier(ShareFittedSheetModifier(height: lockedHeight > 0 ? lockedHeight : 560))
         .task {
             if qrImage == nil {
                 qrImage = MetricShareComposer.qrImage(
@@ -108,7 +134,7 @@ struct MetricShareOptionsView: View {
                             .foregroundStyle(Constants.secondaryColor)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(AnyMetricsStrings.Metric.Share.subtitle)
+                    .accessibilityLabel(infoText)
                     .disabled(isSharing)
                 }
 
@@ -134,7 +160,7 @@ struct MetricShareOptionsView: View {
             .disabled(isSharing)
         }
         .popover(isPresented: $showShareInfo) {
-            Text(AnyMetricsStrings.Metric.Share.subtitle)
+            Text(infoText)
                 .font(Constants.fontSecondary)
                 .foregroundColor(Constants.textColor)
                 .fixedSize(horizontal: false, vertical: true)
@@ -156,7 +182,51 @@ struct MetricShareOptionsView: View {
             .clipShape(RoundedRectangle(cornerRadius: Constants.cardCorner, style: .continuous))
             .shadow(color: Color.black.opacity(0.18), radius: 16, y: 8)
             .frame(maxWidth: .infinity)
+            .compositingGroup()
+            .transaction { $0.animation = nil }
             .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var modeDetails: some View {
+        if shareKind == .file {
+            VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
+                requestToggle
+                Divider()
+                MetricRequestNotice(includesRequest: includeRequest, showsBackground: false)
+            }
+        } else {
+            Text(AnyMetricsStrings.Metric.Share.imageOnlySubtitle)
+                .font(Constants.fontSecondary)
+                .foregroundColor(Constants.secondaryColor)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var infoText: String {
+        switch shareKind {
+        case .file:
+            return AnyMetricsStrings.Metric.Share.subtitle
+        case .image:
+            return AnyMetricsStrings.Metric.Share.imageOnlySubtitle
+        }
+    }
+
+    private var kindPicker: some View {
+        VStack(alignment: .leading, spacing: Constants.contentSpacing) {
+            Text(AnyMetricsStrings.Metric.Share.kind)
+                .font(Constants.fontRow)
+                .foregroundColor(Constants.textColor)
+
+            Picker(AnyMetricsStrings.Metric.Share.kind, selection: $shareKind) {
+                Text(AnyMetricsStrings.Metric.Share.kindImage).tag(MetricShareKind.image)
+                Text(AnyMetricsStrings.Metric.Share.kindFile).tag(MetricShareKind.file)
+            }
+            .pickerStyle(.segmented)
+            .disabled(isSharing)
+            .accessibilityIdentifier("metricShare.kind")
+        }
     }
 
     private var requestToggle: some View {
@@ -169,61 +239,48 @@ struct MetricShareOptionsView: View {
         .accessibilityIdentifier("metricShare.includeRequest")
     }
 
-    private var actions: some View {
-        VStack(spacing: 12) {
-            Button {
-                ImpactHelper.impactButton()
-                share()
-            } label: {
-                Group {
-                    if isSharing {
-                        ProgressView()
-                    } else {
-                        Text(AnyMetricsStrings.Metric.Share.button)
-                            .font(Constants.fontButton)
-                            .foregroundColor(Constants.textColor)
-                    }
+    private var shareButton: some View {
+        Button {
+            ImpactHelper.impactButton()
+            share()
+        } label: {
+            Group {
+                if isSharing {
+                    ProgressView()
+                } else {
+                    Text(AnyMetricsStrings.Metric.Share.button)
+                        .font(Constants.fontButton)
+                        .foregroundColor(Constants.textColor)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
             }
-            .background(Constants.buttonBackground)
-            .cornerRadius(Constants.buttonCorner)
-            .disabled(isSharing)
-            .accessibilityIdentifier("metricShare.share")
-
-            Button {
-                UIPasteboard.general.string = MetricShareComposer.appStoreURL.absoluteString
-                ImpactHelper.success()
-                AnalyticsEvents.appLinkCopied()
-                didCopyLink = true
-            } label: {
-                Text(didCopyLink ? AnyMetricsStrings.Metric.Share.copied : AnyMetricsStrings.Metric.Share.copyLink)
-                    .font(Constants.fontSecondary)
-                    .foregroundColor(Constants.secondaryColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
-                    .padding(.bottom, 20)
-            }
-            .disabled(isSharing)
-            .accessibilityIdentifier("metricShare.copyLink")
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
         }
+        .background(Constants.buttonBackground)
+        .cornerRadius(Constants.buttonCorner)
+        .disabled(isSharing)
+        .accessibilityIdentifier("metricShare.share")
     }
 
     private func share() {
         guard !isSharing else { return }
         isSharing = true
         let metricToShare = metric
+        let kind = shareKind
         let options = MetricExportOptions(
-            includeRequest: includeRequest,
+            includeRequest: kind == .file && includeRequest,
             includeWidgetStyle: true
         )
 
         Task { @MainActor in
             do {
-                let payload = try MetricShareComposer.writePayload(metric: metricToShare, options: options)
+                let payload = try MetricShareComposer.writePayload(
+                    metric: metricToShare,
+                    options: options,
+                    kind: kind
+                )
                 isSharing = false
-                onShared(payload, includeRequest)
+                onShared(payload)
             } catch {
                 isSharing = false
                 errorMessage = Self.message(for: error)
@@ -244,7 +301,15 @@ struct MetricShareOptionsView: View {
     }
 }
 
-private struct ShareSheetHeightPreferenceKey: PreferenceKey {
+private struct ShareContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct ShareFooterHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -266,16 +331,25 @@ private struct ShareFittedSheetModifier: ViewModifier {
     let height: CGFloat
 
     func body(content: Content) -> some View {
-        let capped = min(height, UIScreen.main.bounds.height * 0.92)
-        content
+        let capped = min(height, MetricShareOptionsView.sheetCap)
+        let fitted = content
             .presentationDetents([.height(capped)])
             .presentationDragIndicator(.visible)
+        if #available(iOS 16.4, *) {
+            fitted.presentationBackground(Color(uiColor: .systemBackground))
+        } else {
+            fitted
+        }
     }
+}
+
+private extension MetricShareOptionsView {
+    static var sheetCap: CGFloat { UIScreen.main.bounds.height * 0.92 }
 }
 
 #if DEBUG
 #Preview {
-    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _, _ in })
+    MetricShareOptionsView(metric: Mocks.metricJson, onShared: { _ in })
         .preferredColorScheme(.dark)
 }
 #endif

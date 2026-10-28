@@ -27,6 +27,8 @@
 "metric.actions.update-value" = "Refresh";
 "metric.actions.delete" = "Remove";
 "metric.actions.edit" = "Edit";
+"metric.actions.edit-request" = "Edit request";
+"metric.actions.edit-theme" = "Edit theme";
 "metric.actions.title" = "Select action for metric «%@»";
 "metric.actions.menu-title" = "Actions";
 "metric.actions.share" = "Share";
@@ -42,6 +44,10 @@
 "metric.share.card-brand" = "AnyMetrics";
 "metric.share.card-hint" = "Scan to make one like this";
 "metric.share.failed" = "Could not create the share image. Please try again.";
+"metric.share.kind" = "What to share";
+"metric.share.kind-file" = "Card and file";
+"metric.share.kind-image" = "Image only";
+"metric.share.image-only-subtitle" = "Only the card image is shared. The metric file and the request stay on this device.";
 "metric.export.title" = "Export";
 "metric.export.include-request" = "Export with Request";
 "metric.export.include-widget-style" = "Export with widget style";
@@ -92,6 +98,8 @@
 "addmetric.field.http-method" = "HTTP Method";
 "addmetric.field.url" = "URL";
 "addmetric.field.url-placeholder" = "https://yourapi.com/";
+"addmetric.field.labels" = "Labels";
+"addmetric.field.labels-footer" = "Title is the metric name in the iOS widget picker and on the widget. Measure is the subtitle under the value on the widget. Both are included in the exported file.";
 "addmetric.field.title" = "Title";
 "addmetric.field.title-placeholder" = "Bitcoin";
 "addmetric.field.param-measure" = "Measure";
@@ -143,20 +151,34 @@
 "addmetric.design.rounded-card" = "Card";
 "addmetric.design.minimal" = "Minimal";
 "addmetric.design.ring" = "Ring";
+"addmetric.design.round" = "Round";
+"addmetric.design.round-footer" = "Small widget only. Medium stays a rounded rectangle.";
+"addmetric.design.layout-settings" = "Settings";
+"addmetric.design.sync-sizes" = "Sync sizes";
+"addmetric.design.sync-sizes-footer" = "Edits are copied to the other size.";
+"addmetric.design.undo" = "Undo";
+"addmetric.design.redo" = "Redo";
 "addmetric.design.plain" = "Plain";
 "addmetric.design.choose-design" = "Choose design";
 "addmetric.design.custom" = "Custom";
 "addmetric.design.edit-selected" = "Edit";
 "addmetric.design.edit-design" = "Edit design";
+"addmetric.design.open-editor" = "Open editor";
 "addmetric.design.preview" = "Preview";
 "addmetric.design.presets" = "Templates";
 "addmetric.design.background" = "Background";
-"addmetric.design.elements" = "Elements";
+"addmetric.design.elements" = "Text";
 "addmetric.design.drag-hint" = "Tap an element to select it, then drag. Pinch or use text size controls to zoom. Edit small and medium separately.";
 "addmetric.design.drag-hint-short" = "Drag to move · Pinch to resize";
 "addmetric.design.image-drag-hint-short" = "Drag to pan · Pinch to zoom";
-"addmetric.design.elements-footer" = "Tap a row to select. The switch shows or hides the element.";
+"addmetric.design.elements-footer" = "The switch shows or hides this block.";
+"addmetric.design.show-block" = "Show on widget";
 "addmetric.design.image-elements-footer" = "Drag to pan the image, pinch to zoom. Use as Background places it behind other elements.";
+"addmetric.design.font" = "Font";
+"addmetric.design.font-system" = "System";
+"addmetric.design.font-rounded" = "Rounded";
+"addmetric.design.font-serif" = "Serif";
+"addmetric.design.font-monospaced" = "Monospaced";
 "addmetric.design.font-scale" = "Text size";
 "addmetric.design.text-color" = "Text color";
 "addmetric.design.alignment" = "Alignment";
@@ -169,7 +191,7 @@
 "addmetric.design.size-small" = "Small";
 "addmetric.design.size-medium" = "Medium";
 "addmetric.design.bg-status-gradient" = "Status gradient";
-"addmetric.design.bg-gradients" = "Gradients";
+"addmetric.design.bg-gradients" = "Ready gradient";
 "addmetric.design.bg-custom-gradient" = "Custom gradient";
 "addmetric.design.bg-gradient-stop" = "Color %@";
 "addmetric.design.bg-system" = "System background";
@@ -186,7 +208,7 @@
 "addmetric.design.element-title" = "Title";
 "addmetric.design.element-value" = "Value";
 "addmetric.design.element-measure" = "Subtitle";
-"addmetric.design.element-updated" = "Updated time";
+"addmetric.design.element-updated" = "Time";
 "addmetric.design.customize" = "Customize layout";
 "addmetric.design.edit-style" = "Edit style";
 "addmetric.design.import-style" = "Import style";
@@ -240,8 +262,9 @@
 
 // MARK: - Onboarding
 
-"onboarding.add-widget" = "Add widget";
+"onboarding.add-widget" = "Add this widget";
 "onboarding.choose-from-gallery" = "Choose from Gallery";
+"onboarding.sample-value" = "12";
 "onboarding.widget-hint" = "We'll save the metric and show you how to add the widget to your Home Screen.";
 "onboarding.preview-loading" = "Loading…";
 "onboarding.preview-retry" = "Couldn't load. Retry";
@@ -254,8 +277,16 @@
 "onboarding.page3.title" = "Custom\nwidgets";
 "onboarding.page3.subtitle" = "Pick a template or design your own — layout, colors, and background photo.";
 "onboarding.page4.title" = "Add your\nfirst widget";
-"onboarding.page4.subtitle" = "Start with Quote of the Day, or pick another metric from the gallery.";
+"onboarding.page4.subtitle" = "Start with People in Space, or pick another metric from the gallery.";
 "onboarding.gradient.title" = "Background";
+"onboarding.gradient.space" = "Space";
+"onboarding.gradient.haze" = "Haze";
+"onboarding.gradient.wave" = "Wave";
+"onboarding.gradient.tide" = "Tide";
+"onboarding.gradient.gleam" = "Gleam";
+"onboarding.gradient.nebula" = "Nebula";
+"onboarding.gradient.comet" = "Comet";
+"onboarding.gradient.eclipse" = "Eclipse";
 "onboarding.gradient.dusk" = "Violet";
 "onboarding.gradient.sunset" = "Sunset";
 "onboarding.gradient.ocean" = "Ocean";
@@ -264,8 +295,8 @@
 
 // MARK: - Starter Metric
 
-"starter-metric.title" = "Quote of the Day";
-"starter-metric.measure" = "English · ZenQuotes";
+"starter-metric.title" = "People in Space";
+"starter-metric.measure" = "Right Now";
 
 // MARK: - Widget Guide
 

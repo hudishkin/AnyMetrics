@@ -92,7 +92,9 @@ final class MetricShareComposerTests: XCTestCase {
             image: UIImage(),
             imageURL: imageURL,
             metricURL: json,
-            caption: "Hello"
+            caption: "Hello",
+            kind: .file,
+            includesRequest: true
         )
 
         XCTAssertEqual(payload.fileURLs, [imageURL, json])
@@ -102,6 +104,26 @@ final class MetricShareComposerTests: XCTestCase {
         })
         XCTAssertTrue(payload.activityItems.contains { $0 is MetricShareFileItem })
         XCTAssertTrue(payload.activityItems.contains { $0 is MetricShareImageItem })
+    }
+
+    func testImageOnlyShareOmitsFileAndCaption() {
+        let imageURL = FileManager.default.temporaryDirectory.appendingPathComponent("share.png")
+        let payload = MetricSharePayload(
+            image: UIImage(),
+            imageURL: imageURL,
+            metricURL: nil,
+            caption: "Hello",
+            kind: .image,
+            includesRequest: false
+        )
+
+        XCTAssertFalse(payload.includesFile)
+        XCTAssertFalse(payload.includesRequest)
+        XCTAssertEqual(payload.fileURLs, [imageURL])
+        XCTAssertEqual(payload.activityItems.count, 1)
+        XCTAssertTrue(payload.activityItems.first is MetricShareImageItem)
+        XCTAssertFalse(payload.activityItems.contains { $0 is MetricShareFileItem })
+        XCTAssertFalse(payload.activityItems.contains { $0 is MetricShareTextItem })
     }
 
     func testMessengerShareOmitsLinkFromCaption() {

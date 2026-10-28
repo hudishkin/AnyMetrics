@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version = "2.6"
+let version = "3.0"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
 let teamId = "Q424U5CAPS"

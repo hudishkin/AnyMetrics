@@ -107,25 +107,16 @@ extension MetricFormView {
                     await updater { $0.maxLengthValue = value }
                     await self.updateValue(state: state, updater: updater, length: value)
                 }
-            case .setWidgetDesign(let value):
-                Task { @MainActor in
-                    await updater {
-                        $0.widgetDesign = value
-                        $0.widgetAppearance = .preset(value)
-                    }
-                }
             case .setWidgetAppearance(let value):
                 Task { @MainActor in
                     await updater {
-                        $0.widgetAppearance = value
-                        if value.isCustom || value.matchingWidgetDesign == nil {
-                            var custom = value
-                            custom.presetId = WidgetAppearancePreset.custom.rawValue
-                            $0.widgetAppearance = custom
-                            $0.savedCustomAppearance = custom
-                        } else if let matched = value.matchingWidgetDesign {
-                            $0.widgetDesign = matched
+                        var appearance = value
+                        if appearance.isCustom || appearance.matchingWidgetDesign == nil {
+                            appearance.presetId = WidgetAppearancePreset.custom.rawValue
+                            $0.savedCustomAppearance = appearance
                         }
+                        $0.widgetDesign = appearance.compatibleWidgetDesign(previous: $0.widgetDesign)
+                        $0.widgetAppearance = appearance
                     }
                 }
             }
@@ -214,16 +205,6 @@ extension ParseRules.RuleType {
         case .none: return AnyMetricsStrings.Addmetric.Field.ruleTypeNone
         case .equal: return AnyMetricsStrings.Addmetric.Field.ruleTypeEqual
         case .contains: return AnyMetricsStrings.Addmetric.Field.ruleTypeContains
-        }
-    }
-}
-
-extension WidgetDesign {
-    var localizedName: String {
-        switch self {
-        case .glassCircle: return AnyMetricsStrings.Addmetric.Design.glassCircle
-        case .roundedCard: return AnyMetricsStrings.Addmetric.Design.roundedCard
-        case .plain: return AnyMetricsStrings.Addmetric.Design.plain
         }
     }
 }

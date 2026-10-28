@@ -8,6 +8,8 @@ struct RequestFormView: View {
     @EnvironmentObject
     var viewState: ViewState<RequestFormView.Interactor>
 
+    var screenTitle: String = AnyMetricsStrings.Addmetric.titleRequest
+
     @State
     private var activeSheet: HeaderSheet?
 
@@ -176,7 +178,7 @@ struct RequestFormView: View {
                 }
             }
         }
-        .navigationTitle(AnyMetricsStrings.Addmetric.titleRequest)
+        .navigationTitle(screenTitle)
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .add:

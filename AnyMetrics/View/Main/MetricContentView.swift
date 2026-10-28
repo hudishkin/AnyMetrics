@@ -31,8 +31,8 @@ fileprivate enum Constants {
     static let secondaryText = WidgetExtensionAsset.secondaryText.swiftUIColor
     static let statusGoodLabel = WidgetExtensionStrings.Metric.Value.good
     static let statusBadLabel = WidgetExtensionStrings.Metric.Value.bad
-    static let emptyLabel = NSLocalizedString("metric.value.empty", comment: "")
-    static let errorLabel = NSLocalizedString("metric.value.error", comment: "")
+    static let emptyLabel = WidgetExtensionStrings.Metric.Value.empty
+    static let errorLabel = WidgetExtensionStrings.Metric.Value.error
     #else
     static let textColor = AnyMetricsAsset.Assets.metricText.swiftUIColor
     static let textErrorColor = AnyMetricsAsset.Assets.red.swiftUIColor
@@ -40,8 +40,8 @@ fileprivate enum Constants {
     static let secondaryText = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
     static let statusGoodLabel = AnyMetricsStrings.Metric.Value.good
     static let statusBadLabel = AnyMetricsStrings.Metric.Value.bad
-    static let emptyLabel = NSLocalizedString("metric.value.empty", comment: "")
-    static let errorLabel = NSLocalizedString("metric.value.error", comment: "")
+    static let emptyLabel = AnyMetricsStrings.Metric.Value.empty
+    static let errorLabel = AnyMetricsStrings.Metric.Value.error
     #endif
 }
 
