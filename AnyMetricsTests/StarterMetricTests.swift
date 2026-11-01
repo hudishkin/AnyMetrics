@@ -51,7 +51,7 @@ final class StarterMetricTests: XCTestCase {
         XCTAssertEqual(spec.colors, StarterMetric.QuoteStyle.space.colors.map { .hex($0) })
         XCTAssertEqual(spec.mesh, .cosmos)
         XCTAssertEqual(value.color, .hex("#FFFFFF"))
-        XCTAssertEqual(StarterMetric.QuoteStyle.allCases.count, 13)
+        XCTAssertEqual(StarterMetric.QuoteStyle.allCases.count, 19)
         XCTAssertEqual(
             StarterMetric.appearance(for: .haze).small.elements.first { $0.kind == .value }?.color,
             .hex("#1C1917")
@@ -188,7 +188,7 @@ final class StarterMetricTests: XCTestCase {
         }
         XCTAssertEqual(spec.colors.count, 3)
         XCTAssertEqual(value.color, .hex("#FFFFFF"))
-        XCTAssertEqual(StarterMetric.QuoteStyle.allCases.count, 13)
+        XCTAssertEqual(StarterMetric.QuoteStyle.allCases.count, 19)
         XCTAssertTrue(StarterMetric.QuoteStyle.allCases.contains(.mono))
         guard case .gradient(let mono) = StarterMetric.appearance(for: .mono).small.background.fill else {
             return XCTFail("Monochrome style should be a gradient")

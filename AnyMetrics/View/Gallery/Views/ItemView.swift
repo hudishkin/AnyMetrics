@@ -46,9 +46,10 @@ extension GalleryView {
                             .renderingMode(.template)
                             .foregroundColor(.white)
                             .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
-                            .background(Circle().fill(AnyMetricsAsset.Assets.red.swiftUIColor))
-
+                            .contentShape(.interaction, Circle())
                     }
+                    .modifier(GalleryRemoveButtonChrome())
+                    .contentShape(.interaction, Circle())
                     .offset(Constants.itemButtonOffset)
                 } else {
 
@@ -57,13 +58,12 @@ extension GalleryView {
                     } label: {
                         AnyMetricsAsset.Assets.plus.swiftUIImage
                             .renderingMode(.template)
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                             .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
-                            .overlay {
-                                Circle()
-                                    .stroke(AnyMetricsAsset.Assets.baseText.swiftUIColor, lineWidth: Constants.itemButtonLine)
-                            }
+                            .contentShape(.interaction, Circle())
                     }
-                    .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                    .modifier(GalleryAddButtonChrome())
+                    .contentShape(.interaction, Circle())
                     .offset(Constants.itemButtonOffset)
 
                 }
@@ -72,6 +72,47 @@ extension GalleryView {
         }
     }
 
+}
+
+/// На iOS 26 кнопка «−» — красное интерактивное стекло.
+/// На старых версиях остаётся сплошной красный круг.
+private struct GalleryRemoveButtonChrome: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .buttonStyle(.plain)
+                .glassEffect(
+                    .regular.tint(AnyMetricsAsset.Assets.red.swiftUIColor).interactive(),
+                    in: Circle()
+                )
+                .contentShape(.interaction, Circle())
+        } else {
+            content.background(Circle().fill(AnyMetricsAsset.Assets.red.swiftUIColor))
+        }
+    }
+}
+
+/// На iOS 26 кнопка «+» — интерактивное стекло, как на главном экране.
+/// На старых версиях остаётся обводка круга.
+private struct GalleryAddButtonChrome: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .buttonStyle(.plain)
+                .glassEffect(.regular.interactive(), in: Circle())
+                .contentShape(.interaction, Circle())
+        } else {
+            content.overlay {
+                Circle()
+                    .stroke(
+                        AnyMetricsAsset.Assets.baseText.swiftUIColor,
+                        lineWidth: GalleryView.Constants.itemButtonLine
+                    )
+            }
+        }
+    }
 }
 
 /// На iOS 26 карточка — отдельное стекло. На старых версиях остаётся прежний цвет.

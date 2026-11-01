@@ -5,7 +5,7 @@ import AnyMetricsShared
 extension MainView {
 
     enum Constants {
-        static let fontTitle: Font = Font.system(size: 19, weight: .heavy, design: .default)
+        static let fontTitle: Font = Font.system(size: 19, weight: .semibold, design: .default)
         static let fontPlaceholder: Font = Font.system(size: 16, weight: .regular, design: .default)
         static let padding: CGFloat = 10
         static let titleInset = EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)

@@ -242,11 +242,23 @@ public enum WidgetMeshVariant: String, Codable, Hashable, Sendable {
     case tide
     /// Violet into magenta and blue.
     case gleam
+    /// Soft pink into lilac.
+    case blush
+    /// Navy cap into a lime field.
+    case citrus
+    /// Orange, white, and blue.
+    case glow
+    /// Orange into blue, dark at the edges.
+    case beam
+    /// Red into a white sweep and deep violet.
+    case silk
+    /// Darker red-violet curve with a pale pool.
+    case iris
 
     /// Painted mesh with its own grid. The three stored stops are only the linear fallback.
     public var isDesigned: Bool {
         switch self {
-        case .haze, .wave, .tide, .gleam: return true
+        case .haze, .wave, .tide, .gleam, .blush, .citrus, .glow, .beam, .silk, .iris: return true
         case .cosmos, .bloom, .ribbon, .orbit: return false
         }
     }

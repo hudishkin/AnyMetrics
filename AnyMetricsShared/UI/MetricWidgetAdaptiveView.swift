@@ -99,8 +99,10 @@ public struct MetricWidgetAdaptiveView: View {
             emptyLabel: palette.emptyLabel,
             errorLabel: palette.errorLabel
         )
-        guard MetricDisplayHelpers.showsStaleValue(for: metric) else { return value }
-        return "\(value) · \(MetricDisplayHelpers.staleMark())"
+        return MetricDisplayHelpers.lockScreenValue(
+            value,
+            isStale: MetricDisplayHelpers.showsStaleValue(for: metric)
+        )
     }
 
     private var isStatusMetric: Bool {
@@ -112,6 +114,11 @@ public struct MetricWidgetAdaptiveView: View {
               let path = metric.resultImagePath
         else { return nil }
         return MetricResultImageStore.shared.loadImage(relativePath: path)
+    }
+
+    /// Image fills the value slot, so the asterisk goes on the title instead of the number.
+    private var imageRefreshIsStale: Bool {
+        resultImage != nil && MetricDisplayHelpers.showsStaleUpdate(for: metric)
     }
 
     private var valueColor: Color {
@@ -137,6 +144,12 @@ public struct MetricWidgetAdaptiveView: View {
                     .resizable()
                     .scaledToFill()
                     .clipShape(Circle())
+                    .overlay(alignment: .bottomTrailing) {
+                        if MetricDisplayHelpers.showsStaleUpdate(for: metric) {
+                            Text(MetricDisplayHelpers.lockScreenStaleMark)
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                    }
             } else {
                 Text(valueText)
                     .font(.system(size: 13, weight: .semibold, design: isStatusMetric ? .rounded : .monospaced))
@@ -158,10 +171,12 @@ public struct MetricWidgetAdaptiveView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             VStack(alignment: .leading, spacing: 2) {
-                if !metric.title.isEmpty {
-                    Text(metric.title)
+                if !metric.title.isEmpty || imageRefreshIsStale {
+                    Text(imageRefreshIsStale
+                         ? MetricDisplayHelpers.lockScreenValue(metric.title, isStale: true)
+                         : metric.title)
                         .font(.caption)
-                        .foregroundColor(palette.secondaryText)
+                        .foregroundColor(imageRefreshIsStale ? palette.textErrorColor : palette.secondaryText)
                         .lineLimit(1)
                 }
                 if resultImage == nil {
@@ -171,11 +186,6 @@ public struct MetricWidgetAdaptiveView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .accentableOnLockScreen()
-                } else if MetricDisplayHelpers.showsStaleUpdate(for: metric) {
-                    Text(MetricDisplayHelpers.staleMark())
-                        .font(.caption2)
-                        .foregroundColor(palette.textErrorColor)
-                        .lineLimit(1)
                 }
                 if !metric.measure.isEmpty {
                     Text(metric.measure)
@@ -193,7 +203,10 @@ public struct MetricWidgetAdaptiveView: View {
             if metric.resultKind == .image {
                 if resultImage != nil {
                     let label = metric.title.isEmpty ? "IMG" : "\(metric.title): IMG"
-                    Text(label)
+                    Text(MetricDisplayHelpers.lockScreenValue(
+                        label,
+                        isStale: MetricDisplayHelpers.showsStaleUpdate(for: metric)
+                    ))
                 } else {
                     Text(metric.title.isEmpty ? valueText : "\(metric.title): \(valueText)")
                         .foregroundColor(valueColor)

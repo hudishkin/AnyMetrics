@@ -63,18 +63,22 @@ extension MainView {
                 Task { @MainActor in
                     guard let state = await state() else { return }
 
-                    updateMetrics(state: state) { [weak self] updatedMetrics in
-                        guard let self else { return }
-                        Task { @MainActor in
-                            var merged = self.metricStore.metrics
-                            for (id, metric) in updatedMetrics {
-                                merged[id] = metric
+                    updateMetrics(
+                        state: state,
+                        onEach: { [weak self] metric in
+                            guard let self else { return }
+                            self.metricStore.saveRefresh(metric)
+                            Task { @MainActor in
+                                await updater {
+                                    $0.metrics = self.metricStore.metrics
+                                }
+                                // Each finished metric can leave the lock screen immediately.
+                                // A sibling that is still in flight must not hold this one.
+                                WidgetCenter.shared.reloadAllTimelines()
                             }
-                            self.metricStore.metrics = merged
-                            await updater {
-                                $0.metrics = merged
-                            }
-                            WidgetCenter.shared.reloadAllTimelines()
+                        },
+                        onComplete: { [weak self] updatedMetrics in
+                            guard let self else { return }
                             let failed = updatedMetrics.values.filter(\.refreshFailed).count
                             if !updatedMetrics.isEmpty {
                                 AnalyticsEvents.libraryRefreshed(
@@ -86,7 +90,7 @@ extension MainView {
                                 }
                             }
                         }
-                    }
+                    )
                 }
             case .addMetric(let metric):
                 let isNew = metricStore.metrics[metric.id] == nil
@@ -139,16 +143,17 @@ extension MainView {
                     updateMetric(metric: metric) {[weak self] metric, error in
                         guard let self else { return }
 
-                        self.metricStore.addMetric(metric: metric)
+                        let saved = self.metricStore.saveRefresh(metric)
 
-                        Task {
+                        Task { @MainActor in
                             await updater {
                                 $0.metrics = self.metricStore.metrics
                             }
+                            WidgetCenter.shared.reloadAllTimelines()
                         }
                         AnalyticsEvents.metricRefreshed(success: error == nil, error: error)
-                        if let error {
-                            self.notifications.send(.error(Self.refreshErrorMessage(metric: metric, error: error)))
+                        if let error, saved.refreshFailed {
+                            self.notifications.send(.error(Self.refreshErrorMessage(metric: saved, error: error)))
                         }
                     }
                 }
@@ -176,7 +181,7 @@ extension MainView {
             updateMetric(metric: metric) { [weak self] refreshed, error in
                 guard let self else { return }
 
-                self.metricStore.addMetric(metric: refreshed)
+                let saved = self.metricStore.saveRefresh(refreshed)
 
                 Task { @MainActor in
                     await updater {
@@ -184,34 +189,52 @@ extension MainView {
                     }
                     WidgetCenter.shared.reloadAllTimelines()
                 }
-                if let error {
-                    self.notifications.send(.error(Self.refreshErrorMessage(metric: refreshed, error: error)))
+                if let error, saved.refreshFailed {
+                    self.notifications.send(.error(Self.refreshErrorMessage(metric: saved, error: error)))
                 }
             }
         }
 
-        private func updateMetrics(state: VState, callback: @escaping (Metrics) -> Void) {
-            var updatedMetrics = [UUID: Metric]()
+        private func updateMetrics(
+            state: VState,
+            onEach: @escaping (Metric) -> Void,
+            onComplete: @escaping (Metrics) -> Void
+        ) {
+            let metrics = Array(state.metrics.values)
+            guard !metrics.isEmpty else {
+                onComplete([:])
+                return
+            }
+
+            var updatedMetrics = Metrics()
             let group = DispatchGroup()
-            for (_, metric) in state.metrics {
+            for metric in metrics {
                 group.enter()
-                var m = metric
-                Fetcher.fetch(for: m) { result in
-                    switch result {
-                    case .result(let value):
-                        m.apply(parseResult: value)
-                    case .error:
-                        m.markRefreshFailed()
-                    case .none:
-                        break
-                    }
-                    updatedMetrics[m.id] = m
+                fetchOne(metric) { updated in
+                    updatedMetrics[updated.id] = updated
+                    onEach(updated)
                     group.leave()
                 }
             }
             group.notify(queue: .main) {
+                onComplete(updatedMetrics)
+            }
+        }
 
-                callback(updatedMetrics)
+        private func fetchOne(_ metric: Metric, completion: @escaping (Metric) -> Void) {
+            var copy = metric
+            Fetcher.fetch(for: copy) { result in
+                switch result {
+                case .result(let value):
+                    copy.apply(parseResult: value)
+                case .error:
+                    copy.markRefreshFailed()
+                case .none:
+                    break
+                }
+                DispatchQueue.main.async {
+                    completion(copy)
+                }
             }
         }
 

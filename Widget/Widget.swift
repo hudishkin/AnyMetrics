@@ -54,25 +54,32 @@ struct Provider: IntentTimelineProvider {
             return
         }
 
-        Metric.materializeWidgetBackgrounds(metric) { materialized in
-            store.addMetric(metric: materialized)
+        // Opening the app already refreshed this metric and called reloadAllTimelines().
+        // Fetching again here leaves the previous lock-screen entry (with the stale mark)
+        // up until the extension's own request returns.
+        if metric.isReadyForWidgetDisplay() {
+            completion(Self.timeline(metric: metric, configuration: configuration, at: Date()))
+            return
+        }
 
-            Fetcher.updateMetric(metric: materialized) { newMetric in
-                Metric.materializeWidgetBackgrounds(newMetric) { resolved in
-                    store.addMetric(metric: resolved)
-                    let currentDate = Date()
-                    let entry = AMEntry(date: currentDate, configuration: configuration, metric: resolved)
-
-                    let policy: TimelineReloadPolicy
-                    if let interval = resolved.interval, interval > 0 {
-                        policy = .after(currentDate.addingTimeInterval(TimeInterval(interval)))
-                    } else {
-                        policy = .atEnd
-                    }
-                    completion(Timeline(entries: [entry], policy: policy))
-                }
+        Fetcher.updateMetric(metric: metric) { fetched in
+            Metric.materializeWidgetBackgrounds(fetched) { resolved in
+                let saved = store.saveRefresh(resolved)
+                let display = store.metrics[saved.id] ?? saved
+                completion(Self.timeline(metric: display, configuration: configuration, at: Date()))
             }
         }
+    }
+
+    private static func timeline(metric: Metric, configuration: ConfigurationIntent, at date: Date) -> Timeline<AMEntry> {
+        let entry = AMEntry(date: date, configuration: configuration, metric: metric)
+        let policy: TimelineReloadPolicy
+        if let interval = metric.interval, interval > 0 {
+            policy = .after(date.addingTimeInterval(TimeInterval(interval)))
+        } else {
+            policy = .atEnd
+        }
+        return Timeline(entries: [entry], policy: policy)
     }
 }
 

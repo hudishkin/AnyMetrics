@@ -134,6 +134,7 @@ struct MetricView: View {
     @State var opacity = Constants.animationOpacityBegin
     @State var showActionMenu = false
     @State var showConfirmationDelete = false
+    @State private var exportAfterDeletePrompt = false
     @State private var pendingAction: PendingAction?
 
     private enum PendingAction {
@@ -177,14 +178,26 @@ struct MetricView: View {
             AnyMetricsStrings.Metric.Actions.sure,
             isPresented: $showConfirmationDelete
         ) {
+            Button(AnyMetricsStrings.Metric.Actions.export) {
+                exportAfterDeletePrompt = true
+            }
             Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
                 deletehMetric?(metric.id)
             }
             Button(AnyMetricsStrings.Common.close, role: .cancel) {}
+        } message: {
+            Text(AnyMetricsStrings.Metric.Actions.deleteMessage)
         }
         .onChange(of: showConfirmationDelete) { presented in
             if !presented {
+                let shouldExport = exportAfterDeletePrompt
+                exportAfterDeletePrompt = false
                 onOverlayChange?(false)
+                if shouldExport {
+                    DispatchQueue.main.async {
+                        exportMetric?(metric)
+                    }
+                }
             }
         }
         .scaleEffect(scale)

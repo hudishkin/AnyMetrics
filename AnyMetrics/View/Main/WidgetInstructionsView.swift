@@ -129,11 +129,13 @@ struct WidgetInstructionsView: View {
                         } label: {
                             Text(AnyMetricsStrings.WidgetGuide.back)
                                 .font(Constants.fontButton)
-                                .foregroundColor(Constants.secondaryColor)
+                                .foregroundColor(stepIndex > 0 ? Constants.textColor : Constants.secondaryColor)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
                         }
                         .buttonStyle(.plain)
+                        .background(Constants.buttonBackground.opacity(stepIndex > 0 ? 1 : 0))
+                        .cornerRadius(Constants.buttonCorner)
                         .disabled(stepIndex == 0)
                         .accessibilityIdentifier("widgetGuide.back")
 
