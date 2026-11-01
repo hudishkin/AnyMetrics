@@ -968,7 +968,7 @@ private struct WidgetMeshFill: View {
                 SIMD2(0, 0.5), SIMD2(0.4, 0.44), SIMD2(1, 0.5),
                 SIMD2(0, 1), SIMD2(0.5, 1), SIMD2(1, 1)
             ]
-        case nil, .haze, .wave, .tide, .gleam:
+        case nil, .haze, .wave, .tide, .gleam, .blush, .citrus, .glow, .beam, .silk, .iris:
             return [
                 SIMD2(0, 0), SIMD2(0.5, 0), SIMD2(1, 0),
                 SIMD2(0, 0.5), SIMD2(0.32, 0.36), SIMD2(1, 0.5),
@@ -989,7 +989,7 @@ private struct WidgetMeshFill: View {
             indices = [0, 0, 0, 0, 1, 0, 1, 2, 2]
         case .orbit:
             indices = [2, 1, 0, 1, 0, 0, 0, 0, 1]
-        case nil, .haze, .wave, .tide, .gleam:
+        case nil, .haze, .wave, .tide, .gleam, .blush, .citrus, .glow, .beam, .silk, .iris:
             return legacyVertices(from: source)
         }
         return indices.map { source[$0 % source.count] }
@@ -1079,6 +1079,65 @@ private struct DesignedMeshFill: View {
                 [Vertex(0, 0.34, 0x5B21B6), Vertex(0.30, 0.42, 0x7C3AED), Vertex(0.70, 0.30, 0xC026D3), Vertex(1, 0.36, 0xD946EF)],
                 [Vertex(0, 0.66, 0x4338CA), Vertex(0.36, 0.72, 0x6366F1), Vertex(0.68, 0.60, 0xA855F7), Vertex(1, 0.64, 0xC026D3)],
                 [Vertex(0, 1, 0x1D4ED8), Vertex(0.34, 1, 0x2563EB), Vertex(0.67, 1, 0x4F46E5), Vertex(1, 1, 0x6D28D9)]
+            ]
+        case .blush:
+            hx = 0.12
+            hy = 0.09
+            rows = [
+                [Vertex(0, 0, 0xF6D5E2), Vertex(0.36, 0, 0xD7B6C8), Vertex(0.68, 0, 0xC3B4C8), Vertex(1, 0, 0xCDC6D6)],
+                [Vertex(0, 0.34, 0xE48BB4), Vertex(0.26, 0.46, 0xC97AA6), Vertex(0.66, 0.32, 0xB48CB4), Vertex(1, 0.38, 0xC4A9C4)],
+                [Vertex(0, 0.66, 0xE072A2), Vertex(0.40, 0.74, 0xD84E92), Vertex(0.72, 0.60, 0xA84686), Vertex(1, 0.68, 0xB47AAB)],
+                [Vertex(0, 1, 0xE4C6D2), Vertex(0.34, 1, 0xE8A8C0), Vertex(0.68, 1, 0xC43C88), Vertex(1, 1, 0xA65C98)]
+            ]
+        case .citrus:
+            hx = 0.18
+            hy = 0.12
+            rows = [
+                [Vertex(0, 0, 0x0E2F6E), Vertex(0.36, 0, 0x143878), Vertex(0.68, 0, 0x0C2458), Vertex(1, 0, 0x081848)],
+                [Vertex(0, 0.18, 0x3A88B0), Vertex(0.32, 0.26, 0x2A6CB8), Vertex(0.64, 0.16, 0x68D0C8), Vertex(1, 0.22, 0xB8EC68)],
+                [Vertex(0, 0.40, 0x8ED8A8), Vertex(0.30, 0.46, 0xC4F24C), Vertex(0.62, 0.36, 0xD2F45C), Vertex(1, 0.42, 0xC8F050)],
+                [Vertex(0, 0.64, 0xB0F058), Vertex(0.38, 0.72, 0xE4F8C8), Vertex(0.72, 0.60, 0xD4F070), Vertex(1, 0.68, 0xC8E8B0)],
+                [Vertex(0, 1, 0xC6F25C), Vertex(0.34, 1, 0xD8F498), Vertex(0.68, 1, 0xE8F4D4), Vertex(1, 1, 0xDCE6DC)]
+            ]
+        case .glow:
+            hx = 0.11
+            hy = 0.09
+            rows = [
+                [Vertex(0, 0, 0xF0E6DE), Vertex(0.34, 0, 0xF2E8E2), Vertex(0.67, 0, 0xF4F0EC), Vertex(1, 0, 0xF7F8F8)],
+                [Vertex(0, 0.26, 0xE25830), Vertex(0.28, 0.34, 0xE88848), Vertex(0.64, 0.28, 0xE8C8B0), Vertex(1, 0.30, 0xF3F1EE)],
+                [Vertex(0, 0.50, 0x9A3038), Vertex(0.32, 0.48, 0xC47878), Vertex(0.66, 0.52, 0xE4D8D6), Vertex(1, 0.50, 0xF0EEEC)],
+                [Vertex(0, 0.74, 0x2C5278), Vertex(0.30, 0.70, 0x5C90B8), Vertex(0.66, 0.72, 0xC5D5E4), Vertex(1, 0.74, 0xE8EEF2)],
+                [Vertex(0, 1, 0x6AACE0), Vertex(0.34, 1, 0x7EB6E6), Vertex(0.67, 1, 0xC5D8EA), Vertex(1, 1, 0xEAF1F6)]
+            ]
+        case .beam:
+            hx = 0.07
+            hy = 0.06
+            rows = [
+                [Vertex(0, 0, 0xC46A28), Vertex(0.34, 0, 0xD88233), Vertex(0.67, 0, 0xD2702D), Vertex(1, 0, 0xC87230)],
+                [Vertex(0, 0.24, 0x6A4014), Vertex(0.32, 0.22, 0xE0A848), Vertex(0.68, 0.24, 0xD89840), Vertex(1, 0.24, 0x704418)],
+                [Vertex(0, 0.48, 0x1C242C), Vertex(0.34, 0.46, 0xF0E0B8), Vertex(0.66, 0.48, 0xE8D8B0), Vertex(1, 0.48, 0x222A32)],
+                [Vertex(0, 0.72, 0x101828), Vertex(0.34, 0.68, 0x3D88C9), Vertex(0.68, 0.70, 0x3E8CC8), Vertex(1, 0.72, 0x121A30)],
+                [Vertex(0, 1, 0x080303), Vertex(0.34, 1, 0x12102A), Vertex(0.67, 1, 0x141028), Vertex(1, 1, 0x070403)]
+            ]
+        case .silk:
+            hx = 0.13
+            hy = 0.10
+            rows = [
+                [Vertex(0, 0, 0xE24A42), Vertex(0.32, 0, 0xC22840), Vertex(0.66, 0, 0x5A30B8), Vertex(1, 0, 0x3E34E4)],
+                [Vertex(0, 0.24, 0xD86858), Vertex(0.30, 0.20, 0xC84858), Vertex(0.68, 0.30, 0x5A50D8), Vertex(1, 0.22, 0x7C90EC)],
+                [Vertex(0, 0.48, 0x4A28C4), Vertex(0.36, 0.44, 0x8A78C0), Vertex(0.70, 0.42, 0xD4E8F4), Vertex(1, 0.48, 0xE6F2F8)],
+                [Vertex(0, 0.74, 0x160548), Vertex(0.30, 0.78, 0x180840), Vertex(0.68, 0.68, 0xC8E0F4), Vertex(1, 0.76, 0xA4B4F0)],
+                [Vertex(0, 1, 0x120438), Vertex(0.34, 1, 0x130438), Vertex(0.68, 1, 0x220C70), Vertex(1, 1, 0x3C1EC4)]
+            ]
+        case .iris:
+            hx = 0.12
+            hy = 0.09
+            rows = [
+                [Vertex(0, 0, 0x963E21), Vertex(0.34, 0, 0x8B2A2E), Vertex(0.67, 0, 0x34237E), Vertex(1, 0, 0x393A98)],
+                [Vertex(0, 0.28, 0x714273), Vertex(0.32, 0.26, 0x89304F), Vertex(0.66, 0.32, 0x4E529D), Vertex(1, 0.24, 0x6F82A8)],
+                [Vertex(0, 0.52, 0x4231A3), Vertex(0.36, 0.48, 0x593384), Vertex(0.68, 0.46, 0x8896B2), Vertex(1, 0.50, 0xA5B2B8)],
+                [Vertex(0, 0.74, 0x2B1282), Vertex(0.34, 0.70, 0x8C89B1), Vertex(0.68, 0.74, 0xB9C1C5), Vertex(1, 0.76, 0xB9C4C6)],
+                [Vertex(0, 1, 0x130639), Vertex(0.34, 1, 0x130638), Vertex(0.68, 1, 0x9FB3DB), Vertex(1, 1, 0x655FD6)]
             ]
         case .cosmos, .bloom, .ribbon, .orbit:
             rows = []

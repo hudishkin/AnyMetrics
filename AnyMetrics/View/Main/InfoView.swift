@@ -18,7 +18,7 @@ fileprivate enum Constants {
     static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
     static let secondaryColor = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
     static let cardBackground = AnyMetricsAsset.Assets.galleryItemBackground.swiftUIColor
-    static let fontTitle = Font.system(size: 28, weight: .bold, design: .default)
+    static let fontTitle = Font.system(size: 28, weight: .semibold, design: .default)
     static let fontBody = Font.system(size: 16, weight: .regular, design: .default)
     static let fontTrust = Font.system(size: 15, weight: .regular, design: .default)
     static let fontRow = Font.system(size: 17, weight: .medium, design: .default)
@@ -100,19 +100,19 @@ struct InfoView: View {
 
     private var links: some View {
         VStack(spacing: 0) {
-            InfoLinkRow(systemImage: "star", title: AnyMetricsStrings.Info.rate, action: rateApp)
+            InfoLinkRow(icon: .symbol("star"), title: AnyMetricsStrings.Info.rate, action: rateApp)
             rowDivider
-            InfoLinkRow(systemImage: "envelope", title: AnyMetricsStrings.Info.contact, action: contactDeveloper)
+            InfoLinkRow(icon: .symbol("envelope"), title: AnyMetricsStrings.Info.contact, action: contactDeveloper)
             rowDivider
-            InfoLinkRow(systemImage: "hand.raised", title: AnyMetricsStrings.Info.privacy) {
+            InfoLinkRow(icon: .symbol("hand.raised"), title: AnyMetricsStrings.Info.privacy) {
                 open(AppConfig.Urls.privacyPolicy)
             }
             rowDivider
-            InfoLinkRow(systemImage: "chevron.left.forwardslash.chevron.right", title: AnyMetricsStrings.Info.source) {
+            InfoLinkRow(icon: .github, title: AnyMetricsStrings.Info.source) {
                 open(AppConfig.Urls.appRepository)
             }
             rowDivider
-            InfoLinkRow(systemImage: "plus.rectangle.on.folder", title: AnyMetricsStrings.Info.gallery) {
+            InfoLinkRow(icon: .symbol("plus.rectangle.on.folder"), title: AnyMetricsStrings.Info.gallery) {
                 open(AppConfig.Urls.galleryRepository)
             }
         }
@@ -150,16 +150,20 @@ struct InfoView: View {
     }
 }
 
+private enum InfoLinkIcon {
+    case symbol(String)
+    case github
+}
+
 private struct InfoLinkRow: View {
-    let systemImage: String
+    let icon: InfoLinkIcon
     let title: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 17, weight: .semibold))
+                leadingIcon
                     .frame(width: 24)
                 Text(title)
                     .font(Constants.fontRow)
@@ -175,6 +179,21 @@ private struct InfoLinkRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
+    }
+
+    @ViewBuilder
+    private var leadingIcon: some View {
+        switch icon {
+        case .symbol(let name):
+            Image(systemName: name)
+                .font(.system(size: 17, weight: .semibold))
+        case .github:
+            AnyMetricsAsset.Assets.gitHub.swiftUIImage
+                .resizable()
+                .renderingMode(.template)
+                .scaledToFit()
+                .frame(width: 18, height: 18)
+        }
     }
 }
 

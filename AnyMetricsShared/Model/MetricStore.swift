@@ -74,6 +74,28 @@ open class MetricStore {
         metrics = localMetrics
     }
 
+    /// Keeps a newer successful value when a slower refresh finishes later and fails.
+    @discardableResult
+    public func saveRefresh(_ metric: Metric) -> Metric {
+        if let existing = metrics[metric.id], Self.shouldKeepStored(existing, insteadOf: metric) {
+            return existing
+        }
+        addMetric(metric: metric)
+        return metrics[metric.id] ?? metric
+    }
+
+    public static func shouldKeepStored(_ stored: Metric, insteadOf incoming: Metric) -> Bool {
+        guard let storedUpdated = stored.updated else { return false }
+        let incomingUpdated = incoming.updated ?? .distantPast
+        if incoming.refreshFailed && !stored.refreshFailed {
+            return storedUpdated >= incomingUpdated
+        }
+        if !stored.refreshFailed && storedUpdated > incomingUpdated {
+            return true
+        }
+        return false
+    }
+
     public func removeMetric(id: UUID) {
         var localMetrics = metrics
         localMetrics[id] = nil

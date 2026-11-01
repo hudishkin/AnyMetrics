@@ -48,6 +48,16 @@ public enum MetricDisplayHelpers {
         NSLocalizedString("metric.value.stale", bundle: bundle, comment: "")
     }
 
+    /// Lock Screen text is one short line. The localized word ("outdated" / "устарело")
+    /// gets clipped, so a failed refresh is a trailing asterisk: `12000*`.
+    public static let lockScreenStaleMark = "*"
+
+    public static func lockScreenValue(_ value: String, isStale: Bool) -> String {
+        guard isStale else { return value }
+        if value.isEmpty { return lockScreenStaleMark }
+        return value + lockScreenStaleMark
+    }
+
     public static func relativeUpdatedString(
         for date: Date?,
         bundle: Bundle = Bundle(for: MetricStore.self)

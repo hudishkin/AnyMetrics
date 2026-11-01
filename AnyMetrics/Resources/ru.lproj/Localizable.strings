@@ -6,7 +6,8 @@
   
 */
 
-"appName" = "ЭниМетрикс";
+"appName" = "Any Metrics";
+"dashboard" = "Any Metrics";
 "common.optional" = "Не обяз.";
 "common.close" = "Закрыть";
 "common.save" = "Сохранить";
@@ -34,6 +35,7 @@
 "metric.actions.share" = "Поделиться";
 "metric.actions.export" = "Экспорт в JSON-файл";
 "metric.actions.sure" = "Вы уверены?";
+"metric.actions.delete-message" = "Метрика будет удалена, восстановить её нельзя. Вы можете сохранить её как JSON.";
 "metric.actions.confirmDelete" = "Да, удалить";
 "metric.share.title" = "Поделиться";
 "metric.share.subtitle" = "Карточка с виджетом и QR-кодом. Файл метрики тоже вложен — другой пользователь AnyMetrics сможет добавить её через «Добавить → Импорт из JSON».";
@@ -56,7 +58,7 @@
 "metric.export.request-warning" = "Вы экспортируете запрос полностью со всеми данными и параметрами. Если он использует API-key или другие важные параметры, они также будут добавлены в экспорт.";
 "metric.export.failed" = "Не удалось экспортировать метрику. Попробуйте ещё раз.";
 "metric.export.image-unavailable" = "Не удалось включить фоновое изображение виджета в экспорт.";
-"metric.placeholder" = "Нажмите + и добавьте вашу первую метрику";
+"metric.placeholder" = "Добавьте из галереи или\nсоздайте свою метрику";
 
 "httpheaders.select.title" = "Выберите HTTP заголовок";
 "httpheaders.select.value-title" = "Выберите значение";
@@ -247,7 +249,7 @@
 "info.rate" = "Оценить в App Store";
 "info.contact" = "Написать разработчику";
 "info.privacy" = "Конфиденциальность";
-"info.source" = "Исходный код";
+"info.source" = "GitHub";
 "info.gallery" = "Предложить метрику";
 "info.mail-subject" = "[AnyMetrics] Обратная связь";
 "info.version" = "Версия %@";
@@ -291,6 +293,12 @@
 "onboarding.gradient.sunset" = "Закат";
 "onboarding.gradient.ocean" = "Океан";
 "onboarding.gradient.aurora" = "Сияние";
+"onboarding.gradient.blush" = "Румянец";
+"onboarding.gradient.citrus" = "Цитрус";
+"onboarding.gradient.glow" = "Свечение";
+"onboarding.gradient.beam" = "Луч";
+"onboarding.gradient.silk" = "Шёлк";
+"onboarding.gradient.iris" = "Ирис";
 "onboarding.gradient.mono" = "Монохром";
 
 // MARK: - Starter Metric

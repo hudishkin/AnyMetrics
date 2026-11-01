@@ -49,6 +49,12 @@ enum StarterMetric {
         case sunset
         case ocean
         case aurora
+        case blush
+        case citrus
+        case glow
+        case beam
+        case silk
+        case iris
         case mono
 
         var id: String { rawValue }
@@ -67,6 +73,12 @@ enum StarterMetric {
             case .sunset: return AnyMetricsStrings.Onboarding.Gradient.sunset
             case .ocean: return AnyMetricsStrings.Onboarding.Gradient.ocean
             case .aurora: return AnyMetricsStrings.Onboarding.Gradient.aurora
+            case .blush: return AnyMetricsStrings.Onboarding.Gradient.blush
+            case .citrus: return AnyMetricsStrings.Onboarding.Gradient.citrus
+            case .glow: return AnyMetricsStrings.Onboarding.Gradient.glow
+            case .beam: return AnyMetricsStrings.Onboarding.Gradient.beam
+            case .silk: return AnyMetricsStrings.Onboarding.Gradient.silk
+            case .iris: return AnyMetricsStrings.Onboarding.Gradient.iris
             case .mono: return AnyMetricsStrings.Onboarding.Gradient.mono
             }
         }
@@ -99,6 +111,18 @@ enum StarterMetric {
                 return ["#0F766E", "#1D4ED8", "#0F172A"]
             case .aurora:
                 return ["#6D28D9", "#DB2777", "#0E7490"]
+            case .blush:
+                return ["#F6D5E2", "#E072A2", "#C4A9C4"]
+            case .citrus:
+                return ["#0C2259", "#2E74B4", "#C8F348"]
+            case .glow:
+                return ["#E25830", "#F4F0EC", "#6AACE0"]
+            case .beam:
+                return ["#D88233", "#F0E0B8", "#12102A"]
+            case .silk:
+                return ["#E24A42", "#E6F2F8", "#160548"]
+            case .iris:
+                return ["#8B2A2E", "#B9C1C5", "#130639"]
             case .mono:
                 return ["#636366", "#2C2C2E", "#1C1C1E"]
             }
@@ -114,6 +138,12 @@ enum StarterMetric {
             case .nebula: return .bloom
             case .comet: return .ribbon
             case .eclipse: return .orbit
+            case .blush: return .blush
+            case .citrus: return .citrus
+            case .glow: return .glow
+            case .beam: return .beam
+            case .silk: return .silk
+            case .iris: return .iris
             case .dusk, .sunset, .ocean, .aurora, .mono: return nil
             }
         }
@@ -121,11 +151,17 @@ enum StarterMetric {
         /// Light meshes need dark type. The value sits in the bright part of the field.
         var usesDarkText: Bool {
             switch self {
-            case .haze, .wave: return true
+            case .haze, .wave, .blush, .citrus, .glow, .beam, .silk, .iris: return true
             default: return false
             }
         }
     }
+
+    /// Original gallery set. Newer picker styles stay out so existing gallery looks do not reshuffle.
+    private static let galleryStyles: [QuoteStyle] = [
+        .space, .haze, .wave, .tide, .gleam, .nebula,
+        .comet, .eclipse, .dusk, .sunset, .ocean, .aurora
+    ]
 
     /// Gallery presets ship without a look. Give each one a designed gradient instead of the flat status fill.
     static func applyingCollectionGradient(to metric: Metric) -> Metric {
@@ -139,7 +175,7 @@ enum StarterMetric {
     /// Same metric keeps the same background. People in Space matches the starter.
     static func collectionStyle(for id: UUID) -> QuoteStyle {
         if id == Self.id { return .space }
-        let styles = QuoteStyle.allCases.filter { $0 != .mono }
+        let styles = galleryStyles
         let uuid = id.uuid
         let bytes: [UInt8] = [
             uuid.0, uuid.1, uuid.2, uuid.3, uuid.4, uuid.5, uuid.6, uuid.7,

@@ -208,17 +208,25 @@ struct OnboardingView: View {
 
     private var gradientSwatchRows: some View {
         let styles = Array(StarterMetric.QuoteStyle.allCases)
-        let rowSize = 5
-        let rowCount = (styles.count + rowSize - 1) / rowSize
-        return VStack(spacing: 12) {
-            ForEach(0..<rowCount, id: \.self) { row in
-                HStack(spacing: 12) {
-                    ForEach(styles.dropFirst(row * rowSize).prefix(rowSize)) { style in
-                        gradientSwatch(style)
+        let rowCount = 3
+        let columnCount = max((styles.count + rowCount - 1) / rowCount, 1)
+        let swatchSide: CGFloat = 34
+        let spacing: CGFloat = 12
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: spacing) {
+                ForEach(0..<columnCount, id: \.self) { column in
+                    VStack(spacing: spacing) {
+                        ForEach(0..<rowCount, id: \.self) { row in
+                            let index = row * columnCount + column
+                            if styles.indices.contains(index) {
+                                gradientSwatch(styles[index])
+                            }
+                        }
                     }
                 }
             }
         }
+        .frame(height: swatchSide * CGFloat(rowCount) + spacing * CGFloat(rowCount - 1))
     }
 
     private func gradientSwatch(_ style: StarterMetric.QuoteStyle) -> some View {

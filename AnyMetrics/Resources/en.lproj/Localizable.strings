@@ -6,7 +6,8 @@
   
 */
 
-"appName" = "AnyMetrics";
+"appName" = "Any Metrics";
+"dashboard" = "Any Metrics";
 "common.optional" = "Optional";
 "common.close" = "Close";
 "common.save" = "Save";
@@ -34,6 +35,7 @@
 "metric.actions.share" = "Share";
 "metric.actions.export" = "Export as JSON file";
 "metric.actions.sure" = "You sure?";
+"metric.actions.delete-message" = "This metric will be deleted and can't be restored. You can save it as JSON.";
 "metric.actions.confirmDelete" = "Delete metric";
 "metric.share.title" = "Share";
 "metric.share.subtitle" = "A card with your widget and a QR code. The metric file is attached — another AnyMetrics user can import it via Add → Import from JSON.";
@@ -56,7 +58,7 @@
 "metric.export.request-warning" = "You are exporting the full request with all data and parameters. If it uses an API key or other sensitive values, they will also be included in the export.";
 "metric.export.failed" = "Could not export the metric. Please try again.";
 "metric.export.image-unavailable" = "Could not include the widget background image in the export.";
-"metric.placeholder" = "Press + and add your first metric";
+"metric.placeholder" = "Add from gallery or\ncreate custom metric";
 
 "httpheaders.select.title" = "Select HTTP Header";
 "httpheaders.select.value-title" = "Select Value";
@@ -247,7 +249,7 @@
 "info.rate" = "Rate on the App Store";
 "info.contact" = "Contact the developer";
 "info.privacy" = "Privacy Policy";
-"info.source" = "Source code";
+"info.source" = "GitHub";
 "info.gallery" = "Suggest a metric";
 "info.mail-subject" = "[AnyMetrics] Feedback";
 "info.version" = "Version %@";
@@ -291,6 +293,12 @@
 "onboarding.gradient.sunset" = "Sunset";
 "onboarding.gradient.ocean" = "Ocean";
 "onboarding.gradient.aurora" = "Aurora";
+"onboarding.gradient.blush" = "Blush";
+"onboarding.gradient.citrus" = "Citrus";
+"onboarding.gradient.glow" = "Glow";
+"onboarding.gradient.beam" = "Beam";
+"onboarding.gradient.silk" = "Silk";
+"onboarding.gradient.iris" = "Iris";
 "onboarding.gradient.mono" = "Monochrome";
 
 // MARK: - Starter Metric

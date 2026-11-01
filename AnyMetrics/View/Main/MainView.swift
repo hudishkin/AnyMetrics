@@ -64,91 +64,79 @@ struct MainView: View {
         ZStack(alignment: .bottom) {
             ZStack(alignment: .top) {
                 // MARK: - Header
-                HStack(spacing: 8) {
-                    Button {
-                        sheetType = .info
-                    } label: {
-                        Text(AnyMetricsStrings.appName)
-                            .font(Constants.fontTitle)
-                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                            .padding(Constants.titleInset)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(Constants.titleCorner)
-                    }
+                ZStack {
+                    Text(AnyMetricsStrings.dashboard)
+                        .font(Constants.fontTitle)
+                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                        .accessibilityAddTraits(.isHeader)
 
+                    HStack(spacing: 8) {
+                        aboutButton
+                        Spacer(minLength: 0)
 #if DEBUG
-                    Button {
-                        showDevMenu = true
-                    } label: {
-                        Text("</>")
-                            .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                            .padding(Constants.titleInset)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(Constants.titleCorner)
-                    }
+                        Button {
+                            showDevMenu = true
+                        } label: {
+                            Text("</>")
+                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                                .padding(Constants.titleInset)
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(Constants.titleCorner)
+                        }
 #endif
+                    }
                 }
                 .padding(Constants.padding)
                 .zIndex(Constants.zIndexTitle)
 
                 // MARK: - Content
-                ScrollView {
-                    Spacer(minLength: Constants.topPadding)
-                    LazyVGrid(columns: columns, spacing: Constants.spacing) {
-                        ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
-                            MetricView(
-                                metric: metric,
-                                refreshMetric: { uuid in
-                                    viewState.trigger(.refreshMetric(uuid))
-                                },
-                                deletehMetric: { uuid in
-                                    viewState.trigger(.removeMetric(uuid))
-                                },
-                                editRequest: { metric in
-                                    sheetType = .editRequest(metric)
-                                },
-                                editTheme: { metric in
-                                    sheetType = .editTheme(metric)
-                                },
-                                shareMetric: { metric in
-                                    shareMetric = metric
-                                },
-                                exportMetric: { metric in
-                                    exportMetric = metric
-                                },
-                                onOverlayChange: { presented in
-                                    let wasPresented = isMetricOverlayPresented
-                                    isMetricOverlayPresented = presented
-                                    if wasPresented && !presented {
-                                        scheduleReviewPromptIfNeeded()
+                if viewState.state.metrics.isEmpty {
+                    DashboardEmptyStateView()
+                } else {
+                    ScrollView {
+                        Spacer(minLength: Constants.topPadding)
+                        LazyVGrid(columns: columns, spacing: Constants.spacing) {
+                            ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
+                                MetricView(
+                                    metric: metric,
+                                    refreshMetric: { uuid in
+                                        viewState.trigger(.refreshMetric(uuid))
+                                    },
+                                    deletehMetric: { uuid in
+                                        viewState.trigger(.removeMetric(uuid))
+                                    },
+                                    editRequest: { metric in
+                                        sheetType = .editRequest(metric)
+                                    },
+                                    editTheme: { metric in
+                                        sheetType = .editTheme(metric)
+                                    },
+                                    shareMetric: { metric in
+                                        shareMetric = metric
+                                    },
+                                    exportMetric: { metric in
+                                        exportMetric = metric
+                                    },
+                                    onOverlayChange: { presented in
+                                        let wasPresented = isMetricOverlayPresented
+                                        isMetricOverlayPresented = presented
+                                        if wasPresented && !presented {
+                                            scheduleReviewPromptIfNeeded()
+                                        }
                                     }
-                                }
-                            )
-                            .frame(width: Constants.size, height: Constants.size)
+                                )
+                                .frame(width: Constants.size, height: Constants.size)
+                            }
                         }
-                    }
 
-                    Spacer(minLength: Constants.bottomPadding)
+                        Spacer(minLength: Constants.bottomPadding)
+                    }
                 }
             }
 
             // MARK: - Add Button
-            Button {
-                ImpactHelper.impactButton()
-                sheetType = .addMetrics
-
-            } label: {
-                AnyMetricsAsset.Assets.plus.swiftUIImage
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                    .padding(Constants.addButtonPadding)
-            }
-            .background(.ultraThinMaterial)
-            .cornerRadius(Constants.addButtonCorner)
-            .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
-            .padding()
+            addMetricButton
         }
         .sheet(item: $sheetType, onDismiss: {
             allowDismissed = true
@@ -291,6 +279,49 @@ struct MainView: View {
             scheduleReviewPromptIfNeeded()
         }
 
+    }
+
+    private var addMetricButton: some View {
+        Button {
+            ImpactHelper.impactButton()
+            sheetType = .addMetrics
+        } label: {
+            AnyMetricsAsset.Assets.plus.swiftUIImage
+                .resizable()
+                .renderingMode(.template)
+                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                .padding(Constants.addButtonPadding)
+                .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .modifier(AddMetricButtonChrome())
+        .padding()
+    }
+
+    @ViewBuilder
+    private var aboutButton: some View {
+        if #available(iOS 26.0, *) {
+            Button {
+                sheetType = .info
+            } label: {
+                Image(systemName: "info")
+                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
+        } else {
+            Button {
+                sheetType = .info
+            } label: {
+                Image(systemName: "info")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                    .padding(Constants.infoInset)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private var canPresentReviewPrompt: Bool {
@@ -489,6 +520,19 @@ struct MainView: View {
                 try? FileManager.default.removeItem(at: url)
             }
             sharePayload = nil
+        }
+    }
+}
+
+/// На iOS 26 кнопка — интерактивное стекло. На старых версиях остаётся прежний материал.
+private struct AddMetricButtonChrome: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            content
+                .background(.ultraThinMaterial)
+                .cornerRadius(MainView.Constants.addButtonCorner)
         }
     }
 }

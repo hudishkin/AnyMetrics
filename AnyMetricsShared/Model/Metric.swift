@@ -213,6 +213,16 @@ public struct Metric: Hashable, Identifiable, Sendable {
         refreshFailed = true
     }
 
+    /// Successful value the app just saved. The widget can draw it immediately:
+    /// a second request would keep the previous lock-screen entry until the fetch returns.
+    /// Five minutes covers a late `reloadAllTimelines()` and stays under the shortest
+    /// refresh interval (15 min), so a scheduled reload still performs a request.
+    public func isReadyForWidgetDisplay(at now: Date = Date()) -> Bool {
+        guard !refreshFailed, let updated else { return false }
+        let age = now.timeIntervalSince(updated)
+        return age >= -5 && age < 300
+    }
+
     /// Returns a copy with a new ID when a metric with the same ID already exists.
     public func duplicatingIfNeeded(in existingMetrics: Metrics) -> Metric {
         guard existingMetrics[id] != nil else { return self }

@@ -227,11 +227,6 @@ extension MetricFormView {
                 matchWidgetMetrics: false
             )
             .frame(width: size, height: size, alignment: .center)
-            .background(
-                RoundedRectangle(cornerRadius: Constants.metricViewCorner)
-                    .fill(Color(uiColor: .systemBackground))
-                    .padding(Constants.metricViewPadding)
-            )
         }
 
         private var designActionsMenu: some View {
