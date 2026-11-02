@@ -368,10 +368,12 @@ struct WidgetDesignEditorView: View {
                     Button(AnyMetricsStrings.Common.close) {
                         showLayoutSettings = false
                     }
+                    .foregroundColor(Constants.textColor)
                 }
             }
         }
         .navigationViewStyle(.stack)
+        .tint(Constants.textColor)
     }
 
     private var sizeToggle: some View {

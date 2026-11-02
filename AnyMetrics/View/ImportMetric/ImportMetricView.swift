@@ -124,6 +124,7 @@ struct ImportMetricView: View {
                 .accessibilityLabel(AnyMetricsStrings.Common.ok)
             }
         }
+        .tint(Constants.textColor)
         .onAppear {
             viewState.trigger(.onAppear)
         }

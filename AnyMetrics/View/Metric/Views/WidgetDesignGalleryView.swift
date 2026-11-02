@@ -49,6 +49,7 @@ struct WidgetDesignGalleryView: View {
                     }
                 }
             }
+            .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
         }
         .navigationViewStyle(.stack)
     }

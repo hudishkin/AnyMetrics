@@ -82,6 +82,11 @@ final class StarterMetricTests: XCTestCase {
             prepared.widgetAppearance,
             StarterMetric.applyingCollectionGradient(to: metric).widgetAppearance
         )
+        XCTAssertEqual(
+            StarterMetric.style(matching: prepared),
+            StarterMetric.collectionStyle(for: id)
+        )
+        XCTAssertEqual(StarterMetric.style(matching: StarterMetric.make()), .space)
     }
 
     func testGalleryAsBackgroundFillsTheWidgetAndSkipsCollectionGradient() throws {
