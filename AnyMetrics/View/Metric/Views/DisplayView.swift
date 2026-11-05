@@ -176,6 +176,7 @@ extension MetricFormView {
                         }
                     }
                 }
+                .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
             }
             .navigationViewStyle(.stack)
         }

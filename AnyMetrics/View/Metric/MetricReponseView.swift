@@ -261,6 +261,7 @@ struct MetricResponseView: View {
                     Link(AnyMetricsStrings.Common.faq, destination: AppConfig.Urls.rules)
                 }
             }
+            .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
             .onChange(of: requestViewState.state.response) { _ in
                 viewState.trigger(.updateValue())
             }

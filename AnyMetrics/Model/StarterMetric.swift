@@ -172,6 +172,16 @@ enum StarterMetric {
         return copy
     }
 
+    /// Preset whose gradient matches the metric's small widget, if one does.
+    static func style(matching metric: Metric) -> QuoteStyle? {
+        guard case .gradient(let spec) = metric.resolvedAppearance.small.background.fill else {
+            return nil
+        }
+        return QuoteStyle.allCases.first { style in
+            style.mesh == spec.mesh && spec.colors == style.colors.map { .hex($0) }
+        }
+    }
+
     /// Same metric keeps the same background. People in Space matches the starter.
     static func collectionStyle(for id: UUID) -> QuoteStyle {
         if id == Self.id { return .space }

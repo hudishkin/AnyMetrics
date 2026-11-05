@@ -27,7 +27,6 @@ struct OnboardingView: View {
     @EnvironmentObject
     private var mainState: ViewState<MainView.Interactor>
     @State private var selectedMetric = StarterMetric.make()
-    @State private var selectedStyle = StarterMetric.QuoteStyle.space
     @State private var isLoadingPreview = false
     @State private var previewFailed = false
     @State private var hasCompleted = false
@@ -55,7 +54,7 @@ struct OnboardingView: View {
                 .accessibilityIdentifier("onboarding.skip")
                 .disabled(hasCompleted)
                 .font(Constants.fontSkip)
-                .foregroundColor(Constants.secondaryColor)
+                .foregroundColor(Constants.textColor)
             }
             .padding(.horizontal, Constants.horizontalPadding)
             .padding(.top, 16)
@@ -78,10 +77,10 @@ struct OnboardingView: View {
                             .lineSpacing(3)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.horizontal, Constants.horizontalPadding)
 
                     widgetPreview(side: 168)
                 }
-                .padding(.horizontal, Constants.horizontalPadding)
                 .padding(.top, 12)
                 .padding(.bottom, 12)
             }
@@ -129,7 +128,7 @@ struct OnboardingView: View {
             } label: {
                 Text(AnyMetricsStrings.Onboarding.chooseFromGallery)
                     .font(Constants.fontSkip)
-                    .foregroundColor(Constants.secondaryColor)
+                    .foregroundColor(Constants.textColor)
                     .padding(.top, 12)
             }
             .accessibilityIdentifier("onboarding.chooseFromGallery")
@@ -141,58 +140,60 @@ struct OnboardingView: View {
         .background(Color(.systemBackground).ignoresSafeArea(edges: .bottom))
     }
 
+    private var showsPreviewPlaceholder: Bool {
+        !previewMetric.hasResult && (isLoadingPreview || previewFailed)
+    }
+
+    /// Image-backed widgets already fill the frame, so a gradient choice would replace that photo.
+    private var showsGradientPicker: Bool {
+        let appearance = selectedMetric.resolvedAppearance
+        return ![appearance.small.background, appearance.medium.background].contains(where: usesImageBackground)
+    }
+
+    private func usesImageBackground(_ background: WidgetBackgroundSpec) -> Bool {
+        if background.usesResultImageAsBackground { return true }
+        if case .image = background.fill { return true }
+        return false
+    }
+
     private func widgetPreview(side: CGFloat) -> some View {
         VStack(spacing: 16) {
             ZStack {
-                MetricContentView(metric: previewMetric)
-
-                if isLoadingPreview && !previewMetric.hasResult {
-                    ProgressView()
+                if showsPreviewPlaceholder {
+                    Color(uiColor: .systemGray5)
+                    if previewFailed && !isLoadingPreview {
+                        Button {
+                            loadPreview()
+                        } label: {
+                            Label(AnyMetricsStrings.Onboarding.previewRetry, systemImage: "arrow.clockwise")
+                                .font(.footnote)
+                        }
+                        .foregroundColor(Constants.textColor)
+                    } else {
+                        ProgressView()
+                            .tint(Constants.textColor)
+                    }
+                } else {
+                    MetricContentView(metric: previewMetric)
                 }
             }
             .frame(width: side, height: side)
             .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
             .accessibilityLabel(selectedMetric.title)
+            .padding(.horizontal, 20)
 
-            VStack(spacing: 4) {
-                Text(selectedMetric.title)
-                    .font(.headline)
-                    .foregroundColor(Constants.textColor)
-                    .multilineTextAlignment(.center)
-                    .accessibilityIdentifier("onboarding.starter.title")
-
-                Text(selectedMetric.measure)
-                    .font(.footnote)
-                    .foregroundColor(Constants.secondaryColor)
-                    .multilineTextAlignment(.center)
-
-                if isLoadingPreview && !previewMetric.hasResult {
-                    ProgressView(AnyMetricsStrings.Onboarding.previewLoading)
-                        .font(.footnote)
-                } else if previewFailed && selectedMetric.id != StarterMetric.id {
-                    Button {
-                        loadPreview()
-                    } label: {
-                        Label(AnyMetricsStrings.Onboarding.previewRetry, systemImage: "arrow.clockwise")
-                            .font(.footnote)
-                    }
-                    .foregroundColor(Constants.secondaryColor)
-                }
-            }
-
-            if selectedMetric.id == StarterMetric.id {
+            if showsGradientPicker {
                 gradientPicker
             }
         }
         .padding(.top, 16)
         .padding(.bottom, 16)
-        .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .background {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(Color.primary.opacity(0.08))
         }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .padding(.horizontal, Constants.horizontalPadding)
     }
 
     private var gradientPicker: some View {
@@ -225,12 +226,13 @@ struct OnboardingView: View {
                     }
                 }
             }
+            .padding(.horizontal, 12)
         }
         .frame(height: swatchSide * CGFloat(rowCount) + spacing * CGFloat(rowCount - 1))
     }
 
     private func gradientSwatch(_ style: StarterMetric.QuoteStyle) -> some View {
-        let selected = selectedStyle == style
+        let selected = StarterMetric.style(matching: selectedMetric) == style
         return Button {
             applyStyle(style)
         } label: {
@@ -253,8 +255,7 @@ struct OnboardingView: View {
     }
 
     private func applyStyle(_ style: StarterMetric.QuoteStyle) {
-        guard selectedStyle != style else { return }
-        selectedStyle = style
+        guard StarterMetric.style(matching: selectedMetric) != style else { return }
         var metric = selectedMetric
         metric.widgetAppearance = StarterMetric.appearance(for: style)
         selectedMetric = metric
