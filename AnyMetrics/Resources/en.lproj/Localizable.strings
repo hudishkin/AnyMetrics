@@ -36,6 +36,7 @@
 "metric.actions.export" = "Export as JSON file";
 "metric.actions.sure" = "You sure?";
 "metric.actions.delete-message" = "This metric will be deleted and can't be restored. You can save it as JSON.";
+"metric.actions.duplicate" = "Duplicate";
 "metric.actions.confirmDelete" = "Delete metric";
 "metric.share.title" = "Share";
 "metric.share.subtitle" = "A card with your widget and a QR code. The metric file is attached — another AnyMetrics user can import it via Add → Import from JSON.";
@@ -132,6 +133,13 @@
 
 "addmetric.field.rule-type-contains-description" = "Specify the value that will be contained as a result of processing the response. For example: you want to check if a string contains the word \"error\"";
 "addmetric.field.rule-type-equal-description" = "Specify a value that must match the result of processing the response. For example: you want to check if the answer matches the value \"100\"";
+
+"addmetric.basis.button" = "Use as a basis";
+"addmetric.basis.title" = "Use as a basis";
+"addmetric.basis.own" = "My metrics";
+"addmetric.basis.gallery" = "Gallery";
+"addmetric.basis.search" = "Search";
+"addmetric.basis.empty" = "Nothing found";
 
 "addmetric.section.request-settings" = "Request settings";
 "addmetric.section.http-headers" = "HTTP Headers";

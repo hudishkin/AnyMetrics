@@ -16,6 +16,7 @@ extension MainView {
         case addMetricAndRefresh(Metric)
         case removeMetric(UUID)
         case refreshMetric(UUID)
+        case duplicateMetric(Metric)
         case refreshAllMetrics
         case syncMetrics
     }

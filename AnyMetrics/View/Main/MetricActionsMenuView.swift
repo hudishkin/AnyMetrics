@@ -19,12 +19,13 @@ struct MetricActionsMenuView: View {
     var onRefresh: () -> Void
     var onEditRequest: () -> Void
     var onEditTheme: () -> Void
+    var onDuplicate: () -> Void
     var onExport: () -> Void
     var onShare: () -> Void
     var onDelete: () -> Void
 
     @State
-    private var sheetHeight: CGFloat = 360
+    private var sheetHeight: CGFloat = 420
 
     var body: some View {
         VStack(alignment: .leading, spacing: Constants.sectionSpacing) {
@@ -38,6 +39,11 @@ struct MetricActionsMenuView: View {
                     title: AnyMetricsStrings.Metric.Actions.editTheme,
                     icon: "paintpalette",
                     action: onEditTheme
+                )
+                actionRow(
+                    title: AnyMetricsStrings.Metric.Actions.duplicate,
+                    icon: "doc.on.doc",
+                    action: onDuplicate
                 )
             }
 
@@ -139,6 +145,7 @@ private struct ActionsFittedSheetModifier: ViewModifier {
         onRefresh: {},
         onEditRequest: {},
         onEditTheme: {},
+        onDuplicate: {},
         onExport: {},
         onShare: {},
         onDelete: {}

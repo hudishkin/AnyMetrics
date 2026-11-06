@@ -23,7 +23,7 @@ struct DashboardEmptyStateView: View {
     private func placeholderGrid(height: CGFloat) -> some View {
         let columns = max(MainView.Constants.collumns.count, 1)
         let rowHeight = MainView.Constants.size + MainView.Constants.spacing
-        let rows = max(2, Int(ceil(max(height - MainView.Constants.topPadding, 0) / max(rowHeight, 1))))
+        let rows = max(2, Int(ceil(height / max(rowHeight, 1))))
 
         return LazyVGrid(columns: MainView.Constants.collumns, spacing: MainView.Constants.spacing) {
             ForEach(0..<(columns * rows), id: \.self) { _ in
@@ -32,7 +32,7 @@ struct DashboardEmptyStateView: View {
                     .frame(width: MainView.Constants.size, height: MainView.Constants.size)
             }
         }
-        .padding(.top, MainView.Constants.topPadding)
+        .padding(.horizontal, MainView.Constants.gridHorizontalPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .mask(verticalFade)
         .mask(horizontalFade)
@@ -75,8 +75,7 @@ struct DashboardEmptyStateView: View {
     private var verticalFade: some View {
         LinearGradient(
             stops: [
-                .init(color: .clear, location: 0),
-                .init(color: .black.opacity(0.45), location: 0.16),
+                .init(color: .black.opacity(0.7), location: 0),
                 .init(color: .black.opacity(0.7), location: 0.34),
                 .init(color: .black.opacity(0.4), location: 0.58),
                 .init(color: .black.opacity(0.12), location: 0.8),

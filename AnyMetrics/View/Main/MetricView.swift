@@ -11,10 +11,10 @@ import AnyMetricsShared
 
 fileprivate enum Constants {
 
-    static let animationInit = Animation.spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0.4)
-    static let timeRange = 0.1...0.7
+    static let animationInit = Animation.spring(response: 0.28, dampingFraction: 0.72)
+    static let timeRange = 0.0...0.12
     static let animationScaleEnd: CGFloat = 1.0
-    static let animationScaleBegin: CGFloat = 0.4
+    static let animationScaleBegin: CGFloat = 0.78
     static let animationOpacityBegin: CGFloat = 0.0
     static let animationOpacityEnd: CGFloat = 1.0
 }
@@ -130,6 +130,8 @@ enum MetricSharePresenter {
 struct MetricView: View {
 
     var metric: Metric
+    /// Новая метрика появляется сразу. При старте дашборда карточки чуть разъезжаются по времени.
+    var appearsImmediately = false
     @State var scale = Constants.animationScaleBegin
     @State var opacity = Constants.animationOpacityBegin
     @State var showActionMenu = false
@@ -138,13 +140,14 @@ struct MetricView: View {
     @State private var pendingAction: PendingAction?
 
     private enum PendingAction {
-        case editRequest, editTheme, share, export, delete
+        case editRequest, editTheme, duplicate, share, export, delete
     }
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
     var editRequest: ((Metric) -> Void)?
     var editTheme: ((Metric) -> Void)?
+    var duplicateMetric: ((Metric) -> Void)?
     var shareMetric: ((Metric) -> Void)?
     var exportMetric: ((Metric) -> Void)?
     var onOverlayChange: ((Bool) -> Void)?
@@ -164,6 +167,7 @@ struct MetricView: View {
                 },
                 onEditRequest: { queueAction(.editRequest) },
                 onEditTheme: { queueAction(.editTheme) },
+                onDuplicate: { queueAction(.duplicate) },
                 onExport: { queueAction(.export) },
                 onShare: { queueAction(.share) },
                 onDelete: { queueAction(.delete) }
@@ -203,7 +207,8 @@ struct MetricView: View {
         .scaleEffect(scale)
         .opacity(opacity)
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: getAnimationTimeInterval()) {
+            let delay = appearsImmediately ? 0 : Double.random(in: Constants.timeRange)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(Constants.animationInit) {
                     scale = Constants.animationScaleEnd
                     opacity = Constants.animationOpacityEnd
@@ -223,6 +228,8 @@ struct MetricView: View {
             editRequest?(metric)
         case .editTheme:
             editTheme?(metric)
+        case .duplicate:
+            duplicateMetric?(metric)
         case .share:
             shareMetric?(metric)
         case .export:
@@ -234,10 +241,6 @@ struct MetricView: View {
         }
         pendingAction = nil
         onOverlayChange?(showActionMenu || showConfirmationDelete)
-    }
-
-    private func getAnimationTimeInterval() -> DispatchTime {
-        return DispatchTime.now() + Double.random(in: Constants.timeRange)
     }
 }
 

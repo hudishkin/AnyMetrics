@@ -17,18 +17,20 @@ extension MainView {
             if AppConfig.isiOSAppOnMac {
                 return 260
             }
-            return (UIScreen.main.bounds.width / CGFloat(Constants.collumns.count)) - (Self.spacing * 2)
-
+            let columns = CGFloat(collumns.count)
+            // Слева, между колонками и справа — один и тот же шаг.
+            return (UIScreen.main.bounds.width - spacing * (columns + 1)) / columns
         }()
         static let heightPlaceholder: CGFloat = (UIScreen.main.bounds.height) - (Self.spacing * 2)
-        static let zIndexTitle: CGFloat = 999
         static let titleCorner: CGFloat = 8
-        static let topPadding: CGFloat = 58
         static let bottomPadding: CGFloat = 58
         static let scrollViewInset = EdgeInsets(top: 0, leading: Constants.padding, bottom: 0, trailing: Constants.padding)
         static let addButtonPadding: CGFloat = 14
         static let addButtonSize: CGFloat = {  AppConfig.isiOSAppOnMac ? 82 : 62 }()
         static let addButtonCorner: CGFloat = Self.addButtonSize / 2
+        /// Боковой отступ сетки. На iPhone равен шагу между карточками.
+        static let gridHorizontalPadding: CGFloat = AppConfig.isiOSAppOnMac ? 0 : spacing
+
         static let collumns: [GridItem] = {
 
             if AppConfig.isiOSAppOnMac {
@@ -39,8 +41,8 @@ extension MainView {
                 ]
             } else {
                 return [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
+                    GridItem(.flexible(), spacing: spacing),
+                    GridItem(.flexible(), spacing: spacing)
                 ]
             }
         }()

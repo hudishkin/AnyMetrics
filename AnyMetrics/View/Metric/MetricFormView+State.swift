@@ -95,6 +95,7 @@ extension MetricFormView {
         case setFormatType(MetricFormatterType)
         case setMaxLengthValue(Int)
         case setWidgetAppearance(WidgetAppearance)
+        case applyBasis(Metric)
     }
 
     enum VNotification: NotificationProtocol {

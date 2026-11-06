@@ -53,6 +53,9 @@ struct MainView: View {
     var offerSecondMetric = false
     @State
     var reviewPromptScheduled = false
+    /// Метрики, которые уже были на экране в момент первого появления дашборда.
+    @State
+    private var startupMetricIDs: Set<UUID>?
 #if DEBUG
     @State
     var showDevMenu = false
@@ -63,43 +66,16 @@ struct MainView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             ZStack(alignment: .top) {
-                // MARK: - Header
-                ZStack {
-                    Text(AnyMetricsStrings.dashboard)
-                        .font(Constants.fontTitle)
-                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                        .accessibilityAddTraits(.isHeader)
-
-                    HStack(spacing: 8) {
-                        aboutButton
-                        Spacer(minLength: 0)
-#if DEBUG
-                        Button {
-                            showDevMenu = true
-                        } label: {
-                            Text("</>")
-                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                                .padding(Constants.titleInset)
-                                .background(.ultraThinMaterial)
-                                .cornerRadius(Constants.titleCorner)
-                        }
-#endif
-                    }
-                }
-                .padding(Constants.padding)
-                .zIndex(Constants.zIndexTitle)
-
                 // MARK: - Content
                 if viewState.state.metrics.isEmpty {
                     DashboardEmptyStateView()
                 } else {
                     ScrollView {
-                        Spacer(minLength: Constants.topPadding)
                         LazyVGrid(columns: columns, spacing: Constants.spacing) {
                             ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
                                 MetricView(
                                     metric: metric,
+                                    appearsImmediately: appearsImmediately(metric.id),
                                     refreshMetric: { uuid in
                                         viewState.trigger(.refreshMetric(uuid))
                                     },
@@ -111,6 +87,9 @@ struct MainView: View {
                                     },
                                     editTheme: { metric in
                                         sheetType = .editTheme(metric)
+                                    },
+                                    duplicateMetric: { metric in
+                                        viewState.trigger(.duplicateMetric(metric))
                                     },
                                     shareMetric: { metric in
                                         shareMetric = metric
@@ -129,10 +108,14 @@ struct MainView: View {
                                 .frame(width: Constants.size, height: Constants.size)
                             }
                         }
+                        .padding(.horizontal, Constants.gridHorizontalPadding)
 
                         Spacer(minLength: Constants.bottomPadding)
                     }
                 }
+            }
+            .safeAreaInset(edge: .top, spacing: Constants.spacing) {
+                dashboardHeader
             }
 
             // MARK: - Add Button
@@ -275,10 +258,39 @@ struct MainView: View {
             }
         }
         .onAppear {
+            captureStartupMetricsIfNeeded()
             viewState.trigger(.onAppear)
             scheduleReviewPromptIfNeeded()
         }
 
+    }
+
+    private var dashboardHeader: some View {
+        ZStack {
+            Text(AnyMetricsStrings.dashboard)
+                .font(Constants.fontTitle)
+                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                .accessibilityAddTraits(.isHeader)
+
+            HStack(spacing: 8) {
+                aboutButton
+                Spacer(minLength: 0)
+#if DEBUG
+                Button {
+                    showDevMenu = true
+                } label: {
+                    Text("</>")
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                        .padding(Constants.titleInset)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(Constants.titleCorner)
+                }
+#endif
+            }
+        }
+        .padding(.horizontal, Constants.padding)
+        .padding(.top, Constants.padding)
     }
 
     private var addMetricButton: some View {
@@ -370,6 +382,16 @@ struct MainView: View {
             && !showOnboarding
             && !showReviewPrompt
             && errorMessage == nil
+    }
+
+    private func appearsImmediately(_ id: UUID) -> Bool {
+        guard let startupMetricIDs else { return false }
+        return !startupMetricIDs.contains(id)
+    }
+
+    private func captureStartupMetricsIfNeeded() {
+        guard startupMetricIDs == nil else { return }
+        startupMetricIDs = Set(viewState.state.metrics.keys)
     }
 
     private func metricEditor(metric: Metric, entry: MetricFormEntry, title: String) -> some View {
