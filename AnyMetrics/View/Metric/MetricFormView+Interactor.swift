@@ -123,6 +123,36 @@ extension MetricFormView {
                         $0.widgetAppearance = appearance
                     }
                 }
+            case .applyBasis(let metric):
+                Task { @MainActor in
+                    await updater { state in
+                        state.title = metric.title
+                        state.measure = metric.measure
+                        state.maxLengthValue = metric.formatter?.length ?? DEFAULT_LENGTH_VALUE
+                        state.parseRules = metric.rules?.parseRules ?? ""
+                        state.typeRule = metric.rules?.type ?? .none
+                        state.formatType = metric.formatter?.format ?? .none
+                        state.parseConfigurationValue = metric.rules?.value ?? ""
+                        state.caseSensitive = metric.rules?.caseSensitive ?? false
+                        state.result = metric.result
+                        state.resultWithError = metric.resultWithError
+                        state.hasParseRuleError = false
+                        state.parseErrorMessage = ""
+                        state.author = metric.author
+                        state.description = metric.description
+                        state.website = metric.website
+                        state.widgetDesign = metric.widgetDesign ?? .default
+                        state.widgetAppearance = metric.copyingWidgetFiles(to: state.id)
+                            ?? .preset(metric.widgetDesign ?? .default)
+                        state.savedCustomAppearance = nil
+                        if state.widgetAppearance.isCustom || state.widgetAppearance.matchingWidgetDesign == nil {
+                            var custom = state.widgetAppearance
+                            custom.presetId = WidgetAppearancePreset.custom.rawValue
+                            state.widgetAppearance = custom
+                            state.savedCustomAppearance = custom
+                        }
+                    }
+                }
             }
         }
 

@@ -223,6 +223,91 @@ public struct Metric: Hashable, Identifiable, Sendable {
         return age >= -5 && age < 300
     }
 
+    /// Independent copy for the dashboard. Request, value, and appearance stay the same.
+    /// `created` is one second newer so the copy sorts next to the original.
+    public func duplicated() -> Metric {
+        var copy = Metric(
+            id: UUID(),
+            title: title,
+            measure: measure,
+            type: type,
+            resultKind: resultKind,
+            result: result,
+            resultImagePath: nil,
+            resultWithError: resultWithError,
+            refreshFailed: refreshFailed,
+            request: request,
+            formatter: formatter,
+            rules: rules,
+            created: created.addingTimeInterval(1),
+            updated: updated,
+            author: author,
+            description: description,
+            website: website,
+            interval: interval,
+            widgetDesign: widgetDesign,
+            widgetAppearance: widgetAppearance
+        )
+        try? copy.persistWidgetBackgroundImages()
+        copy.copyOwnedFiles(sourceResultImagePath: resultImagePath)
+        return copy
+    }
+
+    /// Widget look with photo backgrounds stored under `metricId`.
+    public func copyingWidgetFiles(
+        to metricId: UUID,
+        store: WidgetBackgroundStore = .shared
+    ) -> WidgetAppearance? {
+        guard var appearance = widgetAppearance else { return nil }
+        appearance.small.background.fill = Self.copiedBackground(
+            appearance.small.background.fill,
+            metricId: metricId,
+            size: .small,
+            store: store
+        )
+        appearance.medium.background.fill = Self.copiedBackground(
+            appearance.medium.background.fill,
+            metricId: metricId,
+            size: .medium,
+            store: store
+        )
+        return appearance
+    }
+
+    /// Gives the copy its own image files so deleting the original does not remove them.
+    private mutating func copyOwnedFiles(
+        sourceResultImagePath: String?,
+        backgrounds: WidgetBackgroundStore = .shared,
+        results: MetricResultImageStore = .shared
+    ) {
+        if let appearance = copyingWidgetFiles(to: id, store: backgrounds) {
+            widgetAppearance = appearance
+        }
+        if resultKind == .image, let path = sourceResultImagePath,
+           let data = results.loadData(relativePath: path) {
+            resultImagePath = try? results.save(data: data, metricId: id)
+        }
+    }
+
+    private static func copiedBackground(
+        _ fill: WidgetBackgroundFill,
+        metricId: UUID,
+        size: WidgetSizeKey,
+        store: WidgetBackgroundStore
+    ) -> WidgetBackgroundFill {
+        guard case .image(.file(let path)) = fill,
+              let data = store.loadData(relativePath: path)
+        else { return fill }
+        let ext = (path as NSString).pathExtension
+        guard let relative = try? store.saveData(
+            data,
+            metricId: metricId,
+            size: size,
+            fileExtension: ext.isEmpty ? "jpg" : ext
+        ) else { return fill }
+        return .image(.file(relative))
+    }
+
     /// Returns a copy with a new ID when a metric with the same ID already exists.
     public func duplicatingIfNeeded(in existingMetrics: Metrics) -> Metric {
         guard existingMetrics[id] != nil else { return self }

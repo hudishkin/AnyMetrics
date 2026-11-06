@@ -96,6 +96,36 @@ final class StaleMetricTests: XCTestCase {
         XCTAssertFalse(MetricStore.shouldKeepStored(failure, insteadOf: success))
     }
 
+    func testDuplicateKeepsRequestAndGetsANewId() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let original = Metric(
+            id: UUID(),
+            title: "Bitcoin",
+            measure: "USD",
+            type: .json,
+            result: "64000",
+            request: RequestData(
+                headers: ["Authorization": "Bearer secret"],
+                method: "GET",
+                url: URL(string: "https://example.com/price")!
+            ),
+            rules: ParseRules(parseRules: "bpi.USD.rate", type: .none),
+            created: created,
+            updated: created,
+            interval: 900
+        )
+
+        let copy = original.duplicated()
+
+        XCTAssertNotEqual(copy.id, original.id)
+        XCTAssertEqual(copy.title, original.title)
+        XCTAssertEqual(copy.request, original.request)
+        XCTAssertEqual(copy.rules, original.rules)
+        XCTAssertEqual(copy.result, original.result)
+        XCTAssertEqual(copy.created, created.addingTimeInterval(1))
+        XCTAssertEqual(original.request?.headers["Authorization"], "Bearer secret")
+    }
+
     func testSaveRefreshKeepsTheNewerValue() {
         let suiteName = "AnyMetrics.StaleMetricTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

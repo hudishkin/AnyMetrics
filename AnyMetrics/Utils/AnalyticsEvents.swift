@@ -10,6 +10,7 @@ enum AnalyticsEvents {
         static let custom = "custom"
         static let imported = "import"
         static let onboarding = "onboarding"
+        static let duplicate = "duplicate"
     }
 
     enum FormStep {

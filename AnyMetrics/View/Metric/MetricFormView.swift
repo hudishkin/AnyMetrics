@@ -68,7 +68,12 @@ struct MetricFormView: View {
             RequestFormView(
                 screenTitle: viewState.state.isEdited
                     ? AnyMetricsStrings.Metric.Actions.editRequest
-                    : AnyMetricsStrings.Addmetric.titleRequest
+                    : AnyMetricsStrings.Addmetric.titleRequest,
+                currentMetricID: viewState.state.id,
+                onApplyBasis: { metric in
+                    requestViewState.trigger(.applyBasis(metric))
+                    viewState.trigger(.applyBasis(metric))
+                }
             )
             .environmentObject(requestViewState)
 

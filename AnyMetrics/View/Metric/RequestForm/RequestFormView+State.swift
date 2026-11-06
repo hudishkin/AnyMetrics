@@ -10,7 +10,7 @@ extension RequestFormView {
             case none, loading, success, error
         }
 
-        var requestUrl: String = "http://jsonplaceholder.typicode.com/posts"
+        var requestUrl: String = ""
         var httpMethodType: HTTPMethodType = .GET
         var resultKind: MetricResultKind = .content
         var typeMetric: TypeMetric = .json
@@ -40,6 +40,7 @@ extension RequestFormView {
         case addHeader(name: String, value: String)
         case removeHeader(name: String)
         case editHeader(oldName: String, newName: String, newValue: String)
+        case applyBasis(Metric)
         case makeRequest
     }
 

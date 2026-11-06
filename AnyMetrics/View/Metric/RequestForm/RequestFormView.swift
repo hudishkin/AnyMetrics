@@ -9,9 +9,13 @@ struct RequestFormView: View {
     var viewState: ViewState<RequestFormView.Interactor>
 
     var screenTitle: String = AnyMetricsStrings.Addmetric.titleRequest
+    var currentMetricID: UUID?
+    var onApplyBasis: (Metric) -> Void = { _ in }
 
     @State
     private var activeSheet: HeaderSheet?
+    @State
+    private var showBasisPicker = false
 
     var body: some View {
         Form {
@@ -60,7 +64,19 @@ struct RequestFormView: View {
                     .pickerStyle(.automatic)
 
             } header: {
-                Text(AnyMetricsStrings.Addmetric.Section.requestSettings)
+                HStack(alignment: .center, spacing: 6) {
+                    Text(AnyMetricsStrings.Addmetric.Section.requestSettings)
+                    Spacer()
+                    Button {
+                        showBasisPicker = true
+                    } label: {
+                        Text(AnyMetricsStrings.Addmetric.Basis.button)
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                        Constants.imageArrow
+                            .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
             if viewState.state.httpMethodType.hasBody {
                 Section {
@@ -179,6 +195,12 @@ struct RequestFormView: View {
             }
         }
         .navigationTitle(screenTitle)
+        .sheet(isPresented: $showBasisPicker) {
+            MetricBasisPickerView(excludingID: currentMetricID) { metric in
+                showBasisPicker = false
+                onApplyBasis(metric)
+            }
+        }
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .add:
@@ -235,6 +257,7 @@ extension RequestFormView {
 
 private extension RequestFormView {
     enum Constants {
+        static let imageArrow = Image(systemName: "arrow.right")
         static let responseFont = Font.system(size: 12, design: .monospaced)
         static let zero: CGFloat = 0
         static let mainButtonFont = Font.body.weight(.semibold)

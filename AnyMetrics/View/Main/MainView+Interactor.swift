@@ -135,6 +135,21 @@ extension MainView {
                     }
                     WidgetCenter.shared.reloadAllTimelines()
                 }
+            case .duplicateMetric(let metric):
+                let copy = metric.duplicated()
+                metricStore.addMetric(metric: copy)
+                AnalyticsEvents.metricAdded(
+                    source: AnalyticsEvents.Source.duplicate,
+                    type: copy.type,
+                    resultKind: copy.resultKind
+                )
+                AnalyticsEvents.syncLibrary(metricStore.metrics)
+                Task { @MainActor in
+                    await updater {
+                        $0.metrics = self.metricStore.metrics
+                    }
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
             case .refreshMetric(let id):
                 Task { @MainActor in
                     guard let state = await state() else { return }

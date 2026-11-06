@@ -36,6 +36,7 @@
 "metric.actions.export" = "Экспорт в JSON-файл";
 "metric.actions.sure" = "Вы уверены?";
 "metric.actions.delete-message" = "Метрика будет удалена, восстановить её нельзя. Вы можете сохранить её как JSON.";
+"metric.actions.duplicate" = "Дублировать метрику";
 "metric.actions.confirmDelete" = "Да, удалить";
 "metric.share.title" = "Поделиться";
 "metric.share.subtitle" = "Карточка с виджетом и QR-кодом. Файл метрики тоже вложен — другой пользователь AnyMetrics сможет добавить её через «Добавить → Импорт из JSON».";
@@ -132,6 +133,13 @@
 
 "addmetric.field.rule-type-contains-description" = "Укажите значение, которое должно содержаться в результате обработки ответа. Например: вы хотите проверить содежится ли в строка слово \"ошибка\"";
 "addmetric.field.rule-type-equal-description" = "Укажите значение, которое должно совпадать с результатом обработки ответа. Например: вы хотите проверить совпадает ли ответ значению \"100\"";
+
+"addmetric.basis.button" = "Взять за основу";
+"addmetric.basis.title" = "Взять за основу";
+"addmetric.basis.own" = "Свои метрики";
+"addmetric.basis.gallery" = "Галерея";
+"addmetric.basis.search" = "Поиск";
+"addmetric.basis.empty" = "Ничего не найдено";
 
 "addmetric.section.request-settings" = "Настройки запроса";
 "addmetric.section.http-headers" = "HTTP заголовки";

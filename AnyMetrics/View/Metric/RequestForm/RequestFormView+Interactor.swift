@@ -95,6 +95,31 @@ extension RequestFormView {
                         $0.httpHeaders[newName] = newValue
                     }
                 }
+            case .applyBasis(let metric):
+                disposables.removeAll()
+                parserDocument = nil
+                Task { @MainActor in
+                    await updater { state in
+                        state.requestUrl = metric.request?.url.absoluteString ?? ""
+                        state.httpMethodType = .init(rawValue: metric.request?.method ?? "") ?? .GET
+                        state.resultKind = metric.resultKind
+                        state.typeMetric = metric.type
+                        state.httpHeaders = metric.request?.headers ?? [:]
+                        state.requestBody = metric.request?.requestBody ?? ""
+                        state.timeout = metric.request?.timeout ?? DEFAULT_TIMEOUT
+                        state.refreshInterval = RefreshInterval(from: metric.interval)
+                        state.requestStatus = .none
+                        state.response = ""
+                        state.errorMessage = ""
+                        state.hasRequestError = false
+                        if metric.resultKind == .image, let path = metric.resultImagePath {
+                            state.responseImageData = MetricResultImageStore.shared.loadData(relativePath: path)
+                        } else {
+                            state.responseImageData = nil
+                        }
+                        state.canSetupResponse = state.requestUrl.isValidURL
+                    }
+                }
             case .makeRequest:
                 makeRequest(state: state, updater: updater)
             }
