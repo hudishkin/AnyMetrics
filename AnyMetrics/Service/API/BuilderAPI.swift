@@ -1,0 +1,325 @@
+import Foundation
+
+/// Wire types for the AnyMetrics AI Builder API.
+enum BuilderAPI {
+
+    struct Failure: Decodable, Equatable {
+        var code: String?
+        var message: String
+        var balance: Int?
+        var required: Int?
+    }
+
+    enum ClientError: Error, Equatable {
+        case missingSession
+        case status(Int, Failure?)
+        case transport(URLError)
+        case invalidResponse
+
+        var isUnauthorized: Bool {
+            switch self {
+            case .missingSession:
+                return true
+            case .status(401, _):
+                return true
+            default:
+                return false
+            }
+        }
+
+        var failure: Failure? {
+            if case .status(_, let failure) = self {
+                return failure
+            }
+            return nil
+        }
+    }
+
+    struct Health: Decodable, Equatable {
+        enum Status: String, Decodable, Equatable {
+            case ok
+        }
+
+        var status: Status
+    }
+
+    enum SignInProvider: String, Decodable, Equatable {
+        case apple, google, github
+    }
+
+    struct AuthProviders: Decodable, Equatable {
+        var providers: [SignInProvider]
+    }
+
+    struct User: Decodable, Equatable {
+        var id: UUID
+        var email: String?
+        var name: String?
+    }
+
+    struct Account: Decodable, Equatable {
+        var user: User
+        var balance: Int
+        var paid: Bool
+    }
+
+    struct Session: Decodable, Equatable {
+        var token: String
+        var user: User
+        var balance: Int
+        var paid: Bool
+
+        var account: Account {
+            Account(user: user, balance: balance, paid: paid)
+        }
+    }
+
+    struct Billing: Decodable, Equatable {
+        var balance: Int
+        var paid: Bool
+    }
+
+    struct AppleSignIn: Encodable, Equatable {
+        var identityToken: String
+        var nonce: String? = nil
+        var name: String? = nil
+    }
+
+    struct GoogleSignIn: Encodable, Equatable {
+        var idToken: String
+    }
+
+    struct GitHubSignIn: Encodable, Equatable {
+        var code: String
+        var redirectUri: String? = nil
+    }
+
+    struct AppleTransaction: Encodable, Equatable {
+        var signedTransaction: String
+    }
+
+    struct AppleTransactionResult: Decodable, Equatable {
+        var balance: Int
+        var credited: Int
+        var duplicate: Bool
+        var productId: String
+        var transactionId: String
+    }
+
+    struct GenerateRequest: Encodable, Equatable {
+        var prompt: String
+        var locale: String? = nil
+        var sourceUrl: String? = nil
+    }
+
+    struct AnswerRequest: Encodable, Equatable {
+        var text: String
+    }
+
+    enum JobStatus: String, Codable, Equatable {
+        case queued
+        case running
+        case needsInput = "needs_input"
+        case completed
+        case failed
+        case cancelled
+
+        /// Poll until the job pauses for an answer or reaches a final status.
+        var isPolling: Bool {
+            switch self {
+            case .queued, .running:
+                return true
+            case .needsInput, .completed, .failed, .cancelled:
+                return false
+            }
+        }
+    }
+
+    struct AcceptedJob: Decodable, Equatable {
+        var jobId: UUID
+        var status: JobStatus
+    }
+
+    struct JobList: Decodable, Equatable {
+        var jobs: [JobSummary]
+    }
+
+    struct JobSummary: Decodable, Equatable {
+        var jobId: UUID
+        var status: JobStatus
+        var prompt: String
+        var createdAt: Date
+    }
+
+    struct CancelledJob: Decodable, Equatable {
+        var jobId: UUID
+        var status: JobStatus
+    }
+
+    struct Question: Decodable, Equatable {
+        var text: String
+        var options: [String]?
+        var allowsFreeText: Bool
+    }
+
+    struct Job: Decodable, Equatable {
+        var jobId: UUID
+        var status: JobStatus
+        var prompt: String
+        var createdAt: Date
+        var question: Question?
+        var error: Failure?
+        var requirement: UserRequirement?
+        var draft: DraftMetric?
+        var result: GenerateResult?
+        var alternative: MetricAlternative?
+    }
+
+    struct GenerateResult: Decodable, Equatable {
+        var metric: GeneratedMetric
+        var validation: Validation
+        var source: MetricSource
+    }
+
+    struct MetricSource: Decodable, Equatable {
+        enum Kind: String, Decodable, Equatable {
+            case publicAPI = "public_api"
+            case gallery
+        }
+
+        var kind: Kind
+        var url: String
+    }
+
+    struct MetricAlternative: Decodable, Equatable {
+        var reason: String
+        var metric: GeneratedMetric
+        var requirement: UserRequirement
+    }
+
+    struct DraftMetric: Decodable, Equatable {
+        var metric: GeneratedMetric
+        var validated: Bool
+    }
+
+    struct UserRequirement: Decodable, Equatable {
+        enum Kind: String, Decodable, Equatable {
+            case apiKey = "api_key"
+            case account
+            case other
+        }
+
+        var kind: Kind
+        var text: String
+        var url: String?
+    }
+
+    struct GeneratedMetric: Codable, Equatable {
+        enum Kind: String, Codable, Equatable {
+            case json, web, checkStatus
+        }
+
+        enum ResultKind: String, Codable, Equatable {
+            case content, image
+        }
+
+        var id: String
+        var title: String
+        var measure: String
+        var type: Kind
+        var resultKind: ResultKind
+        var interval: Int
+        var request: GeneratedRequest
+        var formatter: Formatter
+        var rules: Rules
+        var author: String?
+        var description: String?
+        var website: String?
+    }
+
+    struct GeneratedRequest: Codable, Equatable {
+        enum Method: String, Codable, Equatable {
+            case GET, HEAD
+        }
+
+        var url: String
+        var method: Method
+        var headers: [String: String]
+    }
+
+    struct Formatter: Codable, Equatable {
+        enum Format: String, Codable, Equatable {
+            case none, currency
+        }
+
+        var format: Format
+        var fraction: Int? = nil
+        var length: Int? = nil
+    }
+
+    struct Rules: Codable, Equatable {
+        enum Kind: String, Codable, Equatable {
+            case none, equal, contains
+        }
+
+        var type: Kind
+        var parseRules: String? = nil
+        var value: String? = nil
+        var caseSensitive: Bool
+    }
+
+    struct ValidateRequest: Encodable, Equatable {
+        var metric: MetricInput
+    }
+
+    struct MetricInput: Encodable, Equatable {
+        var id: String? = nil
+        var title: String
+        var measure: String
+        var type: GeneratedMetric.Kind
+        var resultKind: GeneratedMetric.ResultKind? = nil
+        var interval: Int? = nil
+        var request: MetricRequestInput? = nil
+        var formatter: Formatter? = nil
+        var rules: RulesInput? = nil
+        var author: String? = nil
+        var description: String? = nil
+        var website: String? = nil
+    }
+
+    struct MetricRequestInput: Encodable, Equatable {
+        var url: String
+        var method: String
+        var headers: [String: String]
+        var timeout: Double? = nil
+        var requestBody: String? = nil
+    }
+
+    struct RulesInput: Encodable, Equatable {
+        var type: Rules.Kind? = nil
+        var parseRules: String? = nil
+        var value: String? = nil
+        var caseSensitive: Bool? = nil
+    }
+
+    struct ValidateResponse: Decodable, Equatable {
+        var validation: Validation
+    }
+
+    struct Validation: Decodable, Equatable {
+        enum ValueKind: String, Decodable, Equatable {
+            case content, status
+        }
+
+        var success: Bool
+        var code: String?
+        var message: String?
+        var valueKind: ValueKind?
+        var rawValue: String?
+        var sampleValue: String?
+        var status: Bool?
+        var statusCode: Int?
+        var finalUrl: String?
+        var validatedAt: Date
+    }
+}

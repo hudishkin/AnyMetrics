@@ -25,8 +25,13 @@
 
 "metric.add.title" = "Add Metric";
 "metric.add.custom" = "Create metric";
+"metric.add.manual" = "Add manually";
+"metric.add.import-row" = "Import";
+"metric.add.generate-ai" = "Generate by AI";
 "metric.actions.update-value" = "Refresh";
 "metric.actions.delete" = "Remove";
+"metric.actions.hide" = "Hide";
+"metric.actions.hide-message" = "This metric will be hidden from the home screen and stay in Personal. Add it back with +, or delete it there.";
 "metric.actions.edit" = "Edit";
 "metric.actions.edit-request" = "Edit request";
 "metric.actions.edit-theme" = "Edit theme";
@@ -82,6 +87,10 @@
 "gallery.button.send" = "Send information";
 "gallery.message.subject" = "[AnyMetrics] Can't find metric";
 "gallery.title" = "Gallery";
+
+"catalog.personal" = "Personal";
+"catalog.empty" = "Metrics you add manually, import, or generate stay here. Removing one from the home screen only hides it.";
+"catalog.delete" = "Delete";
 
 // MARK: - Add/Edit Metric
 
@@ -262,6 +271,26 @@
 "info.mail-subject" = "[AnyMetrics] Feedback";
 "info.version" = "Version %@";
 
+// MARK: - Profile
+
+"profile.title" = "Account";
+"profile.signed-out" = "Sign in to keep your balance on this account.";
+"profile.sign-in-unavailable" = "Sign-in is not available.";
+"profile.name-unknown" = "Account";
+"profile.id" = "ID";
+"profile.balance" = "Balance";
+"profile.paid" = "Purchases";
+"profile.paid-yes" = "Yes";
+"profile.paid-no" = "No";
+"profile.log-out" = "Log out";
+"profile.log-out-confirm" = "Log out of this account on this device?";
+"profile.sign-in-apple" = "Sign in with Apple";
+"profile.sign-in-google" = "Sign in with Google";
+"profile.sign-in-github" = "Sign in with GitHub";
+"profile.provider-not-configured" = "Sign in with %@ is not set up in this build.";
+"profile.load-failed" = "Couldn't load the account.";
+"profile.retry" = "Try again";
+
 // MARK: - Review
 
 "review.title" = "Enjoying AnyMetrics?";
@@ -359,4 +388,30 @@
 "dev-menu.show-widget-instructions" = "Show widget instructions";
 "dev-menu.show-review-prompt" = "Show review prompt";
 "dev-menu.reset-review" = "Reset review prompts";
+"dev-menu.server" = "API server";
+"dev-menu.server-local" = "Local";
+"dev-menu.server-custom" = "Custom";
+"dev-menu.server-url-placeholder" = "https://api.example.com";
+"dev-menu.server-apply" = "Use this server";
+"dev-menu.server-invalid" = "Enter an http or https URL";
+
+// MARK: - Generate
+
+"generate.title" = "Generate";
+"generate.greeting" = "I'll find the data you want to see and keep an eye on updates.";
+"generate.examples" = "Metric examples";
+"generate.placeholder" = "Describe your metric";
+"generate.send" = "Send";
+"generate.history" = "History";
+"generate.history.empty" = "Your requests will appear here.";
+"generate.example.people-in-space" = "People in space";
+"generate.example.iss" = "Where is the ISS";
+"generate.example.bitcoin" = "Bitcoin price";
+"generate.example.dollar" = "Dollar rate";
+"generate.example.apple" = "Apple stock";
+"generate.example.spacex" = "Next SpaceX launch";
+"generate.example.fear-greed" = "Fear & Greed";
+"generate.example.moon" = "Moon phase";
+"generate.example.weather" = "Weather now";
+"generate.example.gold" = "Gold price";
 

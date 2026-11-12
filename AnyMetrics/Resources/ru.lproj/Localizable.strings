@@ -25,8 +25,13 @@
 "metric.add" = "Добавить";
 "metric.add.title" = "Добавить метрику";
 "metric.add.custom" = "Создать метрику";
+"metric.add.manual" = "Добавить вручную";
+"metric.add.import-row" = "Импорт";
+"metric.add.generate-ai" = "Сгенерировать с AI";
 "metric.actions.update-value" = "Обновить значение";
 "metric.actions.delete" = "Удалить метрику";
+"metric.actions.hide" = "Скрыть";
+"metric.actions.hide-message" = "Метрика скроется с главного экрана и останется в Personal. Вернуть её можно кнопкой +, удалить полностью — только там.";
 "metric.actions.edit" = "Редактировать";
 "metric.actions.edit-request" = "Редактирование запроса";
 "metric.actions.edit-theme" = "Редактирование темы";
@@ -82,6 +87,10 @@
 "gallery.button.send" = "Отправить информацию";
 "gallery.message.subject" = "[AnyMetrics] Не нашел метрику";
 "gallery.title" = "Галерея";
+
+"catalog.personal" = "Personal";
+"catalog.empty" = "Здесь остаются метрики, которые вы добавили вручную, импортировали или сгенерировали. С главного экрана они скрываются, а не удаляются.";
+"catalog.delete" = "Удалить";
 
 // MARK: - Add/Edit Metric
 
@@ -262,6 +271,26 @@
 "info.mail-subject" = "[AnyMetrics] Обратная связь";
 "info.version" = "Версия %@";
 
+// MARK: - Profile
+
+"profile.title" = "Аккаунт";
+"profile.signed-out" = "Войдите, чтобы баланс хранился в этом аккаунте.";
+"profile.sign-in-unavailable" = "Вход сейчас недоступен.";
+"profile.name-unknown" = "Аккаунт";
+"profile.id" = "ID";
+"profile.balance" = "Баланс";
+"profile.paid" = "Покупки";
+"profile.paid-yes" = "Есть";
+"profile.paid-no" = "Нет";
+"profile.log-out" = "Выйти";
+"profile.log-out-confirm" = "Выйти из аккаунта на этом устройстве?";
+"profile.sign-in-apple" = "Войти через Apple";
+"profile.sign-in-google" = "Войти через Google";
+"profile.sign-in-github" = "Войти через GitHub";
+"profile.provider-not-configured" = "Вход через %@ не настроен в этой сборке.";
+"profile.load-failed" = "Не удалось загрузить аккаунт.";
+"profile.retry" = "Повторить";
+
 // MARK: - Review
 
 "review.title" = "Нравится AnyMetrics?";
@@ -359,3 +388,29 @@
 "dev-menu.show-widget-instructions" = "Показать инструкцию виджета";
 "dev-menu.show-review-prompt" = "Показать запрос оценки";
 "dev-menu.reset-review" = "Сбросить запросы оценки";
+"dev-menu.server" = "Сервер API";
+"dev-menu.server-local" = "Локальный";
+"dev-menu.server-custom" = "Свой адрес";
+"dev-menu.server-url-placeholder" = "https://api.example.com";
+"dev-menu.server-apply" = "Использовать";
+"dev-menu.server-invalid" = "Нужен адрес http или https";
+
+// MARK: - Generate
+
+"generate.title" = "Генерация";
+"generate.greeting" = "Я найду для тебя данные, которые ты хочешь видеть и следить за обновлениями.";
+"generate.examples" = "Пример метрик";
+"generate.placeholder" = "Опишите метрику";
+"generate.send" = "Отправить";
+"generate.history" = "История";
+"generate.history.empty" = "Здесь появятся ваши запросы.";
+"generate.example.people-in-space" = "Люди в космосе";
+"generate.example.iss" = "Где МКС";
+"generate.example.bitcoin" = "Цена биткоина";
+"generate.example.dollar" = "Курс доллара";
+"generate.example.apple" = "Акции Apple";
+"generate.example.spacex" = "Запуск SpaceX";
+"generate.example.fear-greed" = "Страх и жадность";
+"generate.example.moon" = "Фаза луны";
+"generate.example.weather" = "Погода сейчас";
+"generate.example.gold" = "Цена золота";

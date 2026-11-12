@@ -31,7 +31,17 @@ let appInfoPlist: [String: Plist.Value] = [
     "CFBundleShortVersionString": .string(version),
     "CFBundleVersion": .string(buildNumber),
     "ITSAppUsesNonExemptEncryption": .boolean(false),
-    "FirebaseAutomaticScreenReportingEnabled": .boolean(false)
+    "FirebaseAutomaticScreenReportingEnabled": .boolean(false),
+    "CFBundleURLTypes": .array([
+        .dictionary([
+            "CFBundleURLName": .string(bundleId),
+            "CFBundleURLSchemes": .array([
+                .string("anymetrics")
+            ])
+        ])
+    ]),
+    "GitHubClientID": .string("$(GITHUB_CLIENT_ID)"),
+    "GoogleClientID": .string("$(GOOGLE_CLIENT_ID)")
 ]
 
 let widgetInfoPlist: [String: Plist.Value] = [
@@ -160,7 +170,9 @@ let appTarget: Target = .target(
             "TARGETED_DEVICE_FAMILY": "1",
             "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks",
             "OTHER_LDFLAGS": "$(inherited) -ObjC",
-            "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics"
+            "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics",
+            "GITHUB_CLIENT_ID": .string(""),
+            "GOOGLE_CLIENT_ID": .string("")
         ]
     )
 )

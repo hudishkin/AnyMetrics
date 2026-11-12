@@ -149,6 +149,39 @@ final class StaleMetricTests: XCTestCase {
         XCTAssertEqual(store.metrics[id]?.result, "42")
     }
 
+    func testSaveRefreshDoesNotRestoreRemovedMetric() {
+        let suiteName = "AnyMetrics.StaleMetricTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = MetricStore(defaults: defaults, key: "metrics")
+
+        let id = UUID()
+        let metric = sample(id: id, result: "42", refreshFailed: false, updated: Date())
+        store.addMetric(metric: metric)
+        store.removeFromLibrary(id: id)
+
+        let saved = store.saveRefresh(metric)
+
+        XCTAssertEqual(saved.result, "42")
+        XCTAssertNil(store.metrics[id])
+    }
+
+    func testRemoveFromLibraryKeepsTheOtherMetrics() {
+        let suiteName = "AnyMetrics.StaleMetricTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = MetricStore(defaults: defaults, key: "metrics")
+
+        let kept = sample(result: "1", refreshFailed: false, updated: Date())
+        let hidden = sample(result: "2", refreshFailed: false, updated: Date())
+        store.addMetric(metric: kept)
+        store.addMetric(metric: hidden)
+        store.removeFromLibrary(id: hidden.id)
+
+        XCTAssertEqual(store.metrics[kept.id]?.result, "1")
+        XCTAssertNil(store.metrics[hidden.id])
+    }
+
     private func sample(
         id: UUID = UUID(),
         result: String,

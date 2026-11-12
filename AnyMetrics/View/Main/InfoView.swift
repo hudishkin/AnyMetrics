@@ -27,9 +27,15 @@ fileprivate enum Constants {
 
 struct InfoView: View {
 
+    var onShowOnboarding: () -> Void = {}
+    var onShowReviewPrompt: () -> Void = {}
+
     @Environment(\.dismiss) private var dismiss
     @State private var showEmail = false
     @State private var mailResult: Result<MFMailComposeResult, Error>?
+#if DEBUG
+    @State private var showDevMenu = false
+#endif
 
     var body: some View {
         VStack(spacing: 0) {
@@ -68,6 +74,20 @@ struct InfoView: View {
                 compose.setSubject(AnyMetricsStrings.Info.mailSubject)
             }
         }
+#if DEBUG
+        .sheet(isPresented: $showDevMenu) {
+            DevMenuView(
+                onShowOnboarding: {
+                    dismiss()
+                    onShowOnboarding()
+                },
+                onShowReviewPrompt: {
+                    dismiss()
+                    onShowReviewPrompt()
+                }
+            )
+        }
+#endif
     }
 
     private var intro: some View {
@@ -115,6 +135,13 @@ struct InfoView: View {
             InfoLinkRow(icon: .symbol("plus.rectangle.on.folder"), title: AnyMetricsStrings.Info.gallery) {
                 open(AppConfig.Urls.galleryRepository)
             }
+#if DEBUG
+            rowDivider
+            InfoLinkRow(icon: .symbol("terminal"), title: AnyMetricsStrings.DevMenu.title) {
+                ImpactHelper.impactButton()
+                showDevMenu = true
+            }
+#endif
         }
         .background(Constants.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Constants.cardCorner, style: .continuous))

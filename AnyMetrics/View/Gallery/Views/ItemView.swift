@@ -74,8 +74,6 @@ extension GalleryView {
 
 }
 
-/// На iOS 26 кнопка «−» — красное интерактивное стекло.
-/// На старых версиях остаётся сплошной красный круг.
 private struct GalleryRemoveButtonChrome: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -93,8 +91,6 @@ private struct GalleryRemoveButtonChrome: ViewModifier {
     }
 }
 
-/// На iOS 26 кнопка «+» — интерактивное стекло, как на главном экране.
-/// На старых версиях остаётся обводка круга.
 private struct GalleryAddButtonChrome: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -115,7 +111,6 @@ private struct GalleryAddButtonChrome: ViewModifier {
     }
 }
 
-/// На iOS 26 карточка — отдельное стекло. На старых версиях остаётся прежний цвет.
 private struct GalleryItemCardBackground: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {

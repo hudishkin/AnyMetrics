@@ -130,7 +130,6 @@ enum MetricSharePresenter {
 struct MetricView: View {
 
     var metric: Metric
-    /// Новая метрика появляется сразу. При старте дашборда карточки чуть разъезжаются по времени.
     var appearsImmediately = false
     @State var scale = Constants.animationScaleBegin
     @State var opacity = Constants.animationOpacityBegin
@@ -142,6 +141,8 @@ struct MetricView: View {
     private enum PendingAction {
         case editRequest, editTheme, duplicate, share, export, delete
     }
+
+    var keepsInPersonalCatalog = false
 
     var refreshMetric: ((UUID) -> Void)?
     var deletehMetric: ((UUID) -> Void)?
@@ -170,7 +171,12 @@ struct MetricView: View {
                 onDuplicate: { queueAction(.duplicate) },
                 onExport: { queueAction(.export) },
                 onShare: { queueAction(.share) },
-                onDelete: { queueAction(.delete) }
+                onDelete: { queueAction(.delete) },
+                deleteTitle: keepsInPersonalCatalog
+                    ? AnyMetricsStrings.Metric.Actions.hide
+                    : AnyMetricsStrings.Metric.Actions.delete,
+                deleteIcon: keepsInPersonalCatalog ? "eye.slash" : "trash",
+                deleteIsDestructive: !keepsInPersonalCatalog
             )
         }
         .onChange(of: showActionMenu) { presented in
@@ -182,15 +188,25 @@ struct MetricView: View {
             AnyMetricsStrings.Metric.Actions.sure,
             isPresented: $showConfirmationDelete
         ) {
-            Button(AnyMetricsStrings.Metric.Actions.export) {
-                exportAfterDeletePrompt = true
-            }
-            Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
-                deletehMetric?(metric.id)
+            if keepsInPersonalCatalog {
+                Button(AnyMetricsStrings.Metric.Actions.hide) {
+                    deletehMetric?(metric.id)
+                }
+            } else {
+                Button(AnyMetricsStrings.Metric.Actions.export) {
+                    exportAfterDeletePrompt = true
+                }
+                Button(AnyMetricsStrings.Metric.Actions.confirmDelete, role: .destructive) {
+                    deletehMetric?(metric.id)
+                }
             }
             Button(AnyMetricsStrings.Common.close, role: .cancel) {}
         } message: {
-            Text(AnyMetricsStrings.Metric.Actions.deleteMessage)
+            Text(
+                keepsInPersonalCatalog
+                    ? AnyMetricsStrings.Metric.Actions.hideMessage
+                    : AnyMetricsStrings.Metric.Actions.deleteMessage
+            )
         }
         .onChange(of: showConfirmationDelete) { presented in
             if !presented {

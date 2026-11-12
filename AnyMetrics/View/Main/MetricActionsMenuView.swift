@@ -23,6 +23,9 @@ struct MetricActionsMenuView: View {
     var onExport: () -> Void
     var onShare: () -> Void
     var onDelete: () -> Void
+    var deleteTitle: String = AnyMetricsStrings.Metric.Actions.delete
+    var deleteIcon: String = "trash"
+    var deleteIsDestructive: Bool = true
 
     @State
     private var sheetHeight: CGFloat = 420
@@ -72,9 +75,9 @@ struct MetricActionsMenuView: View {
                 .padding(.vertical, 4)
 
             actionRow(
-                title: AnyMetricsStrings.Metric.Actions.delete,
-                icon: "trash",
-                color: Constants.deleteColor,
+                title: deleteTitle,
+                icon: deleteIcon,
+                color: deleteIsDestructive ? Constants.deleteColor : Constants.textColor,
                 action: onDelete
             )
         }

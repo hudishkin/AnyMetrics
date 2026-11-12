@@ -4,6 +4,7 @@ public enum AppConfig {
     public static let emailForReport = "anymetrics.app@gmail.com"
     public static let group = "group.anymetrics.app"
     public static let metricsKey = "app.metrics"
+    public static let personalMetricsKey = "app.personalMetrics"
 
     public enum Urls {
         public static let galleryVersion = "v1"

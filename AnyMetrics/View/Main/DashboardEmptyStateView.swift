@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Пустой дашборд: призрачные карточки метрик, подпись и стрелка к кнопке добавления.
 struct DashboardEmptyStateView: View {
 
     @Environment(\.colorScheme)
@@ -8,7 +7,7 @@ struct DashboardEmptyStateView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            placeholderGrid(height: proxy.size.height)
+            placeholderGrid(size: proxy.size)
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
                 .clipped()
                 .overlay(alignment: .bottom) {
@@ -20,16 +19,17 @@ struct DashboardEmptyStateView: View {
         .accessibilityLabel(AnyMetricsStrings.Metric.placeholder)
     }
 
-    private func placeholderGrid(height: CGFloat) -> some View {
-        let columns = max(MainView.Constants.collumns.count, 1)
-        let rowHeight = MainView.Constants.size + MainView.Constants.spacing
-        let rows = max(2, Int(ceil(height / max(rowHeight, 1))))
+    private func placeholderGrid(size: CGSize) -> some View {
+        let columns = MainView.Constants.columnCount(for: size)
+        let cardSide = MainView.Constants.cardSide(for: size.width, columns: columns)
+        let rowHeight = cardSide + MainView.Constants.spacing
+        let rows = max(2, Int(ceil(size.height / max(rowHeight, 1))))
 
-        return LazyVGrid(columns: MainView.Constants.collumns, spacing: MainView.Constants.spacing) {
+        return LazyVGrid(columns: MainView.Constants.gridItems(count: columns), spacing: MainView.Constants.spacing) {
             ForEach(0..<(columns * rows), id: \.self) { _ in
                 RoundedRectangle(cornerRadius: cardCorner, style: .continuous)
                     .fill(cardFill)
-                    .frame(width: MainView.Constants.size, height: MainView.Constants.size)
+                    .frame(width: cardSide, height: cardSide)
             }
         }
         .padding(.horizontal, MainView.Constants.gridHorizontalPadding)
@@ -67,7 +67,6 @@ struct DashboardEmptyStateView: View {
         return 24
     }
 
-    /// Стрелка заканчивается над круглой кнопкой «+».
     private var arrowClearance: CGFloat {
         MainView.Constants.addButtonSize + Constants.buttonOuterPadding + Constants.arrowGap
     }
