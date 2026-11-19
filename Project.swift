@@ -40,7 +40,7 @@ let appInfoPlist: [String: Plist.Value] = [
             ])
         ])
     ]),
-    "GitHubClientID": .string("$(GITHUB_CLIENT_ID)"),
+    "GitHubClientID": .string("Ov23li1wn9UEvvgRhPUa"),
     "GoogleClientID": .string("$(GOOGLE_CLIENT_ID)")
 ]
 

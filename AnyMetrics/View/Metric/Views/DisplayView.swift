@@ -14,8 +14,6 @@ extension MetricFormView {
         @State
         private var showStyleEditor = false
         @State
-        private var showDesignGallery = false
-        @State
         private var showStyleImporter = false
         @State
         private var styleImportError: String?
@@ -121,16 +119,6 @@ extension MetricFormView {
             .sheet(isPresented: $showStyleEditor) {
                 styleEditorSheet
             }
-            .sheet(isPresented: $showDesignGallery) {
-                WidgetDesignGalleryView(
-                    items: designGalleryItems,
-                    onSelect: { item in
-                        applyDesignChoice(item.id)
-                        showDesignGallery = false
-                    },
-                    onClose: { showDesignGallery = false }
-                )
-            }
             .fileImporter(
                 isPresented: $showStyleImporter,
                 allowedContentTypes: [.json, .plainText],
@@ -199,27 +187,6 @@ extension MetricFormView {
             return small || medium
         }
 
-        private var designGalleryItems: [WidgetDesignGalleryView.Item] {
-            WidgetDesign.allCases.map { design in
-                let isSelected = design == viewState.state.widgetDesign
-                return WidgetDesignGalleryView.Item(
-                    id: design.rawValue,
-                    metric: previewMetric(
-                        for: design,
-                        appearance: isSelected ? viewState.state.widgetAppearance : .preset(design)
-                    ),
-                    isSelected: isSelected
-                )
-            }
-        }
-
-        private func applyDesignChoice(_ id: String) {
-            guard let design = WidgetDesign(rawValue: id),
-                  design != viewState.state.widgetDesign
-            else { return }
-            viewState.trigger(.setWidgetAppearance(.preset(design)))
-        }
-
         private func designPreview(metric: Metric, size: CGFloat) -> some View {
             MetricWidgetDesignView(
                 metric: metric,
@@ -232,9 +199,6 @@ extension MetricFormView {
 
         private var designActionsMenu: some View {
             Menu {
-                Button(AnyMetricsStrings.Addmetric.Design.chooseDesign) {
-                    openAfterMenu { showDesignGallery = true }
-                }
                 Button(AnyMetricsStrings.Addmetric.Design.editDesign) {
                     openAfterMenu {
                         editorDraft = viewState.state.widgetAppearance

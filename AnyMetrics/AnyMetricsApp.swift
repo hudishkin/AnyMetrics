@@ -13,6 +13,7 @@ struct AnyMetricsApp: App {
                 .task {
                     guard !isPreview else { return }
                     await AuthSession.shared.restore()
+                    await GenerationJobService.shared.resume()
                 }
         }
     }

@@ -85,6 +85,8 @@
 
 "gallery.no-metric-message" = "Если вы не нашли метрику,\nвы можете добавить ее вручную ↑\n\nИли отправить сообщение с информацией о метрике, мы добавим ее в галерею.";
 "gallery.button.send" = "Отправить информацию";
+"gallery.button.subscribe" = "Старт. Подписаться";
+"gallery.button.unsubscribe" = "Стоп. Отписаться";
 "gallery.message.subject" = "[AnyMetrics] Не нашел метрику";
 "gallery.title" = "Галерея";
 
@@ -164,7 +166,6 @@
 
 "addmetric.error.cannot-save" = "Не удалось создать метрику. Проверьте URL и обязательные поля и попробуйте снова.";
 
-"addmetric.field.widget-design" = "Дизайн виджета";
 "addmetric.design.glass-circle" = "Стекло";
 "addmetric.design.rounded-card" = "Карточка";
 "addmetric.design.minimal" = "Минимализм";
@@ -177,7 +178,6 @@
 "addmetric.design.undo" = "Отменить";
 "addmetric.design.redo" = "Вернуть";
 "addmetric.design.plain" = "Без заливки";
-"addmetric.design.choose-design" = "Выбрать дизайн";
 "addmetric.design.custom" = "Свой";
 "addmetric.design.edit-selected" = "Редактировать";
 "addmetric.design.edit-design" = "Редактировать дизайн";
@@ -273,17 +273,26 @@
 
 // MARK: - Profile
 
-"profile.title" = "Аккаунт";
+"profile.title" = "Профиль";
 "profile.signed-out" = "Войдите, чтобы баланс хранился в этом аккаунте.";
 "profile.sign-in-unavailable" = "Вход сейчас недоступен.";
 "profile.name-unknown" = "Аккаунт";
 "profile.id" = "ID";
 "profile.balance" = "Баланс";
+"profile.generated-items" = "Сгенерированные";
+"profile.metric-count-one" = "%@ метрика";
+"profile.metric-count-few" = "%@ метрики";
+"profile.metric-count-many" = "%@ метрик";
+"profile.top-up" = "Пополнить";
 "profile.paid" = "Покупки";
 "profile.paid-yes" = "Есть";
 "profile.paid-no" = "Нет";
 "profile.log-out" = "Выйти";
 "profile.log-out-confirm" = "Выйти из аккаунта на этом устройстве?";
+"profile.delete-account" = "Удалить аккаунт";
+"profile.delete-account-confirm" = "Удалить аккаунт и его данные? Это нельзя отменить.";
+"profile.more" = "Ещё";
+"profile.sign-in-heading" = "Вход в аккаунт";
 "profile.sign-in-apple" = "Войти через Apple";
 "profile.sign-in-google" = "Войти через Google";
 "profile.sign-in-github" = "Войти через GitHub";
@@ -394,6 +403,8 @@
 "dev-menu.server-url-placeholder" = "https://api.example.com";
 "dev-menu.server-apply" = "Использовать";
 "dev-menu.server-invalid" = "Нужен адрес http или https";
+"dev-menu.simulation" = "Симуляция";
+"dev-menu.simulation-footer" = "Следующий поиск будет симуляцией: без вызова модели и без списания кредита.";
 
 // MARK: - Generate
 
@@ -401,9 +412,21 @@
 "generate.greeting" = "Я найду для тебя данные, которые ты хочешь видеть и следить за обновлениями.";
 "generate.examples" = "Пример метрик";
 "generate.placeholder" = "Опишите метрику";
+"generate.waiting" = "Секунду…";
+"generate.searching" = "Выполняю работу";
+"generate.status.finding" = "Ищу источник данных";
+"generate.status.checking" = "Проверяю данные";
+"generate.status.creating" = "Создаю метрику";
+"generate.answer-placeholder" = "Ваш ответ";
+"generate.try-again" = "Попробовать ещё раз";
+"generate.generate-new" = "Новая генерация";
+"generate.prompt-too-long" = "Опишите метрику не длиннее 2000 символов.";
 "generate.send" = "Отправить";
 "generate.history" = "История";
 "generate.history.empty" = "Здесь появятся ваши запросы.";
+"generate.more" = "Ещё";
+"generate.reset" = "Сбросить";
+"generate.reset.message" = "Текущее создание метрики будет очищено.";
 "generate.example.people-in-space" = "Люди в космосе";
 "generate.example.iss" = "Где МКС";
 "generate.example.bitcoin" = "Цена биткоина";

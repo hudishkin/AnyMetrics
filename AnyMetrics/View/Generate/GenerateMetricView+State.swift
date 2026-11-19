@@ -11,14 +11,21 @@ extension GenerateMetricView {
 
     struct VState: StateProtocol {
         var draft: String = ""
+        var jobID: UUID?
+        var userLines: [String] = []
+        var isAnswering: Bool = false
+        var generationError: String?
         var examples: [ExamplePrompt] = []
+        /// One search for this visit. A new screen, and Try again, each get a new key.
+        var idempotencyKey: String = UUID().uuidString.lowercased()
     }
 
     enum VAction: ActionProtocol {
         case onAppear
         case setDraft(String)
         case selectExample(String)
-        case send
+        case send(String)
+        case reset
     }
 
     enum VNotification: NotificationProtocol {

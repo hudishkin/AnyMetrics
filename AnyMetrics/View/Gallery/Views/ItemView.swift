@@ -42,8 +42,8 @@ extension GalleryView {
                         removeMetric(metric.id)
 
                     } label: {
-                        AnyMetricsAsset.Assets.minus.swiftUIImage
-                            .renderingMode(.template)
+                        Image(systemName: "minus")
+                            .font(.system(size: 22, weight: .thin))
                             .foregroundColor(.white)
                             .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
                             .contentShape(.interaction, Circle())
@@ -51,13 +51,14 @@ extension GalleryView {
                     .modifier(GalleryRemoveButtonChrome())
                     .contentShape(.interaction, Circle())
                     .offset(Constants.itemButtonOffset)
+                    .accessibilityLabel(AnyMetricsStrings.Gallery.Button.unsubscribe)
                 } else {
 
                     Button {
                         addMetric(metric)
                     } label: {
-                        AnyMetricsAsset.Assets.plus.swiftUIImage
-                            .renderingMode(.template)
+                        Image(systemName: "plus")
+                            .font(.system(size: 22, weight: .thin))
                             .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                             .frame(width: Constants.itemButtonSize, height: Constants.itemButtonSize, alignment: .center)
                             .contentShape(.interaction, Circle())
@@ -65,6 +66,7 @@ extension GalleryView {
                     .modifier(GalleryAddButtonChrome())
                     .contentShape(.interaction, Circle())
                     .offset(Constants.itemButtonOffset)
+                    .accessibilityLabel(AnyMetricsStrings.Gallery.Button.subscribe)
 
                 }
 

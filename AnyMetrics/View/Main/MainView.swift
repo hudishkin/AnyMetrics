@@ -286,11 +286,9 @@ struct MainView: View {
             ImpactHelper.impactButton()
             sheetType = .addMetrics
         } label: {
-            AnyMetricsAsset.Assets.plus.swiftUIImage
-                .resizable()
-                .renderingMode(.template)
+            Image(systemName: "plus")
+                .font(.system(size: Constants.addButtonSize - Constants.addButtonPadding * 2, weight: .thin))
                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                .padding(Constants.addButtonPadding)
                 .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
                 .contentShape(Circle())
         }

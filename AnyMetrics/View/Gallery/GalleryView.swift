@@ -31,6 +31,16 @@ struct GalleryView: View {
     @State
     var showGenerate: Bool = false
     @State
+    private var generateJobID: UUID?
+    @State
+    private var generateRoute = "new"
+    /// Set by Generate New. The finished card stays until then.
+    @State
+    private var resultDismissed = false
+    /// Job started on the open screen. The route id cannot change while that screen is up.
+    @State
+    private var restoreJobID: UUID?
+    @State
     var personalPendingDelete: Metric?
     @State
     private var didLogOpen = false
@@ -56,7 +66,14 @@ struct GalleryView: View {
             ZStack {
                 List {
                     NavigationLink(isActive: $showGenerate) {
-                        GenerateMetricView()
+                        GenerateMetricView(
+                            jobID: generateJobID,
+                            onDismissResult: { resultDismissed = true },
+                            onRememberJob: { jobID in
+                                resultDismissed = false
+                                restoreJobID = jobID
+                            }
+                        )
                     } label: {
                         HStack(spacing: 12) {
                             GenerateAIAnimation()
@@ -70,6 +87,7 @@ struct GalleryView: View {
                     .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                     .listRowSeparator(.hidden)
                     .modifier(GenerateAIBorder())
+                    .id(generateRoute)
 
                     NavigationLink(isActive: $showAddMenu) {
                         MetricFormView(
@@ -84,7 +102,7 @@ struct GalleryView: View {
                         .navigationBarTitleDisplayMode(.inline)
                     } label: {
                         actionLabel(
-                            icon: AnyMetricsAsset.Assets.plus.swiftUIImage,
+                            icon: Image(systemName: "plus"),
                             title: AnyMetricsStrings.Metric.Add.manual
                         )
                     }
@@ -105,7 +123,7 @@ struct GalleryView: View {
                         .navigationBarTitleDisplayMode(.inline)
                     } label: {
                         actionLabel(
-                            icon: AnyMetricsAsset.Assets.import.swiftUIImage,
+                            icon: Image(systemName: "square.and.arrow.down"),
                             title: AnyMetricsStrings.Metric.Add.importRow
                         )
                     }
@@ -192,7 +210,10 @@ struct GalleryView: View {
 
         }
         .listStyle(PlainListStyle())
-        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: catalogDetailIsOpen ? .automatic : .always)
+        )
         .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
         .onChange(of: searchText, perform: { newValue in
             viewState.trigger(.search(newValue.trimmingCharacters(in: .whitespacesAndNewlines)))
@@ -200,11 +221,26 @@ struct GalleryView: View {
         .onAppear {
             viewState.trigger(.onAppear)
             mainState.trigger(.migratePersonalCatalog)
+            adoptGenerateRouteIfNeeded()
             if !didLogOpen {
                 didLogOpen = true
                 AnalyticsEvents.galleryOpened(
                     entry: isPicker ? AnalyticsEvents.GalleryEntry.onboarding : AnalyticsEvents.GalleryEntry.main
                 )
+            }
+        }
+        .background {
+            // Observing the job here, not on the gallery, keeps a poll from rebuilding the open screen.
+            GenerateLiveRouteMonitor(screenOpen: showGenerate) { jobID in
+                syncGenerateRoute(liveJobID: jobID)
+            }
+        }
+        .onChange(of: showGenerate) { shown in
+            guard !shown else { return }
+            // Let the pop finish, then keep a finished metric or open a blank screen.
+            Task { @MainActor in
+                guard !showGenerate else { return }
+                syncGenerateRoute(liveJobID: GenerationJobService.shared.live?.jobId)
             }
         }
         .onChange(of: showAddMenu, perform: { shown in
@@ -217,6 +253,68 @@ struct GalleryView: View {
     }
 
     private var isPicker: Bool { onPickMetric != nil }
+
+    /// A session still in progress, or the metric waiting for Generate New.
+    private func adoptGenerateRouteIfNeeded() {
+        guard !showGenerate else { return }
+        if let jobID = GenerationJobService.shared.live?.jobId {
+            restoreJobID = jobID
+            if generateJobID == nil {
+                generateJobID = jobID
+            }
+            return
+        }
+        guard !resultDismissed else { return }
+        if let current = restoreJobID ?? generateJobID, shouldKeepGenerateJob(current) {
+            adoptGenerateJob(current)
+        }
+    }
+
+    private func syncGenerateRoute(liveJobID: UUID?) {
+        if let liveJobID {
+            resultDismissed = false
+            restoreJobID = liveJobID
+            if generateJobID == nil {
+                generateJobID = liveJobID
+            } else if generateJobID != liveJobID {
+                adoptGenerateJob(liveJobID)
+            }
+            return
+        }
+        if resultDismissed {
+            resultDismissed = false
+            restoreJobID = nil
+            dropGenerateRoute()
+            return
+        }
+        if let candidate = restoreJobID ?? generateJobID, shouldKeepGenerateJob(candidate) {
+            adoptGenerateJob(candidate)
+            return
+        }
+        dropGenerateRoute()
+    }
+
+    private func adoptGenerateJob(_ jobID: UUID) {
+        generateJobID = jobID
+        generateRoute = jobID.uuidString
+    }
+
+    private func dropGenerateRoute() {
+        generateJobID = nil
+        generateRoute = UUID().uuidString
+    }
+
+    private func shouldKeepGenerateJob(_ jobID: UUID) -> Bool {
+        guard let record = GenerationJobService.shared.record(jobID: jobID) else { return false }
+        if record.isOpen { return true }
+        guard let job = record.job else { return false }
+        return GeneratedMetricAdapter.metric(from: job) != nil
+    }
+
+    /// `.always` stays pinned on pushed screens, so drop it while a catalog page is open.
+    private var catalogDetailIsOpen: Bool {
+        showGenerate || showAddMenu || showImportMenu
+    }
 
     private var trimmedSearch: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -246,8 +344,7 @@ struct GalleryView: View {
     private func actionLabel(icon: Image, title: String) -> some View {
         HStack(spacing: 12) {
             icon
-                .resizable()
-                .aspectRatio(contentMode: .fit)
+                .font(.system(size: Constants.createNewIcon, weight: .thin))
                 .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
             Text(title).font(Constants.itemTitleFont)
         }
@@ -439,13 +536,6 @@ private struct GenerateAIAnimation: View {
 }
 
 private struct GenerateAIBorder: ViewModifier {
-    @Environment(\.accessibilityReduceMotion)
-    private var reduceMotion
-    @Environment(\.colorScheme)
-    private var colorScheme
-
-    private static let cycle: TimeInterval = 6
-
     func body(content: Content) -> some View {
         content
             .padding(.bottom, 16)
@@ -453,21 +543,37 @@ private struct GenerateAIBorder: ViewModifier {
     }
 
     private var plate: some View {
+        AIGradientBorder(cornerRadius: GalleryView.Constants.itemCorner)
+            .padding(.horizontal, 4)
+            .padding(.top, 2)
+            .padding(.bottom, 16)
+    }
+}
+
+struct AIGradientBorder: View {
+    var cornerRadius: CGFloat
+
+    @Environment(\.accessibilityReduceMotion)
+    private var reduceMotion
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    private static let cycle: TimeInterval = 6
+
+    var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { timeline in
             let turn = reduceMotion
                 ? 0.15
                 : timeline.date.timeIntervalSinceReferenceDate
                     .truncatingRemainder(dividingBy: Self.cycle) / Self.cycle
             border(turn: turn)
-                .padding(.horizontal, 4)
-                .padding(.top, 2)
-                .padding(.bottom, 16)
         }
+        .allowsHitTesting(false)
     }
 
     private func border(turn: Double) -> some View {
         let angle = turn * 360
-        let shape = RoundedRectangle(cornerRadius: GalleryView.Constants.itemCorner, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         let gradient = AngularGradient(
             gradient: Self.gradient,
             center: .center,
@@ -485,7 +591,6 @@ private struct GenerateAIBorder: ViewModifier {
             shape
                 .strokeBorder(gradient, lineWidth: 0.5)
         }
-        .allowsHitTesting(false)
     }
 
     private static let gradient = Gradient(stops: [
@@ -498,6 +603,22 @@ private struct GenerateAIBorder: ViewModifier {
         .init(color: Color(red: 0.62, green: 0.78, blue: 0.88), location: 0.86),
         .init(color: Color(red: 0.45, green: 0.76, blue: 0.72), location: 1.00),
     ])
+}
+
+/// Watches the open generation without invalidating the gallery list.
+private struct GenerateLiveRouteMonitor: View {
+    @ObservedObject private var generation = GenerationJobService.shared
+    var screenOpen: Bool
+    var onLiveJob: (UUID?) -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onChange(of: generation.live?.jobId) { jobID in
+                guard !screenOpen else { return }
+                onLiveJob(jobID)
+            }
+    }
 }
 
 #if DEBUG

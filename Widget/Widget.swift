@@ -96,15 +96,44 @@ struct WidgetEntryView: View {
     private var family
 
     var body: some View {
-        MetricWidgetAdaptiveView(
-            metric: entry.metric,
-            palette: .widget(),
-            layout: widgetLayout,
-            useGlassEffect: glassEffect,
-            updatedAt: entry.metric.updated
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .widgetContainerBackground()
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .widgetContainerBackground()
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if showsRobotPlaceholder {
+            EmptyMetricWidget()
+        } else {
+            MetricWidgetAdaptiveView(
+                metric: entry.metric,
+                palette: .widget(),
+                layout: widgetLayout,
+                useGlassEffect: glassEffect,
+                updatedAt: entry.metric.updated
+            )
+        }
+    }
+
+    /// Unconfigured home-screen widget: no title and no value yet.
+    private var showsRobotPlaceholder: Bool {
+        guard isHomeScreen else { return false }
+        let metric = entry.metric
+        return metric.title.isEmpty
+            && metric.result.isEmpty
+            && metric.resultImagePath == nil
+            && !metric.refreshFailed
+            && !metric.resultWithError
+    }
+
+    private var isHomeScreen: Bool {
+        switch family {
+        case .systemSmall, .systemMedium:
+            return true
+        default:
+            return false
+        }
     }
 
     private var widgetLayout: MetricWidgetLayout {
@@ -152,6 +181,21 @@ struct AMWidget: Widget {
     }
 }
 
+private struct EmptyMetricWidget: View {
+    var body: some View {
+        GeometryReader { geo in
+            let side = min(geo.size.width, geo.size.height)
+            ZStack {
+                RobotMeshBackground()
+                RobotFaceView(size: side * 0.84, kind: .glance, ink: .white, animated: false)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("AnyMetrics")
+    }
+}
+
 private extension View {
     /// Required on iOS 17+; without it Home Screen shows "Please adopt containerBackground API".
     @ViewBuilder
@@ -173,6 +217,13 @@ struct AMWidget_Previews: PreviewProvider {
             .previewContext(WidgetPreviewContext(family: .systemSmall))
         WidgetEntryView(entry: AMEntry(date: Date(), configuration: ConfigurationIntent(), metric: Mocks.metricJson))
             .previewContext(WidgetPreviewContext(family: .systemMedium))
+        WidgetEntryView(entry: AMEntry(
+            date: Date(),
+            configuration: ConfigurationIntent(),
+            metric: Metric(id: UUID(), title: "", measure: "", type: .json, result: "")
+        ))
+        .previewContext(WidgetPreviewContext(family: .systemSmall))
+        .previewDisplayName("Empty")
     }
 }
 #endif

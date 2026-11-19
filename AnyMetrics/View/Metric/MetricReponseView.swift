@@ -16,7 +16,7 @@ fileprivate enum Constants {
     static let responseFont = Font.system(size: 12, design: .monospaced)
     static let responsPaddingButton: CGFloat = -10
     static let mainButtonFont = Font.system(size: 17, weight: .semibold, design: .default)
-    static let requestImage = AnyMetricsAsset.Assets.request.swiftUIImage
+    static let requestImage = Image(systemName: "paperplane")
     static let createNewIcon: CGFloat = 16
     static let buttonBackground = AnyMetricsAsset.Assets.baseText.swiftUIColor
     static let buttonTextColor = AnyMetricsAsset.Assets.addMetricTint.swiftUIColor
@@ -68,11 +68,8 @@ struct MetricResponseView: View {
                                 } label: {
                                     HStack {
                                         Constants.requestImage
-                                            .resizable()
-                                            .renderingMode(.template)
+                                            .font(.system(size: Constants.createNewIcon, weight: .thin))
                                             .foregroundColor(Constants.buttonBackground)
-                                            .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
-                                            .aspectRatio(contentMode: .fit)
                                         Text(AnyMetricsStrings.Addmetric.Button.makeRequest)
                                             .font(Constants.mainButtonFont)
                                             .foregroundColor(Constants.buttonBackground)

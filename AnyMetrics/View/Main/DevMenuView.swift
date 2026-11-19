@@ -19,6 +19,8 @@ struct DevMenuView: View {
     private var selectedID = APIServerStore.shared.current.id
     @State
     private var customURLIsInvalid = false
+    @State
+    private var simulation = DevSettings.simulateGeneration
 
     var body: some View {
         NavigationView {
@@ -58,6 +60,15 @@ struct DevMenuView: View {
                         Text(AnyMetricsStrings.DevMenu.serverInvalid)
                             .foregroundColor(.red)
                     }
+                }
+
+                Section {
+                    Toggle(AnyMetricsStrings.DevMenu.simulation, isOn: $simulation)
+                        .onChange(of: simulation) { value in
+                            DevSettings.simulateGeneration = value
+                        }
+                } footer: {
+                    Text(AnyMetricsStrings.DevMenu.simulationFooter)
                 }
 
                 Button(AnyMetricsStrings.DevMenu.showOnboarding) {
@@ -149,5 +160,14 @@ struct DevMenuView: View {
 
 #Preview {
     DevMenuView(onShowOnboarding: {}, onShowReviewPrompt: {})
+}
+
+enum DevSettings {
+    private static let simulationKey = "dev.generate.simulation"
+
+    static var simulateGeneration: Bool {
+        get { UserDefaults.standard.bool(forKey: simulationKey) }
+        set { UserDefaults.standard.set(newValue, forKey: simulationKey) }
+    }
 }
 #endif

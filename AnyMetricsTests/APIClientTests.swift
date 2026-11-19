@@ -80,6 +80,7 @@ final class APIClientTests: XCTestCase {
         let request = try XCTUnwrap(transport.requests.first)
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer session-token")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Idempotency-Key"), "one-search")
+        XCTAssertNil(request.url?.query)
         let body = apiObject(request.httpBody)
         XCTAssertEqual(body["prompt"] as? String, "Star count")
         XCTAssertEqual(body["locale"] as? String, "ru-RU")
@@ -147,6 +148,11 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(job.result?.metric.request.headers, [:])
         XCTAssertEqual(job.result?.validation.sampleValue, "10")
         XCTAssertEqual(job.result?.source.kind, .publicAPI)
+        XCTAssertEqual(job.result?.source.name, "GitHub")
+        XCTAssertEqual(job.result?.source.website, "https://github.com")
+        XCTAssertEqual(job.result?.metric.author, "GitHub")
+        XCTAssertEqual(job.result?.metric.website, "https://github.com")
+        XCTAssertNil(job.simulation)
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         XCTAssertEqual(
@@ -178,21 +184,6 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(failed.draft?.metric.rules.parseRules, "main.temp")
     }
 
-    func testWatchJobStopsWhenTheJobNeedsInput() async throws {
-        transport.responses = [
-            .success((200, apiJSON(#"{"jobId":"80d9fc21-3e2d-41b6-93ec-0d5474cb0758","status":"queued","prompt":"Star count","createdAt":"2026-11-08T12:00:00.000Z"}"#))),
-            .success((200, apiJSON(needsInputJSON)))
-        ]
-
-        var statuses: [BuilderAPI.JobStatus] = []
-        for try await job in client.watchJob(apiJobID, intervalNanoseconds: 1_000_000) {
-            statuses.append(job.status)
-        }
-
-        XCTAssertEqual(statuses, [.queued, .needsInput])
-        XCTAssertEqual(transport.requests.count, 2)
-    }
-
     func testValidateDoesNotSendASession() async throws {
         let body = """
         {"validation":{"success":false,"message":"missed","validatedAt":"2026-11-05T12:00:00Z"}}
@@ -222,14 +213,52 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(list.jobs.map(\.status), [.completed, .failed])
         XCTAssertEqual(list.jobs.map(\.prompt), ["Star count", "погода в Москве"])
         XCTAssertEqual(list.jobs.first?.jobId, apiJobID)
+        XCTAssertNil(list.jobs.first?.question)
+        XCTAssertNil(list.jobs.first?.simulation)
         let request = try XCTUnwrap(transport.requests.first)
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertEqual(request.url?.path, "/v1/jobs")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer session-token")
     }
+
+    func testSimulationGenerateSendsTestModeAndKeepsTheFlagOnTheJob() async throws {
+        let queued = #"{"jobId":"80d9fc21-3e2d-41b6-93ec-0d5474cb0758","status":"queued"}"#
+        let waiting = """
+        {"jobId":"80d9fc21-3e2d-41b6-93ec-0d5474cb0758","status":"needs_input","simulation":true,"prompt":"погода","createdAt":"2026-11-08T12:00:00.000Z","question":{"text":"Какой показатель показать?","options":["Значение","Изменение"],"allowsFreeText":true}}
+        """
+        let list = """
+        {"jobs":[{"jobId":"80d9fc21-3e2d-41b6-93ec-0d5474cb0758","status":"needs_input","prompt":"погода","createdAt":"2026-11-08T12:00:00.000Z","simulation":true,"question":{"text":"Какой показатель показать?","options":["Значение","Изменение"],"allowsFreeText":true}}]}
+        """
+        transport.responses = [
+            .success((202, apiJSON(queued))),
+            .success((200, apiJSON(waiting))),
+            .success((200, apiJSON(list)))
+        ]
+
+        let accepted = try await client.generate(
+            BuilderAPI.GenerateRequest(prompt: "погода", locale: "ru-RU"),
+            idempotencyKey: "sim",
+            simulation: true
+        )
+
+        XCTAssertEqual(accepted.status, .queued)
+        let request = try XCTUnwrap(transport.requests.first)
+        XCTAssertEqual(request.url?.path, "/v1/metrics/generate")
+        XCTAssertEqual(request.url?.query, "test=1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Idempotency-Key"), "sim")
+
+        let job = try await client.job(apiJobID)
+        XCTAssertEqual(job.simulation, true)
+        XCTAssertEqual(job.question?.options, ["Значение", "Изменение"])
+
+        let summary = try await client.jobs().jobs.first
+        XCTAssertEqual(summary?.simulation, true)
+        XCTAssertEqual(summary?.question?.text, "Какой показатель показать?")
+        XCTAssertEqual(summary?.question?.allowsFreeText, true)
+    }
 }
 
-private let completedJobJSON = """
+let completedJobJSON = """
 {
   "jobId": "80d9fc21-3e2d-41b6-93ec-0d5474cb0758",
   "status": "completed",
@@ -249,7 +278,9 @@ private let completedJobJSON = """
         "headers": {}
       },
       "formatter": { "format": "none" },
-      "rules": { "type": "none", "parseRules": "stargazers_count", "caseSensitive": false }
+      "rules": { "type": "none", "parseRules": "stargazers_count", "caseSensitive": false },
+      "author": "GitHub",
+      "website": "https://github.com"
     },
     "validation": {
       "success": true,
@@ -262,13 +293,15 @@ private let completedJobJSON = """
     },
     "source": {
       "kind": "public_api",
-      "url": "https://api.github.com/repos/hudishkin/AnyMetrics"
+      "name": "GitHub",
+      "url": "https://api.github.com/repos/hudishkin/AnyMetrics",
+      "website": "https://github.com"
     }
   }
 }
 """
 
-private let needsInputJSON = """
+let needsInputJSON = """
 {
   "jobId": "80d9fc21-3e2d-41b6-93ec-0d5474cb0758",
   "status": "needs_input",

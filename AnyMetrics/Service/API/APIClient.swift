@@ -54,17 +54,20 @@ struct APIClient {
 
     func generate(
         _ body: BuilderAPI.GenerateRequest,
-        idempotencyKey: String? = nil
+        idempotencyKey: String? = nil,
+        simulation: Bool = false
     ) async throws -> BuilderAPI.AcceptedJob {
         var headers: [String: String] = [:]
         if let idempotencyKey, !idempotencyKey.isEmpty {
             headers["Idempotency-Key"] = idempotencyKey
         }
+        let query = simulation ? [URLQueryItem(name: "test", value: "1")] : []
         return try await submit(
             method: "POST",
             path: "/v1/metrics/generate",
             body: body,
             headers: headers,
+            query: query,
             authenticated: true,
             success: [202]
         )
@@ -99,36 +102,6 @@ struct APIClient {
             authenticated: true,
             success: [200]
         )
-    }
-
-    /// Yields each poll. Stops on `needs_input`, `completed`, `failed`, or `cancelled`.
-    func watchJob(
-        _ id: UUID,
-        intervalNanoseconds: UInt64 = 1_000_000_000
-    ) -> AsyncThrowingStream<BuilderAPI.Job, Error> {
-        AsyncThrowingStream { continuation in
-            let task = Task {
-                do {
-                    while !Task.isCancelled {
-                        let job = try await self.job(id)
-                        continuation.yield(job)
-                        if !job.status.isPolling {
-                            continuation.finish()
-                            return
-                        }
-                        try await Task.sleep(nanoseconds: intervalNanoseconds)
-                    }
-                    continuation.finish()
-                } catch is CancellationError {
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
-                }
-            }
-            continuation.onTermination = { _ in
-                task.cancel()
-            }
-        }
     }
 
     static func urlSession(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
@@ -169,6 +142,7 @@ extension APIClient {
         path: String,
         body: Body,
         headers: [String: String] = [:],
+        query: [URLQueryItem] = [],
         authenticated: Bool,
         success: Set<Int>
     ) async throws -> Response {
@@ -177,6 +151,7 @@ extension APIClient {
             path: path,
             body: try Self.encode(body),
             headers: headers,
+            query: query,
             authenticated: authenticated,
             success: success
         )
@@ -187,6 +162,7 @@ extension APIClient {
         path: String,
         body: Data? = nil,
         headers: [String: String] = [:],
+        query: [URLQueryItem] = [],
         authenticated: Bool,
         success: Set<Int>
     ) async throws -> Response {
@@ -195,6 +171,7 @@ extension APIClient {
             path: path,
             body: body,
             headers: headers,
+            query: query,
             authenticated: authenticated
         )
         guard success.contains(response.statusCode) else {
@@ -230,9 +207,10 @@ extension APIClient {
         path: String,
         body: Data?,
         headers: [String: String],
+        query: [URLQueryItem] = [],
         authenticated: Bool
     ) async throws -> (Data, HTTPURLResponse) {
-        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL else {
+        guard let url = Self.url(path: path, query: query, relativeTo: baseURL) else {
             throw BuilderAPI.ClientError.invalidResponse
         }
         var request = URLRequest(url: url)
@@ -254,6 +232,17 @@ extension APIClient {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         return try await transport(request)
+    }
+
+    private static func url(path: String, query: [URLQueryItem], relativeTo baseURL: URL) -> URL? {
+        guard let url = URL(string: path, relativeTo: baseURL)?.absoluteURL,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+        if !query.isEmpty {
+            components.queryItems = query
+        }
+        return components.url
     }
 
     private static func encode<T: Encodable>(_ value: T) throws -> Data {

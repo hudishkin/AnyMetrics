@@ -9,6 +9,7 @@ extension ProfileView {
         var providers: [BuilderAPI.SignInProvider] = []
         var isLoading = true
         var isSubmitting = false
+        var signingIn: BuilderAPI.SignInProvider?
         var loadFailed = false
     }
 

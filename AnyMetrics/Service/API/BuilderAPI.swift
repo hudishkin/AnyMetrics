@@ -3,7 +3,7 @@ import Foundation
 /// Wire types for the AnyMetrics AI Builder API.
 enum BuilderAPI {
 
-    struct Failure: Decodable, Equatable {
+    struct Failure: Codable, Equatable {
         var code: String?
         var message: String
         var balance: Int?
@@ -149,6 +149,9 @@ enum BuilderAPI {
         var status: JobStatus
         var prompt: String
         var createdAt: Date
+        var question: Question?
+        /// Present and true when the job was started with `test=1`.
+        var simulation: Bool?
     }
 
     struct CancelledJob: Decodable, Equatable {
@@ -156,13 +159,13 @@ enum BuilderAPI {
         var status: JobStatus
     }
 
-    struct Question: Decodable, Equatable {
+    struct Question: Codable, Equatable {
         var text: String
         var options: [String]?
         var allowsFreeText: Bool
     }
 
-    struct Job: Decodable, Equatable {
+    struct Job: Codable, Equatable {
         var jobId: UUID
         var status: JobStatus
         var prompt: String
@@ -173,37 +176,41 @@ enum BuilderAPI {
         var draft: DraftMetric?
         var result: GenerateResult?
         var alternative: MetricAlternative?
+        /// Present and true when the job was started with `test=1`.
+        var simulation: Bool?
     }
 
-    struct GenerateResult: Decodable, Equatable {
+    struct GenerateResult: Codable, Equatable {
         var metric: GeneratedMetric
         var validation: Validation
         var source: MetricSource
     }
 
-    struct MetricSource: Decodable, Equatable {
-        enum Kind: String, Decodable, Equatable {
+    struct MetricSource: Codable, Equatable {
+        enum Kind: String, Codable, Equatable {
             case publicAPI = "public_api"
             case gallery
         }
 
         var kind: Kind
+        var name: String?
         var url: String
+        var website: String?
     }
 
-    struct MetricAlternative: Decodable, Equatable {
+    struct MetricAlternative: Codable, Equatable {
         var reason: String
         var metric: GeneratedMetric
         var requirement: UserRequirement
     }
 
-    struct DraftMetric: Decodable, Equatable {
+    struct DraftMetric: Codable, Equatable {
         var metric: GeneratedMetric
         var validated: Bool
     }
 
-    struct UserRequirement: Decodable, Equatable {
-        enum Kind: String, Decodable, Equatable {
+    struct UserRequirement: Codable, Equatable {
+        enum Kind: String, Codable, Equatable {
             case apiKey = "api_key"
             case account
             case other
@@ -306,8 +313,8 @@ enum BuilderAPI {
         var validation: Validation
     }
 
-    struct Validation: Decodable, Equatable {
-        enum ValueKind: String, Decodable, Equatable {
+    struct Validation: Codable, Equatable {
+        enum ValueKind: String, Codable, Equatable {
             case content, status
         }
 

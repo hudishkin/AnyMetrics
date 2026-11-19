@@ -129,7 +129,7 @@ extension ProfileView {
             updater: @escaping StateUpdater<S>
         ) async {
             let token = nextGeneration()
-            await updater { $0.isSubmitting = true }
+            await updater { $0.signingIn = provider }
             do {
                 let account = try await ProviderSignIn.signIn(provider)
                 guard isCurrent(token) else { return }
@@ -137,13 +137,13 @@ extension ProfileView {
                     $0.account = account
                     $0.isSignedIn = true
                     $0.providers = []
-                    $0.isSubmitting = false
+                    $0.signingIn = nil
                     $0.isLoading = false
                     $0.loadFailed = false
                 }
             } catch {
                 guard isCurrent(token) else { return }
-                await updater { $0.isSubmitting = false }
+                await updater { $0.signingIn = nil }
                 if !isCancellation(error) {
                     notifications.send(.error(message(for: error)))
                 }
