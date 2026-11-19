@@ -119,14 +119,11 @@ struct ProfileView: View {
         } else {
             VStack(spacing: 0) {
                 Spacer()
-                VStack(spacing: 28) {
-                    VStack(spacing: 16) {
-                        appIcon
-                        Text(AnyMetricsStrings.Profile.signInHeading)
-                            .font(Constants.fontTitle)
-                            .foregroundColor(Constants.textColor)
-                            .multilineTextAlignment(.center)
-                    }
+                VStack(spacing: 12) {
+                    Text(AnyMetricsStrings.Profile.selectMethod)
+                        .font(Constants.fontBody)
+                        .foregroundColor(Constants.secondaryColor)
+                        .multilineTextAlignment(.center)
                     VStack(spacing: 12) {
                         ForEach(viewState.state.providers, id: \.self) { provider in
                             signInButton(provider)
@@ -135,6 +132,8 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, Constants.horizontalPadding)
                 Spacer()
+                legalLink
+                    .padding(.bottom, 12)
             }
         }
     }
@@ -236,13 +235,23 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var legalLink: some View {
+        Button {
+        } label: {
+            Text(AnyMetricsStrings.Profile.termsAndPrivacy)
+                .font(.system(size: 13))
+                .foregroundColor(Constants.secondaryColor)
+        }
+        .buttonStyle(.plain)
+    }
+
     private var closeButton: some View {
         Button {
             ImpactHelper.impactButton()
             dismiss()
         } label: {
-            Text(AnyMetricsStrings.Common.close)
-                .font(Constants.fontBody)
+            Image(systemName: "xmark")
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(Constants.textColor)
         }
         .buttonStyle(.plain)
@@ -292,14 +301,6 @@ struct ProfileView: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, Constants.horizontalPadding)
-    }
-
-    private var appIcon: some View {
-        AnyMetricsAsset.Assets.appIconInfo.swiftUIImage
-            .resizable()
-            .frame(width: Constants.iconSize, height: Constants.iconSize)
-            .clipShape(RoundedRectangle(cornerRadius: Constants.iconCorner, style: .continuous))
-            .accessibilityHidden(true)
     }
 
     private func signInButton(_ provider: BuilderAPI.SignInProvider) -> some View {

@@ -186,14 +186,21 @@ private struct EmptyMetricWidget: View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             ZStack {
-                RobotMeshBackground()
-                RobotFaceView(size: side * 0.84, kind: .glance, ink: .white, animated: false)
+                WidgetGradientFill(colors: Self.hazeFallback, mesh: .haze)
+                RobotFaceView(size: side * 0.84, kind: .glance, ink: .white, filled: false, animated: false)
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("AnyMetrics")
     }
+
+    /// Linear ramp for systems without mesh gradients (before iOS 18).
+    private static let hazeFallback: [Color] = [
+        Color(red: 0.91, green: 0.84, blue: 1.0),
+        Color(red: 0.99, green: 0.73, blue: 0.45),
+        Color(red: 0.98, green: 0.57, blue: 0.24)
+    ]
 }
 
 private extension View {

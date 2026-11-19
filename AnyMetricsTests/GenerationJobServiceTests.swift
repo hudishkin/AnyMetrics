@@ -1030,20 +1030,30 @@ final class GenerationJobStoreTests: XCTestCase {
         XCTAssertEqual(defaults.data(forKey: "generation.jobs.local.corrupt"), Data("not-json".utf8))
     }
 
-    func testLiveJobIsTheNewestSessionStillOpen() {
-        let older = UUID()
+    func testLiveJobIsTheLatestAttemptWhileItIsOpen() {
         let waiting = UUID()
-        let jobs = [
-            jobRecord(id: older, status: .running, startedAt: 10),
-            jobRecord(id: waiting, status: .needsInput, startedAt: 20),
-            jobRecord(id: UUID(), status: .completed, startedAt: 30),
-            jobRecord(id: nil, status: .queued, startedAt: 40),
-            jobRecord(id: UUID(), status: .failed, startedAt: 50),
-            jobRecord(id: UUID(), status: .cancelled, startedAt: 60)
+        let open = [
+            jobRecord(id: UUID(), status: .running, startedAt: 10),
+            jobRecord(id: UUID(), status: .completed, startedAt: 15),
+            jobRecord(id: waiting, status: .needsInput, startedAt: 20)
         ]
-
-        XCTAssertEqual(GenerationJobService.liveJob(in: jobs)?.jobId, waiting)
+        XCTAssertEqual(GenerationJobService.liveJob(in: open)?.jobId, waiting)
         XCTAssertNil(GenerationJobService.liveJob(in: []))
+    }
+
+    func testLiveJobIgnoresQuestionsAbandonedForANewerSearch() {
+        let abandoned = [
+            jobRecord(id: UUID(), status: .needsInput, startedAt: 10),
+            jobRecord(id: UUID(), status: .running, startedAt: 20),
+            jobRecord(id: UUID(), status: .completed, startedAt: 30)
+        ]
+        XCTAssertNil(GenerationJobService.liveJob(in: abandoned))
+
+        let notSubmitted = [
+            jobRecord(id: UUID(), status: .needsInput, startedAt: 10),
+            jobRecord(id: nil, status: .queued, startedAt: 20)
+        ]
+        XCTAssertNil(GenerationJobService.liveJob(in: notSubmitted))
     }
 
     private func jobRecord(

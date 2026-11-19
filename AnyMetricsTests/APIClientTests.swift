@@ -148,6 +148,7 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(job.result?.metric.request.headers, [:])
         XCTAssertEqual(job.result?.validation.sampleValue, "10")
         XCTAssertEqual(job.result?.source.kind, .publicAPI)
+        XCTAssertEqual(job.dialog, [])
         XCTAssertEqual(job.result?.source.name, "GitHub")
         XCTAssertEqual(job.result?.source.website, "https://github.com")
         XCTAssertEqual(job.result?.metric.author, "GitHub")
@@ -175,6 +176,10 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(question.status, .needsInput)
         XCTAssertEqual(question.question?.options, ["Stars", "Forks"])
         XCTAssertEqual(question.question?.allowsFreeText, true)
+        XCTAssertEqual(question.dialog.count, 1)
+        XCTAssertEqual(question.dialog[0].question.text, "Stars or forks?")
+        XCTAssertNil(question.dialog[0].answer)
+        XCTAssertNil(question.dialog[0].answeredAt)
 
         let failed = try await client.job(apiJobID)
         XCTAssertEqual(failed.status, .failed)
@@ -182,6 +187,12 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(failed.requirement?.kind, .apiKey)
         XCTAssertEqual(failed.draft?.validated, false)
         XCTAssertEqual(failed.draft?.metric.rules.parseRules, "main.temp")
+        XCTAssertEqual(failed.dialog.count, 1)
+        XCTAssertEqual(failed.dialog[0].question.text, "Which repository?")
+        XCTAssertEqual(failed.dialog[0].answer, "hudishkin/AnyMetrics")
+        let answered = ISO8601DateFormatter()
+        answered.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        XCTAssertEqual(failed.dialog[0].answeredAt, answered.date(from: "2026-11-08T12:01:05.000Z"))
     }
 
     func testValidateDoesNotSendASession() async throws {
@@ -307,7 +318,13 @@ let needsInputJSON = """
   "status": "needs_input",
   "prompt": "Stars or forks of hudishkin/AnyMetrics",
   "createdAt": "2026-11-08T12:00:00.000Z",
-  "question": { "text": "Stars or forks?", "options": ["Stars", "Forks"], "allowsFreeText": true }
+  "question": { "text": "Stars or forks?", "options": ["Stars", "Forks"], "allowsFreeText": true },
+  "dialog": [
+    {
+      "question": { "text": "Stars or forks?", "options": ["Stars", "Forks"], "allowsFreeText": true },
+      "askedAt": "2026-11-08T12:01:30.000Z"
+    }
+  ]
 }
 """
 
@@ -321,6 +338,14 @@ private let authRequiredJSON = """
     "code": "AUTH_REQUIRED",
     "message": "The source responds only with a key."
   },
+  "dialog": [
+    {
+      "question": { "text": "Which repository?", "allowsFreeText": true },
+      "askedAt": "2026-11-08T12:00:20.000Z",
+      "answer": "hudishkin/AnyMetrics",
+      "answeredAt": "2026-11-08T12:01:05.000Z"
+    }
+  ],
   "requirement": {
     "kind": "api_key",
     "text": "Get a key from the provider.",

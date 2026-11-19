@@ -16,6 +16,8 @@ struct GenerateMetricView: View {
     private var composerText = ""
     @Environment(\.accessibilityReduceMotion)
     private var reduceMotion
+    @Environment(\.colorScheme)
+    private var colorScheme
     @Environment(\.presentationMode)
     private var presentationMode
     @State
@@ -47,35 +49,57 @@ struct GenerateMetricView: View {
     private var confirmReset = false
     private var onDismissResult: () -> Void
     private var onRememberJob: (UUID) -> Void
+    /// History passes a job directly. The gallery screen reads `reopen` instead.
+    private var suppliedJobID: UUID?
+    @ObservedObject
+    private var reopen: GenerateReopen
+    /// Generate New drops the finished job. The card stays until then.
+    @State
+    private var dismissedJobID: UUID?
+    /// Route already applied on this visit. A restored screen can still be holding an older dialog.
+    @State
+    private var appliedRouteToken: String?
 
     init(
         jobID: UUID? = nil,
+        reopen: GenerateReopen = .detached,
         onDismissResult: @escaping () -> Void = {},
         onRememberJob: @escaping (UUID) -> Void = { _ in }
     ) {
         let record = jobID.flatMap { GenerationJobService.shared.record(jobID: $0) }
         let done = record?.job.flatMap(GeneratedMetricAdapter.metric(from:)) != nil
+        let answers = record?.job?.dialog.compactMap(\.answer) ?? []
         self.onDismissResult = onDismissResult
         self.onRememberJob = onRememberJob
+        self.suppliedJobID = jobID
+        _reopen = ObservedObject(wrappedValue: reopen)
         _keepsBubbles = State(initialValue: !done)
-        _viewState = StateObject(wrappedValue: ViewState(Interactor(jobID: jobID, prompt: record?.prompt)))
+        _viewState = StateObject(
+            wrappedValue: ViewState(Interactor(jobID: jobID, prompt: record?.prompt, answers: answers))
+        )
     }
 
     var body: some View {
         GeometryReader { proxy in
-            ZStack {
+            let robot = robotSize(for: proxy.size.height)
+            ZStack(alignment: .top) {
                 VStack(spacing: 0) {
-                    robotHeader(width: proxy.size.width)
+                    robotHeader(width: proxy.size.width, robot: robot)
                     messageLane
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 if let metric = completedMetric, presentsResult {
-                    readyMetric(metric)
+                    readyMetric(metric, size: robot)
+                        .padding(.top, Constants.headerTop + robot * Constants.robotDropShare)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
             }
             .padding(.bottom, Constants.composerSlot)
             .animation(arrive.delay(0.14), value: presentsResult)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                isComposerFocused = false
+            }
         }
         .overlay(alignment: .bottom) {
             composerDock
@@ -84,15 +108,19 @@ struct GenerateMetricView: View {
         .animation(.spring(response: 0.48, dampingFraction: 0.84), value: showsRetry)
         .animation(exitDown, value: showsNew)
         .background(alignment: .top) {
-            RobotGradientWash(direction: .down, softness: 0.92, opacity: 0.5)
-                .frame(height: Constants.glowHeight)
-                .ignoresSafeArea(edges: .top)
+            RobotGradientWash(
+                direction: .down,
+                softness: isDark ? 1 : 0.92,
+                opacity: isDark ? Constants.glowOpacityDark : Constants.glowOpacity
+            )
+            .frame(height: Constants.glowHeight)
+            .ignoresSafeArea(edges: .top)
         }
         .background(Color(uiColor: .systemBackground))
         .navigationTitle(AnyMetricsStrings.Generate.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbarColorScheme(.light, for: .navigationBar)
+        .toolbarColorScheme(isDark ? .dark : .light, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 ZStack {
@@ -139,6 +167,12 @@ struct GenerateMetricView: View {
         .tint(Constants.textColor)
         .background(DismissNavigationSearch())
         .onAppear {
+            if discardedRestoredDialog {
+                clearForBlankRoute()
+            } else if pinnedFinishedJobID != nil {
+                clearFinishedChrome()
+            }
+            appliedRouteToken = reopen.state.token
             viewState.trigger(.onAppear)
             if shownLine.isEmpty {
                 shownLine = robotLine
@@ -164,6 +198,17 @@ struct GenerateMetricView: View {
         .onChange(of: viewState.state.draft) { newValue in
             guard !sending, composerText != newValue else { return }
             composerText = newValue
+        }
+        .onChange(of: reopen.state) { next in
+            guard reopen !== GenerateReopen.detached else { return }
+            appliedRouteToken = next.token
+            if let id = next.jobID, dismissedJobID != id, finishedMetric(id) != nil {
+                clearFinishedChrome()
+                return
+            }
+            if next.jobID == nil, next.token != "new" {
+                clearForBlankRoute()
+            }
         }
         .onChange(of: viewState.state.jobID) { id in
             if let id {
@@ -192,6 +237,8 @@ struct GenerateMetricView: View {
         }
     }
 
+    private var isDark: Bool { colorScheme == .dark }
+
     private var composerVisible: Bool {
         showsPromptComposer || showsAnswerComposer || showsWaitingComposer || showsRetry || showsNew
     }
@@ -216,7 +263,6 @@ struct GenerateMetricView: View {
         }
         .padding(.top, 4)
         .padding(.bottom, 8)
-        .background(Color(uiColor: .systemBackground))
         .opacity(composerVisible ? 1 : 0)
         .offset(y: composerVisible || reduceMotion ? 0 : 10)
         .allowsHitTesting(composerVisible)
@@ -224,7 +270,7 @@ struct GenerateMetricView: View {
     }
 
     private var showsPromptComposer: Bool {
-        preparingNew || (completedMetric == nil && visibleUserLines.isEmpty)
+        preparingNew || (completedMetric == nil && displayedUserLines.isEmpty)
     }
 
     private var showsNew: Bool {
@@ -250,7 +296,7 @@ struct GenerateMetricView: View {
         completedMetric == nil
             && !preparingNew
             && !showsRetry
-            && (viewState.state.isAnswering || (!visibleUserLines.isEmpty && liveQuestion == nil))
+            && (viewState.state.isAnswering || (!displayedUserLines.isEmpty && liveQuestion == nil))
     }
 
     private var faceKind: RobotFaceView.Kind {
@@ -260,7 +306,7 @@ struct GenerateMetricView: View {
         if completedMetric == nil, failureMessage != nil {
             return .notFound
         }
-        if completedMetric == nil, !visibleUserLines.isEmpty {
+        if completedMetric == nil, !displayedUserLines.isEmpty {
             return .working
         }
         return .glance
@@ -284,7 +330,49 @@ struct GenerateMetricView: View {
             && failureMessage != nil
     }
 
+    /// Blank route after a finished visit, while this screen still has the previous dialog.
+    private var discardedRestoredDialog: Bool {
+        guard reopen !== GenerateReopen.detached else { return false }
+        guard reopen.state.jobID == nil, reopen.state.token != "new" else { return false }
+        guard appliedRouteToken != reopen.state.token else { return false }
+        return viewState.state.jobID != nil || !viewState.state.userLines.isEmpty
+    }
+
+    /// The gallery reopens an in-progress job through `reopen`. A restored conversation does not replace it.
+    private var requestedJobID: UUID? {
+        reopen === GenerateReopen.detached ? suppliedJobID : reopen.state.jobID
+    }
+
+    private func finishedMetric(_ jobID: UUID) -> Metric? {
+        generation.record(jobID: jobID)?.job.flatMap(GeneratedMetricAdapter.metric(from:))
+    }
+
+    private func clearFinishedChrome() {
+        preparingNew = false
+        sending = false
+        pendingLines = []
+        composerText = ""
+        questionEcho = nil
+        keepsBubbles = false
+    }
+
+    private func clearForBlankRoute() {
+        dismissedJobID = nil
+        preparingNew = false
+        sending = false
+        pendingLines = []
+        composerText = ""
+        isComposerFocused = false
+        questionEcho = nil
+        keepsBubbles = true
+        lineHidden = false
+        lineSqueezed = false
+        showRobotLine(AnyMetricsStrings.Generate.greeting)
+        viewState.trigger(.reset)
+    }
+
     private func startNew() {
+        dismissedJobID = requestedJobID
         preparingNew = true
         sending = false
         pendingLines = []
@@ -339,8 +427,19 @@ struct GenerateMetricView: View {
         .accessibilityIdentifier(identifier)
     }
 
+    /// Finished job passed in from the gallery. Wins over a conversation restored from the previous visit.
+    private var pinnedFinishedJobID: UUID? {
+        guard let requestedJobID, dismissedJobID != requestedJobID else { return nil }
+        guard finishedMetric(requestedJobID) != nil else { return nil }
+        return requestedJobID
+    }
+
+    private var activeJobID: UUID? {
+        pinnedFinishedJobID ?? viewState.state.jobID
+    }
+
     private var completedMetric: Metric? {
-        guard let jobID = viewState.state.jobID,
+        guard let jobID = activeJobID,
               let job = generation.record(jobID: jobID)?.job,
               var metric = GeneratedMetricAdapter.metric(from: job) else { return nil }
         metric.widgetAppearance = StarterMetric.appearance(for: .haze)
@@ -349,9 +448,9 @@ struct GenerateMetricView: View {
     }
 
     /// The card stays centered. Source and Add hang below and do not move that center.
-    private func readyMetric(_ metric: Metric) -> some View {
+    private func readyMetric(_ metric: Metric, size: CGFloat) -> some View {
         MetricContentView(metric: metric)
-            .frame(width: Constants.robotSize, height: Constants.robotSize)
+            .frame(width: size, height: size)
             .shadow(color: Color.black.opacity(0.16), radius: 22, x: 0, y: 14)
             .overlay(alignment: .bottom) {
                 VStack(spacing: 10) {
@@ -366,7 +465,7 @@ struct GenerateMetricView: View {
     }
 
     private var completedSource: BuilderAPI.MetricSource? {
-        guard let jobID = viewState.state.jobID,
+        guard let jobID = activeJobID,
               let source = generation.record(jobID: jobID)?.job?.result?.source else { return nil }
         return source
     }
@@ -425,28 +524,33 @@ struct GenerateMetricView: View {
         presentationMode.wrappedValue.dismiss()
     }
 
-    private func robotHeader(width: CGFloat) -> some View {
+    /// Smaller on short screens and while the keyboard is up, so the bubble, examples and field all fit.
+    private func robotSize(for height: CGFloat) -> CGFloat {
+        min(Constants.robotMaxSize, max(Constants.robotMinSize, height * Constants.robotHeightShare)).rounded()
+    }
+
+    private func robotHeader(width: CGFloat, robot: CGFloat) -> some View {
         VStack(spacing: 8) {
             ZStack(alignment: .top) {
-                face
-                if keepsBubbles {
+                face(size: robot)
+                if keepsBubbles, pinnedFinishedJobID == nil {
                     robotBubble(maxWidth: robotTextWidth(in: width))
                         .fixedSize()
                         .rotationEffect(.degrees(-3), anchor: .top)
-                        .padding(.top, Constants.robotSize - Constants.bubbleOverlap)
-                        .offset(y: departed ? departure(-340) : 0)
-                        .opacity(departed ? 0 : 1)
+                        .padding(.top, robot * (1 - Constants.bubbleOverlapShare))
+                        .offset(y: faceDeparted ? departure(-340) : 0)
+                        .opacity(faceDeparted ? 0 : 1)
                         .animation(exitUp.delay(0.05), value: presentsResult)
                         .allowsHitTesting(false)
                         .accessibilityHidden(presentsResult)
                 }
             }
-            .frame(width: Constants.robotSize, height: Constants.robotSize)
-            .offset(y: Constants.robotDrop)
+            .frame(width: robot, height: robot)
+            .offset(y: robot * Constants.robotDropShare)
             addSlot
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 18)
+        .padding(.top, Constants.headerTop)
     }
 
     private var messageLane: some View {
@@ -469,17 +573,13 @@ struct GenerateMetricView: View {
                 .onAppear {
                     scrollToFront(scroller)
                 }
-                .onChange(of: viewState.state.userLines.count) { _ in
+                .onChange(of: displayedUserLines) { _ in
                     withAnimation(speech) {
                         scrollToFront(scroller)
                     }
                 }
             }
         }
-        .opacity(departed ? 0 : 1)
-        .offset(y: departed ? departure(380) : 0)
-        .animation(exitDown.delay(0.02), value: presentsResult)
-        .allowsHitTesting(!departed)
     }
 
     private func scrollToFront(_ scroller: ScrollViewProxy) {
@@ -487,14 +587,14 @@ struct GenerateMetricView: View {
         scroller.scrollTo(last.id, anchor: .bottom)
     }
 
-    private var face: some View {
+    private func face(size: CGFloat) -> some View {
         ZStack {
-            RobotFaceView(size: Constants.robotSize, kind: faceKind, loop: faceLoops)
-                .offset(y: departed ? departure(-320) : 0)
-                .opacity(departed ? 0 : 1)
+            RobotFaceView(size: size, kind: faceKind, loop: faceLoops)
+                .offset(y: faceDeparted ? departure(-320) : 0)
+                .opacity(faceDeparted ? 0 : 1)
                 .animation(exitUp, value: presentsResult)
         }
-        .frame(width: Constants.robotSize, height: Constants.robotSize)
+        .frame(width: size, height: size)
     }
 
     private var addSlot: some View {
@@ -531,12 +631,34 @@ struct GenerateMetricView: View {
         return stored.count >= pendingLines.count ? stored : pendingLines
     }
 
-    private var indexedLines: [UserLine] {
-        guard !preparingNew else { return [] }
-        return visibleUserLines.enumerated().map { UserLine(index: $0.offset, text: $0.element) }
+    /// Prompt, then each answer the job has stored. A reply still in flight is appended until the dialog catches it.
+    private var displayedUserLines: [String] {
+        let local = visibleUserLines
+        guard let jobID = activeJobID,
+              let record = generation.record(jobID: jobID) else { return local }
+        var lines: [String] = []
+        let prompt = record.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !prompt.isEmpty {
+            lines.append(prompt)
+        }
+        for turn in record.job?.dialog ?? [] {
+            let answer = turn.answer?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !answer.isEmpty {
+                lines.append(answer)
+            }
+        }
+        if jobID == viewState.state.jobID, local.count > lines.count {
+            lines.append(contentsOf: local.suffix(local.count - lines.count))
+        }
+        return lines
     }
 
-    private var departed: Bool { presentsResult }
+    private var indexedLines: [UserLine] {
+        guard !preparingNew else { return [] }
+        return displayedUserLines.enumerated().map { UserLine(index: $0.offset, text: $0.element) }
+    }
+
+    private var faceDeparted: Bool { presentsResult }
 
     private func departure(_ distance: CGFloat) -> CGFloat {
         reduceMotion ? 0 : distance
@@ -627,7 +749,7 @@ struct GenerateMetricView: View {
     private var showsStatusCycle: Bool {
         guard !preparingNew, !presentsResult, failureMessage == nil else { return false }
         if !viewState.state.isAnswering, liveQuestion != nil { return false }
-        return !visibleUserLines.isEmpty
+        return !displayedUserLines.isEmpty
     }
 
     private func beginStatusCycle(_ cycling: Bool) {
@@ -700,7 +822,7 @@ struct GenerateMetricView: View {
             maxWidth: maxWidth
         ) {
             Text(line.text)
-                .font(Constants.inputFont)
+                .font(Constants.bubbleFont)
                 .foregroundColor(Constants.textColor)
                 .multilineTextAlignment(.leading)
         }
@@ -968,7 +1090,7 @@ private struct RobotLineBubble: View {
             maxWidth: maxWidth
         ) {
             Text(text)
-                .font(GenerateMetricView.Constants.inputFont)
+                .font(GenerateMetricView.Constants.bubbleFont)
                 .foregroundColor(GenerateMetricView.Constants.textColor)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)

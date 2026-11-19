@@ -98,6 +98,7 @@ struct MainView: View {
                 )
             case .profile:
                 ProfileView()
+                    .environmentObject(viewState)
             case .editRequest(let metric):
                 metricEditor(
                     metric: metric,
@@ -309,31 +310,21 @@ struct MainView: View {
         }
     }
 
-    @ViewBuilder
     private func headerCircleButton(
         systemName: String,
         accessibilityLabel: String,
         action: @escaping () -> Void
     ) -> some View {
-        if #available(iOS 26.0, *) {
-            Button(action: action) {
-                Image(systemName: systemName)
-                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel(accessibilityLabel)
-        } else {
-            Button(action: action) {
-                Image(systemName: systemName)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                    .padding(Constants.infoInset)
-                    .background(.ultraThinMaterial, in: Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(accessibilityLabel)
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                .frame(width: Constants.headerButtonSide, height: Constants.headerButtonSide)
+                .contentShape(Circle())
         }
+        .buttonStyle(.plain)
+        .modifier(HeaderButtonChrome())
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private var canPresentReviewPrompt: Bool {
@@ -534,6 +525,16 @@ struct MainView: View {
                 try? FileManager.default.removeItem(at: url)
             }
             sharePayload = nil
+        }
+    }
+}
+
+private struct HeaderButtonChrome: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            content.background(.ultraThinMaterial, in: Circle())
         }
     }
 }

@@ -112,8 +112,10 @@ final class GenerationJobService: ObservableObject {
         Self.liveJob(in: jobs)
     }
 
+    /// Only the latest attempt counts. An older question left unanswered was abandoned when a new search began.
     nonisolated static func liveJob(in jobs: [GenerationJobRecord]) -> GenerationJobRecord? {
-        jobs.filter(\.isOpen).max { $0.startedAt < $1.startedAt }
+        guard let latest = jobs.max(by: { $0.startedAt < $1.startedAt }), latest.isOpen else { return nil }
+        return latest
     }
 
     /// Loads this server's jobs and continues polling anything still queued or running.

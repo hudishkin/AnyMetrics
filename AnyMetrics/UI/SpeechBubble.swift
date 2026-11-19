@@ -47,8 +47,9 @@ struct SpeechBubbleStyle: Equatable {
         shadowRadius: 8,
         shadowY: 3
     )
+    /// Opaque, so the screen gradient and the bubbles behind do not show through.
     private static let robotDark = SpeechBubbleStyle(
-        fill: [Color.white.opacity(0.18), Color.white.opacity(0.08)],
+        fill: [Color(white: 0.22), Color(white: 0.17)],
         stroke: Color.white.opacity(0.14),
         shadow: Color.black.opacity(0.32),
         shadowRadius: 8,
@@ -62,7 +63,7 @@ struct SpeechBubbleStyle: Equatable {
         shadowY: -10
     )
     private static let userDark = SpeechBubbleStyle(
-        fill: [Color.white.opacity(0.12), Color.white.opacity(0.05)],
+        fill: [Color(white: 0.19), Color(white: 0.15)],
         stroke: Color.white.opacity(0.10),
         shadow: Color.black.opacity(0.4),
         shadowRadius: 14,

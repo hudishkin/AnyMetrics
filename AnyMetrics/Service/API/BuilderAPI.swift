@@ -165,11 +165,20 @@ enum BuilderAPI {
         var allowsFreeText: Bool
     }
 
+    struct DialogTurn: Codable, Equatable {
+        var question: Question
+        var askedAt: Date
+        var answer: String?
+        var answeredAt: Date?
+    }
+
     struct Job: Codable, Equatable {
         var jobId: UUID
         var status: JobStatus
         var prompt: String
         var createdAt: Date
+        /// Questions this job asked, oldest first. An answer is present only after it was sent.
+        var dialog: [DialogTurn]
         var question: Question?
         var error: Failure?
         var requirement: UserRequirement?
@@ -328,5 +337,28 @@ enum BuilderAPI {
         var statusCode: Int?
         var finalUrl: String?
         var validatedAt: Date
+    }
+}
+
+extension BuilderAPI.Job {
+    private enum CodingKeys: String, CodingKey {
+        case jobId, status, prompt, createdAt, dialog, question, error
+        case requirement, draft, result, alternative, simulation
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        jobId = try container.decode(UUID.self, forKey: .jobId)
+        status = try container.decode(BuilderAPI.JobStatus.self, forKey: .status)
+        prompt = try container.decode(String.self, forKey: .prompt)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        dialog = try container.decodeIfPresent([BuilderAPI.DialogTurn].self, forKey: .dialog) ?? []
+        question = try container.decodeIfPresent(BuilderAPI.Question.self, forKey: .question)
+        error = try container.decodeIfPresent(BuilderAPI.Failure.self, forKey: .error)
+        requirement = try container.decodeIfPresent(BuilderAPI.UserRequirement.self, forKey: .requirement)
+        draft = try container.decodeIfPresent(BuilderAPI.DraftMetric.self, forKey: .draft)
+        result = try container.decodeIfPresent(BuilderAPI.GenerateResult.self, forKey: .result)
+        alternative = try container.decodeIfPresent(BuilderAPI.MetricAlternative.self, forKey: .alternative)
+        simulation = try container.decodeIfPresent(Bool.self, forKey: .simulation)
     }
 }

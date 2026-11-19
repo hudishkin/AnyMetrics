@@ -29,6 +29,7 @@
 "metric.add.import-row" = "Import";
 "metric.add.generate-ai" = "Generate by AI";
 "metric.actions.update-value" = "Refresh";
+"metric.actions.copy-value" = "Copy value";
 "metric.actions.delete" = "Remove";
 "metric.actions.hide" = "Hide";
 "metric.actions.hide-message" = "This metric will be hidden from the home screen and stay in Personal. Add it back with +, or delete it there.";
@@ -293,6 +294,8 @@
 "profile.delete-account-confirm" = "Delete this account and its data? This can't be undone.";
 "profile.more" = "More";
 "profile.sign-in-heading" = "Sign in";
+"profile.select-method" = "Select method";
+"profile.terms-and-privacy" = "Terms & Privacy";
 "profile.sign-in-apple" = "Sign in with Apple";
 "profile.sign-in-google" = "Sign in with Google";
 "profile.sign-in-github" = "Sign in with GitHub";

@@ -17,6 +17,7 @@ struct MetricActionsMenuView: View {
     }
 
     var onRefresh: () -> Void
+    var onCopyValue: () -> Void
     var onEditRequest: () -> Void
     var onEditTheme: () -> Void
     var onDuplicate: () -> Void
@@ -58,6 +59,11 @@ struct MetricActionsMenuView: View {
                     title: AnyMetricsStrings.Metric.Actions.updateValue,
                     icon: "arrow.clockwise",
                     action: onRefresh
+                )
+                actionRow(
+                    title: AnyMetricsStrings.Metric.Actions.copyValue,
+                    icon: "doc.on.clipboard",
+                    action: onCopyValue
                 )
                 actionRow(
                     title: AnyMetricsStrings.Metric.Actions.export,
@@ -146,6 +152,7 @@ private struct ActionsFittedSheetModifier: ViewModifier {
 #Preview {
     MetricActionsMenuView(
         onRefresh: {},
+        onCopyValue: {},
         onEditRequest: {},
         onEditTheme: {},
         onDuplicate: {},

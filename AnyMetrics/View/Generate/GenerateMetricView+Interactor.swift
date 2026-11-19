@@ -14,10 +14,11 @@ extension GenerateMetricView {
         /// Drops a keystroke that lands after Send or Try again.
         private var draftEpoch = 0
 
-        init(jobID: UUID? = nil, prompt: String? = nil) {
+        init(jobID: UUID? = nil, prompt: String? = nil, answers: [String] = []) {
+            let lines = prompt.map { [$0] + answers } ?? []
             initialState = VState(
                 jobID: jobID,
-                userLines: prompt.map { [$0] } ?? [],
+                userLines: lines,
                 examples: [
                     ExamplePrompt(id: "people-in-space", emoji: "👨‍🚀", title: AnyMetricsStrings.Generate.Example.peopleInSpace),
                     ExamplePrompt(id: "iss", emoji: "🛰️", title: AnyMetricsStrings.Generate.Example.iss),
@@ -48,8 +49,10 @@ extension GenerateMetricView {
                     guard let jobID = current.jobID,
                           let record = GenerationJobService.shared.record(jobID: jobID) else { return }
                     await updater {
-                        if $0.userLines.isEmpty {
-                            $0.userLines = [record.prompt]
+                        let answers = record.job?.dialog.compactMap(\.answer) ?? []
+                        let restored = [record.prompt] + answers
+                        if $0.userLines.isEmpty || ($0.userLines == [record.prompt] && !answers.isEmpty) {
+                            $0.userLines = restored
                         }
                     }
                 }

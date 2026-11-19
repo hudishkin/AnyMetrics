@@ -166,6 +166,10 @@ struct MetricView: View {
                     showActionMenu = false
                     refreshMetric?(metric.id)
                 },
+                onCopyValue: {
+                    UIPasteboard.general.string = displayedValue
+                    showActionMenu = false
+                },
                 onEditRequest: { queueAction(.editRequest) },
                 onEditTheme: { queueAction(.editTheme) },
                 onDuplicate: { queueAction(.duplicate) },
@@ -231,6 +235,16 @@ struct MetricView: View {
                 }
             }
         }
+    }
+
+    private var displayedValue: String {
+        MetricDisplayHelpers.valueString(
+            for: metric,
+            goodLabel: AnyMetricsStrings.Metric.Value.good,
+            badLabel: AnyMetricsStrings.Metric.Value.bad,
+            emptyLabel: AnyMetricsStrings.Metric.Value.empty,
+            errorLabel: AnyMetricsStrings.Metric.Value.error
+        )
     }
 
     private func queueAction(_ action: PendingAction) {

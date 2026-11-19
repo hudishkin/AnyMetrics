@@ -28,7 +28,6 @@ struct ScrollDepth: ViewModifier {
                     .offset(y: step.drop)
                     .rotation3DEffect(.degrees(step.tilt), axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.4)
                     .blur(radius: step.blur)
-                    .opacity(step.opacity)
             }
         } else {
             content.modifier(LegacyScrollDepth(depth: self))
@@ -47,7 +46,6 @@ private struct DepthStep {
     let scale: CGFloat
     let drop: CGFloat
     let blur: CGFloat
-    let opacity: Double
     let tilt: Double
 
     init(distance: CGFloat) {
@@ -56,7 +54,6 @@ private struct DepthStep {
         self.scale = scale
         drop = distance - Self.reach * (1 - scale)
         blur = min(distance / Self.reach * 5, 8)
-        opacity = Double(0.2 + 0.8 * scale)
         tilt = Double(1 - scale) * 28
     }
 }
@@ -75,7 +72,6 @@ private struct LegacyScrollDepth: ViewModifier {
             .offset(y: step.drop)
             .rotation3DEffect(.degrees(step.tilt), axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.4)
             .blur(radius: step.blur)
-            .opacity(step.opacity)
             .background {
                 GeometryReader { geo in
                     Color.clear.preference(key: DepthMaxY.self, value: geo.frame(in: .named(ScrollDepth.space)).maxY)

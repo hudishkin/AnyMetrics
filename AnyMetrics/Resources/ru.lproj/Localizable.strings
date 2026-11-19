@@ -29,6 +29,7 @@
 "metric.add.import-row" = "Импорт";
 "metric.add.generate-ai" = "Сгенерировать с AI";
 "metric.actions.update-value" = "Обновить значение";
+"metric.actions.copy-value" = "Скопировать значение";
 "metric.actions.delete" = "Удалить метрику";
 "metric.actions.hide" = "Скрыть";
 "metric.actions.hide-message" = "Метрика скроется с главного экрана и останется в Personal. Вернуть её можно кнопкой +, удалить полностью — только там.";
@@ -293,6 +294,8 @@
 "profile.delete-account-confirm" = "Удалить аккаунт и его данные? Это нельзя отменить.";
 "profile.more" = "Ещё";
 "profile.sign-in-heading" = "Вход в аккаунт";
+"profile.select-method" = "Выберите способ";
+"profile.terms-and-privacy" = "Условия и конфиденциальность";
 "profile.sign-in-apple" = "Войти через Apple";
 "profile.sign-in-google" = "Войти через Google";
 "profile.sign-in-github" = "Войти через GitHub";

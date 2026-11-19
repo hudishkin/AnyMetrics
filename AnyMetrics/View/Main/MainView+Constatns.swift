@@ -10,7 +10,7 @@ extension MainView {
         static let fontPlaceholder: Font = Font.system(size: 16, weight: .regular, design: .default)
         static let padding: CGFloat = 10
         static let titleInset = EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
-        static let infoInset = EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+        static let headerButtonSide: CGFloat = 44
         static let spacing: CGFloat = {
             AppConfig.isiOSAppOnMac ? 20 : 10
         }()

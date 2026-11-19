@@ -16,6 +16,8 @@ public struct RobotFaceView: View {
     var size: CGFloat
     var kind: Kind
     var ink: Color
+    /// When false, only the outline and eyes are drawn, so the face sits on the caller's background.
+    var filled: Bool
     var animated: Bool
     /// When false, the clip plays once and holds the last frame.
     /// Clips with an intro play it once either way; looping repeats only the part after it.
@@ -25,12 +27,14 @@ public struct RobotFaceView: View {
         size: CGFloat,
         kind: Kind = .glance,
         ink: Color = .white,
+        filled: Bool = true,
         animated: Bool = true,
         loop: Bool = true
     ) {
         self.size = size
         self.kind = kind
         self.ink = ink
+        self.filled = filled
         self.animated = animated
         self.loop = loop
         _take = State(initialValue: Take(kind: kind, loops: loop, started: Date()))
@@ -124,8 +128,10 @@ public struct RobotFaceView: View {
         let container = squircle(FaceLayout.corner * size)
         let border = squircle(FaceLayout.corner * borderSide)
         return ZStack {
-            RobotMeshGradient(side: size)
-                .clipShape(container)
+            if filled {
+                RobotMeshGradient(side: size)
+                    .clipShape(container)
+            }
             ZStack {
                 mark(pose.left, side: borderSide)
                 mark(pose.right, side: borderSide)
@@ -398,19 +404,6 @@ public struct RobotGradientWash: View {
             ))
         }
         return stops
-    }
-}
-
-public struct RobotMeshBackground: View {
-
-    public init() {}
-
-    public var body: some View {
-        GeometryReader { geo in
-            let side = max(geo.size.width, geo.size.height)
-            RobotMeshGradient(side: side)
-                .frame(width: geo.size.width, height: geo.size.height)
-        }
     }
 }
 

@@ -34,6 +34,9 @@ struct GalleryView: View {
     private var generateJobID: UUID?
     @State
     private var generateRoute = "new"
+    /// Same instance the open screen observes. A list link does not rebuild that screen.
+    @StateObject
+    private var generateReopen = GenerateReopen()
     /// Set by Generate New. The finished card stays until then.
     @State
     private var resultDismissed = false
@@ -68,12 +71,14 @@ struct GalleryView: View {
                     NavigationLink(isActive: $showGenerate) {
                         GenerateMetricView(
                             jobID: generateJobID,
+                            reopen: generateReopen,
                             onDismissResult: { resultDismissed = true },
                             onRememberJob: { jobID in
                                 resultDismissed = false
                                 restoreJobID = jobID
                             }
                         )
+                        .id(generateRoute)
                     } label: {
                         HStack(spacing: 12) {
                             GenerateAIAnimation()
@@ -87,7 +92,6 @@ struct GalleryView: View {
                     .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                     .listRowSeparator(.hidden)
                     .modifier(GenerateAIBorder())
-                    .id(generateRoute)
 
                     NavigationLink(isActive: $showAddMenu) {
                         MetricFormView(
@@ -236,7 +240,10 @@ struct GalleryView: View {
             }
         }
         .onChange(of: showGenerate) { shown in
+            // The sheet stays put while Generate or its history is open. Back is the only way out.
+            allowDismissed = !shown
             guard !shown else { return }
+            publishClosedJob()
             // Let the pop finish, then keep a finished metric or open a blank screen.
             Task { @MainActor in
                 guard !showGenerate else { return }
@@ -261,6 +268,7 @@ struct GalleryView: View {
             restoreJobID = jobID
             if generateJobID == nil {
                 generateJobID = jobID
+                publishGenerateRoute()
             }
             return
         }
@@ -276,6 +284,7 @@ struct GalleryView: View {
             restoreJobID = liveJobID
             if generateJobID == nil {
                 generateJobID = liveJobID
+                publishGenerateRoute()
             } else if generateJobID != liveJobID {
                 adoptGenerateJob(liveJobID)
             }
@@ -297,11 +306,32 @@ struct GalleryView: View {
     private func adoptGenerateJob(_ jobID: UUID) {
         generateJobID = jobID
         generateRoute = jobID.uuidString
+        publishGenerateRoute()
     }
 
     private func dropGenerateRoute() {
         generateJobID = nil
         generateRoute = UUID().uuidString
+        publishGenerateRoute()
+    }
+
+    /// Tells the open screen which job to show. The link keeps the old conversation until this updates.
+    private func publishClosedJob() {
+        var next = generateReopen.state
+        if resultDismissed {
+            next.jobID = nil
+        } else if let liveID = GenerationJobService.shared.live?.jobId {
+            next.jobID = liveID
+        } else if let candidate = restoreJobID ?? generateJobID, shouldKeepGenerateJob(candidate) {
+            next.jobID = candidate
+        } else {
+            next.jobID = nil
+        }
+        generateReopen.state = next
+    }
+
+    private func publishGenerateRoute() {
+        generateReopen.state = GenerateReopenState(jobID: generateJobID, token: generateRoute)
     }
 
     private func shouldKeepGenerateJob(_ jobID: UUID) -> Bool {
@@ -353,12 +383,7 @@ struct GalleryView: View {
     @ViewBuilder
     private var personalRows: some View {
         if filteredPersonal.isEmpty && !isSearching && catalogTab == .personal {
-            Text(AnyMetricsStrings.Catalog.empty)
-                .font(Constants.itemDefaultFont)
-                .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, Constants.createNewVSpacing)
+            personalEmptyState
                 .listRowSeparator(.hidden)
                 .galleryListRowSurface()
         } else if isSearching && !filteredPersonal.isEmpty {
@@ -374,6 +399,24 @@ struct GalleryView: View {
                 personalRow(metric)
             }
         }
+    }
+
+    private var personalEmptyState: some View {
+        VStack(spacing: Constants.emptySpacing) {
+            Image(systemName: "square.stack.3d.up")
+                .font(.system(size: Constants.emptyIconSize, weight: .light))
+                .accessibilityHidden(true)
+            Text(AnyMetricsStrings.Catalog.empty)
+                .font(Constants.emptyFont)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, Constants.emptyHorizontalPadding)
+        .padding(.vertical, Constants.emptyVerticalPadding)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("catalog.personal.empty")
     }
 
     private func personalRow(_ metric: Metric) -> some View {
@@ -603,6 +646,18 @@ struct AIGradientBorder: View {
         .init(color: Color(red: 0.62, green: 0.78, blue: 0.88), location: 0.86),
         .init(color: Color(red: 0.45, green: 0.76, blue: 0.72), location: 1.00),
     ])
+}
+
+/// What the generate screen should show after it is closed. The screen keeps this object.
+struct GenerateReopenState: Equatable {
+    var jobID: UUID?
+    var token = "new"
+}
+
+final class GenerateReopen: ObservableObject {
+    @Published var state = GenerateReopenState()
+
+    static let detached = GenerateReopen()
 }
 
 /// Watches the open generation without invalidating the gallery list.
