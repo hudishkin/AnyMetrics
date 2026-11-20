@@ -14,6 +14,7 @@ public enum AppConfig {
         public static let appRepository = URL(string: "https://github.com/hudishkin/AnyMetrics")!
         public static let galleryRepository = URL(string: "https://github.com/hudishkin/AnyMetricsGallery")!
         public static let privacyPolicy = URL(string: "https://github.com/hudishkin/AnyMetrics/blob/main/privacy_policy.md")!
+        public static let terms = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
         public static let rules = URL(string: "https://github.com/hudishkin/AnyMetrics")!
         public static let gallery = URL(string: String(format: "https://raw.githubusercontent.com/hudishkin/AnyMetricsGallery/main/%@/list.min.json", galleryVersion))!
     }

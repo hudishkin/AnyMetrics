@@ -57,5 +57,5 @@ func makeServerStore() -> (APIServerStore, UserDefaults, String) {
     let name = "APIServerStoreTests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: name)!
     defaults.removePersistentDomain(forName: name)
-    return (APIServerStore(defaults: defaults), defaults, name)
+    return (APIServerStore(defaults: defaults, production: nil), defaults, name)
 }

@@ -32,6 +32,13 @@ extension GenerateMetricView {
         static let textColor = AnyMetricsAsset.Assets.baseText.swiftUIColor
         static let secondaryColor = AnyMetricsAsset.Assets.secondaryText.swiftUIColor
         static let sendIconColor = AnyMetricsAsset.Assets.addMetricTint.swiftUIColor
+        static let sendDisabledFill = AnyMetricsAsset.Assets.secondaryText.swiftUIColor.opacity(0.35)
         static let chipFill = AnyMetricsAsset.Assets.secondaryText.swiftUIColor.opacity(0.22)
+
+        /// Leaves the bubble's own padding and a small screen margin, then gives the rest to the text.
+        static func textWidth(in width: CGFloat) -> CGFloat {
+            let reserved = CGFloat(88)
+            return max(CGFloat(220), width - reserved)
+        }
     }
 }

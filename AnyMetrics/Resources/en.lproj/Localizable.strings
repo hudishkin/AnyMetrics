@@ -280,6 +280,7 @@
 "profile.name-unknown" = "Account";
 "profile.id" = "ID";
 "profile.balance" = "Balance";
+"profile.free-attempts" = "%@ free";
 "profile.generated-items" = "Generated Items";
 "profile.metric-count-one" = "%@ metric";
 "profile.metric-count-few" = "%@ metrics";
@@ -295,13 +296,32 @@
 "profile.more" = "More";
 "profile.sign-in-heading" = "Sign in";
 "profile.select-method" = "Select method";
-"profile.terms-and-privacy" = "Terms & Privacy";
 "profile.sign-in-apple" = "Sign in with Apple";
 "profile.sign-in-google" = "Sign in with Google";
 "profile.sign-in-github" = "Sign in with GitHub";
 "profile.provider-not-configured" = "Sign in with %@ is not set up in this build.";
 "profile.load-failed" = "Couldn't load the account.";
 "profile.retry" = "Try again";
+
+// MARK: - Top Up
+
+"top-up.headline" = "Let AI build your metrics";
+"top-up.subtitle" = "Describe what you want to track. AI finds a data source, builds the request, and checks the value.";
+"top-up.balance" = "You have %@";
+"top-up.generations-one" = "%@ generation";
+"top-up.generations-few" = "%@ generations";
+"top-up.generations-many" = "%@ generations";
+"top-up.per-generation" = "%@ per generation";
+"top-up.best" = "Best value";
+"top-up.save" = "Save %@";
+"top-up.no-expiry" = "Don't expire after a month. Use them anytime";
+"top-up.one-time" = "One-time purchase, no subscription";
+"top-up.buy" = "Buy for %@";
+"top-up.terms" = "Terms";
+"top-up.empty" = "Credit packs are not available right now.";
+"top-up.load-failed" = "Couldn't load credit packs.";
+"top-up.pending" = "This purchase is waiting for approval.";
+"top-up.unavailable" = "This pack can't be purchased right now.";
 
 // MARK: - Review
 
@@ -423,7 +443,9 @@
 "generate.answer-placeholder" = "Your answer";
 "generate.try-again" = "Try again";
 "generate.generate-new" = "Generate new";
+"generate.no-credits" = "You're out of generations. You can top up when you send";
 "generate.prompt-too-long" = "Describe the metric in 2000 characters or fewer.";
+"generate.sign-in-required" = "Sign in to generate a metric.";
 "generate.send" = "Send";
 "generate.history" = "History";
 "generate.history.empty" = "Your requests will appear here.";

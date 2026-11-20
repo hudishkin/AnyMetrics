@@ -26,7 +26,7 @@ struct DevMenuView: View {
         NavigationView {
             List {
                 Section(AnyMetricsStrings.DevMenu.server) {
-                    ForEach(APIServer.builtIn) { server in
+                    ForEach(APIServerStore.shared.builtIn) { server in
                         Button {
                             select(server)
                         } label: {

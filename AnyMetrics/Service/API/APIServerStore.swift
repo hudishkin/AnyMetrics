@@ -1,6 +1,6 @@
 import Foundation
 
-/// A Builder API origin. The documented list currently contains only local.
+/// A Builder API origin.
 struct APIServer: Equatable, Identifiable {
     let id: String
     let baseURL: URL
@@ -10,7 +10,13 @@ struct APIServer: Equatable, Identifiable {
         baseURL: URL(string: "http://127.0.0.1:3000")!
     )
 
-    static let builtIn: [APIServer] = [local]
+    /// Comes from the `BuilderAPIURL` Info.plist key, filled by the `BUILDER_API_URL` build setting.
+    static let production: APIServer? = {
+        let raw = (Bundle.main.object(forInfoDictionaryKey: "BuilderAPIURL") as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let raw, !raw.isEmpty, !raw.hasPrefix("$("), let url = URL(string: raw) else { return nil }
+        return APIServer(id: "production", baseURL: url)
+    }()
 
     static func custom(baseURL: URL) -> APIServer {
         APIServer(id: "custom:\(baseURL.absoluteString)", baseURL: baseURL)
@@ -25,9 +31,24 @@ final class APIServerStore {
     private static let customKey = "custom"
 
     private let defaults: UserDefaults
+    private let production: APIServer?
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, production: APIServer? = .production) {
         self.defaults = defaults
+        self.production = production
+    }
+
+    /// Release builds offer only one server, so a selection saved by a debug build cannot leak into them.
+    var builtIn: [APIServer] {
+        #if DEBUG
+        return [production, .local].compactMap { $0 }
+        #else
+        return [fallback]
+        #endif
+    }
+
+    private var fallback: APIServer {
+        production ?? .local
     }
 
     var usesCustom: Bool {
@@ -39,15 +60,19 @@ final class APIServerStore {
     }
 
     var current: APIServer {
-        guard let record = savedRecord else { return .local }
+        #if DEBUG
+        guard let record = savedRecord else { return fallback }
         if record.selectedID == Self.customKey, let url = currentCustomURL {
             return .custom(baseURL: url)
         }
-        return APIServer.builtIn.first { $0.id == record.selectedID } ?? .local
+        return builtIn.first { $0.id == record.selectedID } ?? fallback
+        #else
+        return fallback
+        #endif
     }
 
     func selectBuiltIn(_ id: String) {
-        guard APIServer.builtIn.contains(where: { $0.id == id }) else { return }
+        guard builtIn.contains(where: { $0.id == id }) else { return }
         var record = savedRecord ?? Record(selectedID: id, customURL: nil)
         record.selectedID = id
         save(record)

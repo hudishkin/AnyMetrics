@@ -26,6 +26,8 @@ extension ProfileView {
                 Task { await self.load(updater: updater) }
             case .logOut:
                 Task { await self.logOut(updater: updater) }
+            case .deleteAccount:
+                Task { await self.deleteAccount(updater: updater) }
             case .signIn(let provider):
                 Task { await self.signIn(provider, updater: updater) }
             }
@@ -57,6 +59,7 @@ extension ProfileView {
                     try await client.me()
                 }
                 guard isCurrent(token) else { return }
+                AuthSession.shared.remember(account)
                 await updater {
                     $0.account = account
                     $0.isSignedIn = true
@@ -119,6 +122,25 @@ extension ProfileView {
             } catch {
                 guard isCurrent(token) else { return }
                 await updater { $0.isSubmitting = false }
+                notifications.send(.error(message(for: error)))
+            }
+        }
+
+        @MainActor
+        private func deleteAccount(updater: @escaping StateUpdater<S>) async {
+            let token = nextGeneration()
+            await updater { $0.isSubmitting = true }
+            do {
+                try await AuthSession.shared.deleteAccount()
+                guard isCurrent(token) else { return }
+                await showSignedOut(token: token, updater: updater)
+            } catch {
+                guard isCurrent(token) else { return }
+                if AuthSession.shared.isSignedIn {
+                    await updater { $0.isSubmitting = false }
+                } else {
+                    await showSignedOut(token: token, updater: updater)
+                }
                 notifications.send(.error(message(for: error)))
             }
         }

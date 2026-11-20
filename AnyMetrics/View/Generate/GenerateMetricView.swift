@@ -45,6 +45,15 @@ struct GenerateMetricView: View {
     private var pendingLines: [String] = []
     @State
     private var showHistory = false
+    @ObservedObject
+    private var session = AuthSession.shared
+    @State
+    private var showTopUp = false
+    /// Prompt held while the paywall is open. Sent once a purchase lands.
+    @State
+    private var promptAwaitingCredits: String?
+    @State
+    private var purchasedCredits = false
     @State
     private var confirmReset = false
     private var onDismissResult: () -> Void
@@ -85,11 +94,17 @@ struct GenerateMetricView: View {
             ZStack(alignment: .top) {
                 VStack(spacing: 0) {
                     robotHeader(width: proxy.size.width, robot: robot)
-                    messageLane
+                    GenerateMessageLane(lines: indexedLines, scrollKey: displayedUserLines, speech: speech)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 if let metric = completedMetric, presentsResult {
-                    readyMetric(metric, size: robot)
+                    GeneratedMetricCard(
+                        metric: metric,
+                        size: robot,
+                        source: completedSource,
+                        isSaved: isSaved(metric),
+                        onAdd: { add(metric) }
+                    )
                         .padding(.top, Constants.headerTop + robot * Constants.robotDropShare)
                         .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
@@ -233,8 +248,68 @@ struct GenerateMetricView: View {
             switch notification {
             case .submitted:
                 isComposerFocused = false
+            case .paymentRequired(let text):
+                sending = false
+                pendingLines = []
+                composerText = text
+                askForCredits(text)
             }
         }
+        .sheet(isPresented: $showTopUp, onDismiss: finishTopUp) {
+            NavigationStack {
+                TopUpView(
+                    balance: session.account?.balance ?? 0,
+                    paid: session.account?.paid ?? false,
+                    onPurchased: {
+                        purchasedCredits = true
+                        showTopUp = false
+                    }
+                )
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            ImpactHelper.impactButton()
+                            showTopUp = false
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Constants.textColor)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(AnyMetricsStrings.Common.close)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Known from the last `/v1/me`. A stale value is caught by the server's 402.
+    private var outOfCredits: Bool {
+        guard let account = session.account else { return false }
+        return account.balance <= 0
+    }
+
+    private func askForCredits(_ text: String) {
+        isComposerFocused = false
+        promptAwaitingCredits = text
+        purchasedCredits = false
+        showTopUp = true
+    }
+
+    private func finishTopUp() {
+        let text = promptAwaitingCredits
+        promptAwaitingCredits = nil
+        guard purchasedCredits, let text, showsPromptComposer else { return }
+        purchasedCredits = false
+        submitPrompt(text)
+    }
+
+    private func submitPrompt(_ text: String) {
+        sending = true
+        pendingLines.append(text)
+        composerText = ""
+        isComposerFocused = false
+        viewState.trigger(.send(text))
     }
 
     private var isDark: Bool { colorScheme == .dark }
@@ -247,9 +322,17 @@ struct GenerateMetricView: View {
         VStack(spacing: 10) {
             if composerVisible, !showsRetry, !showsNew, let error = viewState.state.generationError {
                 statusText(error)
+            } else if showsPromptComposer, outOfCredits {
+                statusText(AnyMetricsStrings.Generate.noCredits)
             }
             if showsPromptComposer {
-                examples
+                GenerateExamples(examples: viewState.state.examples) { example in
+                    composerText = example.title
+                    viewState.trigger(.selectExample(example.id))
+                    DispatchQueue.main.async {
+                        isComposerFocused = true
+                    }
+                }
             }
             if showsNew {
                 newButton
@@ -392,39 +475,15 @@ struct GenerateMetricView: View {
     }
 
     private var retryButton: some View {
-        dockButton(AnyMetricsStrings.Generate.tryAgain, identifier: "generate.retry") {
+        GenerateDockButton(title: AnyMetricsStrings.Generate.tryAgain, identifier: "generate.retry") {
             startNew()
         }
     }
 
     private var newButton: some View {
-        dockButton(AnyMetricsStrings.Generate.generateNew, identifier: "generate.new") {
+        GenerateDockButton(title: AnyMetricsStrings.Generate.generateNew, identifier: "generate.new") {
             startNew()
         }
-    }
-
-    private func dockButton(
-        _ title: String,
-        identifier: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button {
-            ImpactHelper.impactButton()
-            action()
-        } label: {
-            Text(title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(Constants.textColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: Constants.sendButtonSize + 12)
-                .background(
-                    RoundedRectangle(cornerRadius: Constants.composerCorner, style: .continuous)
-                        .fill(Color(uiColor: .secondarySystemFill))
-                )
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 16)
-        .accessibilityIdentifier(identifier)
     }
 
     /// Finished job passed in from the gallery. Wins over a conversation restored from the previous visit.
@@ -447,65 +506,10 @@ struct GenerateMetricView: View {
         return metric
     }
 
-    /// The card stays centered. Source and Add hang below and do not move that center.
-    private func readyMetric(_ metric: Metric, size: CGFloat) -> some View {
-        MetricContentView(metric: metric)
-            .frame(width: size, height: size)
-            .shadow(color: Color.black.opacity(0.16), radius: 22, x: 0, y: 14)
-            .overlay(alignment: .bottom) {
-                VStack(spacing: 10) {
-                    if let source = completedSource {
-                        sourceCaption(source)
-                    }
-                    addButton(metric)
-                }
-                .alignmentGuide(.bottom) { _ in -12 }
-            }
-            .accessibilityIdentifier("generate.job.ready")
-    }
-
     private var completedSource: BuilderAPI.MetricSource? {
         guard let jobID = activeJobID,
               let source = generation.record(jobID: jobID)?.job?.result?.source else { return nil }
         return source
-    }
-
-    /// Name, then the site it comes from. Sits between the card and Add.
-    private func sourceCaption(_ source: BuilderAPI.MetricSource) -> some View {
-        let name = source.name?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let site = sourceSite(source)
-        let title = (name?.isEmpty == false) ? name : nil
-        return VStack(spacing: 2) {
-            if let title {
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Constants.textColor)
-            }
-                if let site, site.label != title {
-                    if let url = site.url {
-                        Link(site.label, destination: url)
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundColor(Constants.secondaryColor)
-                            .tint(Constants.secondaryColor)
-                    } else {
-                    Text(site.label)
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(Constants.secondaryColor)
-                }
-            }
-        }
-        .multilineTextAlignment(.center)
-        .lineLimit(1)
-        .frame(maxWidth: 280)
-        .accessibilityIdentifier("generate.source")
-    }
-
-    private func sourceSite(_ source: BuilderAPI.MetricSource) -> (label: String, url: URL?)? {
-        let raw = (source.website ?? source.url).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !raw.isEmpty, let url = URL(string: raw) else { return nil }
-        let host = url.host?.replacingOccurrences(of: "www.", with: "")
-        let label = host.flatMap { $0.isEmpty ? nil : $0 } ?? raw
-        return (label, url)
     }
 
     private func isSaved(_ metric: Metric) -> Bool {
@@ -534,7 +538,7 @@ struct GenerateMetricView: View {
             ZStack(alignment: .top) {
                 face(size: robot)
                 if keepsBubbles, pinnedFinishedJobID == nil {
-                    robotBubble(maxWidth: robotTextWidth(in: width))
+                    robotBubble(maxWidth: Constants.textWidth(in: width))
                         .fixedSize()
                         .rotationEffect(.degrees(-3), anchor: .top)
                         .padding(.top, robot * (1 - Constants.bubbleOverlapShare))
@@ -553,40 +557,6 @@ struct GenerateMetricView: View {
         .padding(.top, Constants.headerTop)
     }
 
-    private var messageLane: some View {
-        GeometryReader { lane in
-            let frontInset = CGFloat(28)
-            ScrollViewReader { scroller in
-                ScrollView(showsIndicators: false) {
-                    BottomPinLayout(minHeight: lane.size.height, spacing: -22, bottomInset: frontInset) {
-                        ForEach(indexedLines) { line in
-                            userBubble(line, maxWidth: robotTextWidth(in: lane.size.width))
-                                .scrollDepth(viewportHeight: lane.size.height, frontInset: frontInset)
-                                .zIndex(Double(line.index))
-                                .id(line.id)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .animation(speech, value: indexedLines.count)
-                }
-                .coordinateSpace(name: ScrollDepth.space)
-                .onAppear {
-                    scrollToFront(scroller)
-                }
-                .onChange(of: displayedUserLines) { _ in
-                    withAnimation(speech) {
-                        scrollToFront(scroller)
-                    }
-                }
-            }
-        }
-    }
-
-    private func scrollToFront(_ scroller: ScrollViewProxy) {
-        guard let last = indexedLines.last else { return }
-        scroller.scrollTo(last.id, anchor: .bottom)
-    }
-
     private func face(size: CGFloat) -> some View {
         ZStack {
             RobotFaceView(size: size, kind: faceKind, loop: faceLoops)
@@ -599,30 +569,6 @@ struct GenerateMetricView: View {
 
     private var addSlot: some View {
         Color.clear.frame(height: 34)
-    }
-
-    private func addButton(_ metric: Metric) -> some View {
-        let saved = isSaved(metric)
-        return Button {
-            add(metric)
-        } label: {
-            Text(AnyMetricsStrings.Metric.add)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(Constants.sendIconColor)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
-                .background(Capsule().fill(Constants.textColor))
-        }
-        .buttonStyle(.plain)
-        .disabled(saved)
-        .opacity(saved ? 0.45 : 1)
-        .accessibilityIdentifier("generate.add")
-    }
-
-    private struct UserLine: Identifiable {
-        let index: Int
-        let text: String
-        var id: Int { index }
     }
 
     /// The model line list once it has caught the tap. Until then, the text just sent.
@@ -653,9 +599,9 @@ struct GenerateMetricView: View {
         return lines
     }
 
-    private var indexedLines: [UserLine] {
+    private var indexedLines: [GenerateMessageLane.Line] {
         guard !preparingNew else { return [] }
-        return displayedUserLines.enumerated().map { UserLine(index: $0.offset, text: $0.element) }
+        return displayedUserLines.enumerated().map { GenerateMessageLane.Line(index: $0.offset, text: $0.element) }
     }
 
     private var faceDeparted: Bool { presentsResult }
@@ -798,12 +744,6 @@ struct GenerateMetricView: View {
         return text.isEmpty ? nil : text
     }
 
-    /// Leaves the bubble's own padding and a small screen margin, then gives the rest to the text.
-    private func robotTextWidth(in width: CGFloat) -> CGFloat {
-        let reserved = CGFloat(88)
-        return max(CGFloat(220), width - reserved)
-    }
-
     private func robotBubble(maxWidth: CGFloat) -> some View {
         RobotLineBubble(
             text: shownLine.isEmpty ? robotLine : shownLine,
@@ -814,23 +754,6 @@ struct GenerateMetricView: View {
         .accessibilityIdentifier("generate.robot")
     }
 
-    private func userBubble(_ line: UserLine, maxWidth: CGFloat) -> some View {
-        SpeechBubble(
-            side: .bottomCenter,
-            role: .user,
-            tilt: .zero,
-            maxWidth: maxWidth
-        ) {
-            Text(line.text)
-                .font(Constants.bubbleFont)
-                .foregroundColor(Constants.textColor)
-                .multilineTextAlignment(.leading)
-        }
-        .rotationEffect(.degrees(1), anchor: .bottom)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .accessibilityIdentifier("generate.sent.\(line.index)")
-    }
-
     private func statusText(_ text: String) -> some View {
         Text(text)
             .font(Constants.examplesFont)
@@ -838,39 +761,6 @@ struct GenerateMetricView: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 24)
-    }
-
-    private var examples: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Constants.chipSpacing) {
-                ForEach(viewState.state.examples) { example in
-                    Button {
-                        ImpactHelper.impactLight()
-                        composerText = example.title
-                        viewState.trigger(.selectExample(example.id))
-                        DispatchQueue.main.async {
-                            isComposerFocused = true
-                        }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Text(example.emoji)
-                            Text(example.title)
-                                .lineLimit(1)
-                        }
-                        .font(Constants.chipFont)
-                        .foregroundColor(Constants.textColor)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(Constants.chipFill))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("generate.example.\(example.id)")
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 1)
-        }
-        .frame(height: 42)
     }
 
     private func composer(answer: Bool, waiting: Bool) -> some View {
@@ -900,234 +790,13 @@ struct GenerateMetricView: View {
                     viewState.trigger(.send(text))
                     return
                 }
-                sending = true
-                pendingLines.append(text)
-                composerText = ""
-                isComposerFocused = false
-                viewState.trigger(.send(text))
-            }
-        )
-    }
-}
-
-private struct GenerateComposer: View {
-    @Binding var text: String
-    var isFocused: FocusState<Bool>.Binding
-    var placeholder: String
-    var fieldIdentifier: String
-    var isWaiting: Bool = false
-    var onSend: () -> Void
-
-    private let sendInset: CGFloat = 6
-
-    private var canSend: Bool {
-        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    var body: some View {
-        let shape = RoundedRectangle(
-            cornerRadius: GenerateMetricView.Constants.composerCorner,
-            style: .continuous
-        )
-        HStack(alignment: .bottom, spacing: 0) {
-            TextField("", text: $text, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(GenerateMetricView.Constants.inputFont)
-                .foregroundColor(GenerateMetricView.Constants.textColor)
-                .focused(isFocused)
-                .disabled(isWaiting)
-                .lineLimit(1...GenerateMetricView.Constants.composerMaxLines)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 16)
-                .padding(.trailing, isWaiting ? 16 : 8)
-                .padding(.vertical, 11)
-                .frame(
-                    minHeight: GenerateMetricView.Constants.sendButtonSize + sendInset * 2,
-                    alignment: .center
-                )
-                .overlay(alignment: .leading) {
-                    if text.isEmpty {
-                        WaitingPlaceholder(text: placeholder, active: isWaiting)
-                            .padding(.leading, 16)
-                            .allowsHitTesting(false)
-                    }
+                if !answer, outOfCredits {
+                    askForCredits(text)
+                    return
                 }
-                .accessibilityIdentifier(fieldIdentifier)
-
-            Button {
-                guard canSend else { return }
-                onSend()
-            } label: {
-                Image(systemName: "paperplane.fill")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(GenerateMetricView.Constants.sendIconColor)
-                    .frame(
-                        width: GenerateMetricView.Constants.sendButtonSize,
-                        height: GenerateMetricView.Constants.sendButtonSize
-                    )
-                    .background(
-                        Circle().fill(GenerateMetricView.Constants.textColor)
-                    )
+                submitPrompt(text)
             }
-            .buttonStyle(.plain)
-            .opacity(isWaiting ? 0 : 1)
-            .allowsHitTesting(!isWaiting)
-            .accessibilityHidden(isWaiting)
-            .frame(width: isWaiting ? 0 : nil, alignment: .center)
-            .clipped()
-            .padding(.trailing, isWaiting ? 0 : sendInset)
-            .padding(.vertical, sendInset)
-            .accessibilityIdentifier("generate.send")
-            .accessibilityLabel(AnyMetricsStrings.Generate.send)
-        }
-        .background(shape.fill(Color(uiColor: .systemBackground)))
-        .overlay {
-            AIGradientBorder(cornerRadius: GenerateMetricView.Constants.composerCorner)
-        }
-        .clipShape(shape)
-        .padding(.horizontal, 16)
-    }
-}
-
-/// A soft light moves across the waiting placeholder. Time drives it, so a parent spring cannot hitch the sweep.
-private struct WaitingPlaceholder: View {
-    var text: String
-    var active: Bool
-
-    @Environment(\.accessibilityReduceMotion)
-    private var reduceMotion
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion || !active)) { timeline in
-            Text(text)
-                .font(GenerateMetricView.Constants.inputFont)
-                .foregroundStyle(style(at: timeline.date))
-                .lineLimit(1)
-        }
-        .accessibilityLabel(text)
-    }
-
-    private func style(at date: Date) -> AnyShapeStyle {
-        if reduceMotion || !active {
-            return AnyShapeStyle(GenerateMetricView.Constants.secondaryColor)
-        }
-        let period = 1.6
-        let phase = date.timeIntervalSinceReferenceDate
-            .truncatingRemainder(dividingBy: period) / period
-        let shift = -0.8 + phase * 2.0
-        return AnyShapeStyle(
-            LinearGradient(
-                colors: [
-                    GenerateMetricView.Constants.secondaryColor.opacity(0.4),
-                    GenerateMetricView.Constants.textColor,
-                    GenerateMetricView.Constants.secondaryColor.opacity(0.4)
-                ],
-                startPoint: UnitPoint(x: shift, y: 0.5),
-                endPoint: UnitPoint(x: shift + 0.6, y: 0.5)
-            )
         )
-    }
-}
-
-/// The catalog search uses `displayMode: .always`, so a pushed screen keeps that field under the title.
-struct DismissNavigationSearch: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> Controller { Controller() }
-    func updateUIViewController(_ controller: Controller, context: Context) {
-        controller.removeSearch()
-    }
-
-    final class Controller: UIViewController {
-        override func viewDidAppear(_ animated: Bool) {
-            super.viewDidAppear(animated)
-            removeSearch()
-            DispatchQueue.main.async { [weak self] in
-                self?.removeSearch()
-            }
-        }
-
-        override func viewDidLayoutSubviews() {
-            super.viewDidLayoutSubviews()
-            removeSearch()
-        }
-
-        func removeSearch() {
-            guard let navigation = view.enclosingNavigationController(),
-                  let top = navigation.topViewController,
-                  view.isDescendant(of: top.view) else { return }
-            guard top.navigationItem.searchController != nil else { return }
-            top.navigationItem.searchController = nil
-            navigation.navigationBar.setNeedsLayout()
-        }
-    }
-}
-
-private extension UIView {
-    func enclosingNavigationController() -> UINavigationController? {
-        var responder: UIResponder? = self
-        while let next = responder {
-            if let navigation = next as? UINavigationController { return navigation }
-            if let controller = next as? UIViewController, let navigation = controller.navigationController {
-                return navigation
-            }
-            responder = next.next
-        }
-        return nil
-    }
-}
-
-/// One bubble for every robot line. It squeezes toward the tail while the old text clears, then springs to the new size.
-private struct RobotLineBubble: View {
-    var text: String
-    var textHidden: Bool
-    var squeezed: Bool
-    var maxWidth: CGFloat
-
-    var body: some View {
-        SpeechBubble(
-            side: .topCenter,
-            role: .robot,
-            tilt: .zero,
-            maxWidth: maxWidth
-        ) {
-            Text(text)
-                .font(GenerateMetricView.Constants.bubbleFont)
-                .foregroundColor(GenerateMetricView.Constants.textColor)
-                .multilineTextAlignment(.center)
-                .lineSpacing(2)
-                .blur(radius: textHidden ? 5 : 0)
-                .opacity(textHidden ? 0 : 1)
-        }
-        .scaleEffect(squeezed ? 0.95 : 1, anchor: .top)
-    }
-}
-
-/// Pins a short message stack to the bottom of the lane. A `Spacer` inside `ScrollView` collapses, which left the bubbles in the far zone.
-private struct BottomPinLayout: Layout {
-    var minHeight: CGFloat
-    var spacing: CGFloat
-    var bottomInset: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.replacingUnspecifiedDimensions().width
-        let content = contentHeight(width: width, subviews: subviews)
-        return CGSize(width: width, height: max(minHeight, content + bottomInset))
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let proposal = ProposedViewSize(width: bounds.width, height: nil)
-        var y = bounds.maxY - bottomInset
-        for subview in subviews.reversed() {
-            let size = subview.sizeThatFits(proposal)
-            y -= size.height
-            subview.place(at: CGPoint(x: bounds.midX, y: y), anchor: .top, proposal: proposal)
-            y -= spacing
-        }
-    }
-
-    private func contentHeight(width: CGFloat, subviews: Subviews) -> CGFloat {
-        let proposal = ProposedViewSize(width: width, height: nil)
-        let heights = subviews.map { $0.sizeThatFits(proposal).height }
-        return heights.reduce(0, +) + spacing * CGFloat(max(subviews.count - 1, 0))
     }
 }
 

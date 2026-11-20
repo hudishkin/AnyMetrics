@@ -323,7 +323,7 @@ struct MetricResponseView: View {
 
 
 #if DEBUG
-struct MetricReponseView_Previews: PreviewProvider {
+struct MetricResponseView_Previews: PreviewProvider {
     static var previews: some View {
         let requestInteractor = RequestFormView.Interactor()
         NavigationView {

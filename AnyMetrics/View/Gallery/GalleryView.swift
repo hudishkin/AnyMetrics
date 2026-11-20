@@ -31,6 +31,8 @@ struct GalleryView: View {
     @State
     var showGenerate: Bool = false
     @State
+    private var showSignInForGenerate = false
+    @State
     private var generateJobID: UUID?
     @State
     private var generateRoute = "new"
@@ -59,6 +61,8 @@ struct GalleryView: View {
     var presentationMode: Binding<PresentationMode>
     @EnvironmentObject
     var mainState: ViewState<MainView.Interactor>
+    @ObservedObject
+    private var session = AuthSession.shared
 
     let columns = [
         GridItem(.flexible())
@@ -68,26 +72,40 @@ struct GalleryView: View {
         NavigationView {
             ZStack {
                 List {
-                    NavigationLink(isActive: $showGenerate) {
-                        GenerateMetricView(
-                            jobID: generateJobID,
-                            reopen: generateReopen,
-                            onDismissResult: { resultDismissed = true },
-                            onRememberJob: { jobID in
-                                resultDismissed = false
-                                restoreJobID = jobID
-                            }
-                        )
-                        .id(generateRoute)
-                    } label: {
-                        HStack(spacing: 12) {
-                            GenerateAIAnimation()
-                            Text(AnyMetricsStrings.Metric.Add.generateAi)
-                                .font(Constants.itemTitleFont)
-                            Spacer(minLength: 0)
+                    ZStack {
+                        NavigationLink(isActive: $showGenerate) {
+                            GenerateMetricView(
+                                jobID: generateJobID,
+                                reopen: generateReopen,
+                                onDismissResult: { resultDismissed = true },
+                                onRememberJob: { jobID in
+                                    resultDismissed = false
+                                    restoreJobID = jobID
+                                }
+                            )
+                            .id(generateRoute)
+                        } label: {
+                            EmptyView()
                         }
+                        .opacity(0)
+
+                        Button(action: openGenerate) {
+                            HStack(spacing: 12) {
+                                GenerateAIAnimation()
+                                Text(AnyMetricsStrings.Metric.Add.generateAi)
+                                    .font(Constants.itemTitleFont)
+                                Spacer(minLength: 8)
+                                if let freeAttempts {
+                                    Text(freeAttempts)
+                                        .font(Constants.itemDefaultFont)
+                                        .foregroundColor(AnyMetricsAsset.Assets.secondaryText.swiftUIColor)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
                     .accessibilityIdentifier("catalog.generateByAI")
                     .tint(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                     .listRowSeparator(.hidden)
@@ -210,6 +228,9 @@ struct GalleryView: View {
                     compose.setToRecipients([AppConfig.emailForReport])
                 }
             }
+            .sheet(isPresented: $showSignInForGenerate, onDismiss: finishSignInForGenerate) {
+                ProfileView(dismissOnSignIn: true)
+            }
 
 
         }
@@ -240,6 +261,15 @@ struct GalleryView: View {
             }
         }
         .onChange(of: showGenerate) { shown in
+            if shown, !session.isSignedIn {
+                showGenerate = false
+                allowDismissed = false
+                showSignInForGenerate = true
+                return
+            }
+            if !shown, showSignInForGenerate {
+                return
+            }
             // The sheet stays put while Generate or its history is open. Back is the only way out.
             allowDismissed = !shown
             guard !shown else { return }
@@ -260,6 +290,29 @@ struct GalleryView: View {
     }
 
     private var isPicker: Bool { onPickMetric != nil }
+
+    private func openGenerate() {
+        guard session.isSignedIn else {
+            allowDismissed = false
+            showSignInForGenerate = true
+            return
+        }
+        showGenerate = true
+    }
+
+    /// The chat opens only after the sign-in sheet is gone, so the push is not dropped mid-dismiss.
+    private func finishSignInForGenerate() {
+        guard session.isSignedIn else {
+            if !catalogDetailIsOpen {
+                allowDismissed = true
+            }
+            return
+        }
+        Task { @MainActor in
+            guard session.isSignedIn else { return }
+            showGenerate = true
+        }
+    }
 
     /// A session still in progress, or the metric waiting for Generate New.
     private func adoptGenerateRouteIfNeeded() {
@@ -369,6 +422,11 @@ struct GalleryView: View {
             return filteredPersonal.isEmpty && viewState.state.galleryItems.isEmpty
         }
         return catalogTab == .gallery && viewState.state.showSendRequestMetric
+    }
+
+    private var freeAttempts: String? {
+        guard let account = session.account else { return nil }
+        return BalanceLabel.freeCaption(balance: account.balance, paid: account.paid)
     }
 
     private func actionLabel(icon: Image, title: String) -> some View {
@@ -590,89 +648,6 @@ private struct GenerateAIBorder: ViewModifier {
             .padding(.horizontal, 4)
             .padding(.top, 2)
             .padding(.bottom, 16)
-    }
-}
-
-struct AIGradientBorder: View {
-    var cornerRadius: CGFloat
-
-    @Environment(\.accessibilityReduceMotion)
-    private var reduceMotion
-    @Environment(\.colorScheme)
-    private var colorScheme
-
-    private static let cycle: TimeInterval = 6
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { timeline in
-            let turn = reduceMotion
-                ? 0.15
-                : timeline.date.timeIntervalSinceReferenceDate
-                    .truncatingRemainder(dividingBy: Self.cycle) / Self.cycle
-            border(turn: turn)
-        }
-        .allowsHitTesting(false)
-    }
-
-    private func border(turn: Double) -> some View {
-        let angle = turn * 360
-        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        let gradient = AngularGradient(
-            gradient: Self.gradient,
-            center: .center,
-            startAngle: .degrees(angle),
-            endAngle: .degrees(angle + 360)
-        )
-        let glow = colorScheme == .dark ? 0.45 : 0.55
-
-        return ZStack {
-            shape
-                .stroke(gradient, lineWidth: 8)
-                .blur(radius: 8)
-                .clipShape(shape)
-                .opacity(glow)
-            shape
-                .strokeBorder(gradient, lineWidth: 0.5)
-        }
-    }
-
-    private static let gradient = Gradient(stops: [
-        .init(color: Color(red: 0.45, green: 0.76, blue: 0.72), location: 0.00),
-        .init(color: Color(red: 0.74, green: 0.84, blue: 0.48), location: 0.16),
-        .init(color: Color(red: 0.95, green: 0.84, blue: 0.32), location: 0.32),
-        .init(color: Color(red: 0.93, green: 0.52, blue: 0.24), location: 0.46),
-        .init(color: Color(red: 0.96, green: 0.74, blue: 0.48), location: 0.58),
-        .init(color: Color(red: 0.90, green: 0.82, blue: 0.66), location: 0.72),
-        .init(color: Color(red: 0.62, green: 0.78, blue: 0.88), location: 0.86),
-        .init(color: Color(red: 0.45, green: 0.76, blue: 0.72), location: 1.00),
-    ])
-}
-
-/// What the generate screen should show after it is closed. The screen keeps this object.
-struct GenerateReopenState: Equatable {
-    var jobID: UUID?
-    var token = "new"
-}
-
-final class GenerateReopen: ObservableObject {
-    @Published var state = GenerateReopenState()
-
-    static let detached = GenerateReopen()
-}
-
-/// Watches the open generation without invalidating the gallery list.
-private struct GenerateLiveRouteMonitor: View {
-    @ObservedObject private var generation = GenerationJobService.shared
-    var screenOpen: Bool
-    var onLiveJob: (UUID?) -> Void
-
-    var body: some View {
-        Color.clear
-            .frame(width: 0, height: 0)
-            .onChange(of: generation.live?.jobId) { jobID in
-                guard !screenOpen else { return }
-                onLiveJob(jobID)
-            }
     }
 }
 

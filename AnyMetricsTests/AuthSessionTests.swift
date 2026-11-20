@@ -117,6 +117,34 @@ final class AuthSessionTests: XCTestCase {
         XCTAssertEqual(transport.requests.first?.value(forHTTPHeaderField: "Authorization"), "Bearer local-token")
     }
 
+    func testDeleteAccountDropsOnlyTheCurrentServerToken() async throws {
+        tokens.sessions[APIServer.local.id] = StoredSession(token: "local-token", userID: apiUserID)
+        tokens.sessions["custom:http://10.0.0.2:3000"] = StoredSession(token: "other-token", userID: apiUserID)
+        transport.responses = [.success((204, Data()))]
+
+        try await session.deleteAccount()
+
+        let request = transport.requests.first
+        XCTAssertEqual(request?.httpMethod, "DELETE")
+        XCTAssertEqual(request?.url?.path, "/v1/me")
+        XCTAssertEqual(request?.value(forHTTPHeaderField: "Authorization"), "Bearer local-token")
+        XCTAssertNil(tokens.sessions[APIServer.local.id])
+        XCTAssertEqual(tokens.sessions["custom:http://10.0.0.2:3000"]?.token, "other-token")
+        XCTAssertFalse(session.isSignedIn)
+    }
+
+    func testFailedDeleteAccountKeepsTheSession() async {
+        tokens.sessions[APIServer.local.id] = StoredSession(token: "local-token", userID: apiUserID)
+        transport.responses = [.success((500, apiJSON(#"{"error":{"code":"INTERNAL","message":"Try again."}}"#)))]
+
+        do {
+            try await session.deleteAccount()
+            XCTFail("Expected the server error")
+        } catch {
+            XCTAssertEqual(tokens.sessions[APIServer.local.id]?.token, "local-token")
+        }
+    }
+
     func testAuthorizedCallClearsTheSessionOn401() async {
         tokens.sessions[APIServer.local.id] = StoredSession(token: "stored", userID: apiUserID)
         transport.responses = [.success((401, apiJSON(#"{"error":{"code":"UNAUTHORIZED","message":"A session token is required."}}"#)))]
@@ -181,7 +209,7 @@ final class APIServerStoreTests: XCTestCase {
         XCTAssertTrue(store.usesCustom)
         XCTAssertEqual(store.customURLString, "http://10.0.0.2:3000")
 
-        let reloaded = APIServerStore(defaults: defaults)
+        let reloaded = APIServerStore(defaults: defaults, production: nil)
         XCTAssertEqual(reloaded.current, store.current)
 
         store.selectBuiltIn(APIServer.local.id)
@@ -206,7 +234,21 @@ final class APIServerStoreTests: XCTestCase {
             forKey: "api.server.selection"
         )
 
-        XCTAssertEqual(APIServerStore(defaults: defaults).current, .local)
+        XCTAssertEqual(APIServerStore(defaults: defaults, production: nil).current, .local)
+        XCTAssertEqual(store.current, .local)
+    }
+
+    func testConfiguredProductionIsTheDefaultAndLocalStaysSelectable() {
+        let name = "APIServerStoreTests.\(UUID().uuidString)"
+        defaultsName = name
+        let defaults = UserDefaults(suiteName: name)!
+        let production = APIServer(id: "production", baseURL: URL(string: "https://api.example.com")!)
+        let store = APIServerStore(defaults: defaults, production: production)
+
+        XCTAssertEqual(store.current, production)
+        XCTAssertEqual(store.builtIn, [production, .local])
+
+        store.selectBuiltIn(APIServer.local.id)
         XCTAssertEqual(store.current, .local)
     }
 }

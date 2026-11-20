@@ -9,7 +9,9 @@
 
 AnyMetrics also sends **anonymous usage events** (Google Analytics for Firebase) and **crash reports** (Firebase Crashlytics). They help us see which features are used and where people get stuck — nothing more.
 
-**Never sent:** your URLs, headers, tokens, request bodies, responses, metric titles or values. No accounts, no email, no advertising identifier (IDFA) — the app uses `FirebaseAnalyticsCore` without ad support. Widgets send no analytics.
+**Never sent:** your URLs, headers, tokens, request bodies, responses, metric titles or values. No account IDs, no email, no generation prompts, no advertising identifier (IDFA) — the app uses `FirebaseAnalyticsCore` without ad support. Widgets send no analytics.
+
+AI generation and sign-in use the AnyMetrics server, not analytics. What that server receives is described in the [Privacy Policy](privacy_policy.md#account-and-ai-generation).
 
 ## What is sent
 
@@ -20,7 +22,7 @@ Event names with short technical parameters:
 | `onboarding_shown` | Onboarding opened | — |
 | `onboarding_skipped` | Onboarding closed without adding a metric | — |
 | `gallery_opened` | Gallery opened | `entry`: `main` / `onboarding` |
-| `metric_added` | A new metric is added | `source`: `gallery` / `custom` / `import` / `onboarding`, `type`, `result_kind`; for gallery items also `gallery_id`, `gallery_group` |
+| `metric_added` | A new metric is added | `source`: `gallery` / `custom` / `import` / `onboarding` / `duplicate` / `generate`, `type`, `result_kind`; for gallery items also `gallery_id`, `gallery_group` |
 | `metric_form_started`, `metric_form_step`, `metric_form_saved`, `metric_form_abandoned` | Creating a custom metric | `step`: `request` / `value` / `display` |
 | `metric_request_tested` | Test request in the form | `success`, `error_kind`: `network` / `http` / `parse` / `unknown` |
 | `metric_refreshed`, `library_refreshed` | Metrics refreshed | `success`, `error_kind`, `library_size`, `failed_count` |

@@ -30,5 +30,7 @@ extension GenerateMetricView {
 
     enum VNotification: NotificationProtocol {
         case submitted(String)
+        /// The server refused a new generation for lack of credits. Carries the prompt to send after a purchase.
+        case paymentRequired(String)
     }
 }

@@ -38,6 +38,10 @@ struct APIClient {
         try await decode(method: "GET", path: "/v1/me", authenticated: true, success: [200])
     }
 
+    func deleteAccount() async throws {
+        try await sendEmpty(method: "DELETE", path: "/v1/me", authenticated: true, success: [204])
+    }
+
     func billing() async throws -> BuilderAPI.Billing {
         try await decode(method: "GET", path: "/v1/billing", authenticated: true, success: [200])
     }

@@ -280,6 +280,7 @@
 "profile.name-unknown" = "Аккаунт";
 "profile.id" = "ID";
 "profile.balance" = "Баланс";
+"profile.free-attempts" = "%@ бесплатно";
 "profile.generated-items" = "Сгенерированные";
 "profile.metric-count-one" = "%@ метрика";
 "profile.metric-count-few" = "%@ метрики";
@@ -295,13 +296,32 @@
 "profile.more" = "Ещё";
 "profile.sign-in-heading" = "Вход в аккаунт";
 "profile.select-method" = "Выберите способ";
-"profile.terms-and-privacy" = "Условия и конфиденциальность";
 "profile.sign-in-apple" = "Войти через Apple";
 "profile.sign-in-google" = "Войти через Google";
 "profile.sign-in-github" = "Войти через GitHub";
 "profile.provider-not-configured" = "Вход через %@ не настроен в этой сборке.";
 "profile.load-failed" = "Не удалось загрузить аккаунт.";
 "profile.retry" = "Повторить";
+
+// MARK: - Top Up
+
+"top-up.headline" = "AI соберёт метрику за вас";
+"top-up.subtitle" = "Опишите, что хотите видеть. AI найдёт источник данных, соберёт запрос и проверит значение.";
+"top-up.balance" = "Сейчас у вас: %@";
+"top-up.generations-one" = "%@ генерация";
+"top-up.generations-few" = "%@ генерации";
+"top-up.generations-many" = "%@ генераций";
+"top-up.per-generation" = "%@ за генерацию";
+"top-up.best" = "Выгоднее всего";
+"top-up.save" = "Экономия %@";
+"top-up.no-expiry" = "Не сгорают через месяц — тратьте, когда нужно";
+"top-up.one-time" = "Разовая покупка, без подписки";
+"top-up.buy" = "Купить за %@";
+"top-up.terms" = "Условия";
+"top-up.empty" = "Пакеты кредитов сейчас недоступны.";
+"top-up.load-failed" = "Не удалось загрузить пакеты кредитов.";
+"top-up.pending" = "Покупка ждёт подтверждения.";
+"top-up.unavailable" = "Этот пакет сейчас нельзя купить.";
 
 // MARK: - Review
 
@@ -423,7 +443,9 @@
 "generate.answer-placeholder" = "Ваш ответ";
 "generate.try-again" = "Попробовать ещё раз";
 "generate.generate-new" = "Новая генерация";
+"generate.no-credits" = "Генерации закончились — пополнить можно при отправке";
 "generate.prompt-too-long" = "Опишите метрику не длиннее 2000 символов.";
+"generate.sign-in-required" = "Войдите, чтобы создать метрику.";
 "generate.send" = "Отправить";
 "generate.history" = "История";
 "generate.history.empty" = "Здесь появятся ваши запросы.";

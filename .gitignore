@@ -87,3 +87,5 @@ iOSInjectionProject/
 
 .props/*
 .cursor/*
+
+.env

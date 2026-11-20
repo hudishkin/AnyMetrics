@@ -11,7 +11,7 @@
 <p align="center">
   Point AnyMetrics at a REST API, JSON service, or web page.<br />
   Extract the value you care about. Pin it to your Home Screen.<br />
-  No code. No servers. No ads.
+  No code. No ads.
 </p>
 
 <p align="center">
@@ -79,6 +79,7 @@ That’s it. Three steps from endpoint to widget.
 | **Widget design** | Glass, Card and Plain presets; custom background (color, gradient, photo), fonts, colors and layout |
 | **Value formatting** | Currency, length trimming, and more |
 | **Gallery** | Ready-made metrics from the [community](https://github.com/hudishkin/AnyMetricsGallery) — one tap to add |
+| **AI generation** | Describe what you want to track; the assistant finds a public source and builds the metric. Needs sign-in (Apple, Google or GitHub); free attempts, then credits |
 | **Share / Import / Export** | Share a metric as an image + JSON file; import metrics from teammates |
 | **Languages** | English and Russian |
 
@@ -87,6 +88,8 @@ That’s it. Three steps from endpoint to widget.
 ## Privacy
 
 Your metrics and API keys stay on your iPhone — requests go straight to your endpoint, with no AnyMetrics server in between. The app sends anonymous usage events and crash reports, never your URLs, headers or values.
+
+AI generation is the one feature that uses an AnyMetrics server. It receives your sign-in, the description you type and your answers — never your saved metrics or their keys. It is optional; everything else works without an account.
 
 [What exactly is collected](ANALYTICS.md) · [Privacy Policy](privacy_policy.md)
 
@@ -217,14 +220,28 @@ Only on your device, together with the rest of the metric. See [Privacy & analyt
 
 ## Build from source
 
-**Requirements:** iOS 16.0+, Xcode 15+, [Tuist](https://tuist.io)
+**Requirements:** iOS 16.0+, Xcode 15+, [Tuist](https://tuist.io). The Tuist version is pinned in [`mise.toml`](mise.toml); with [mise](https://mise.jdx.dev) run `mise install`.
 
 ```bash
 tuist install
 tuist generate
 ```
 
-Open the generated workspace in Xcode and run.
+Open the generated workspace in Xcode and run. Run unit tests with the `AnyMetrics` scheme (`AnyMetricsTests` target).
+
+### Running a fork
+
+Widgets, metrics and the Gallery work as is. A few things are tied to the AnyMetrics App Store app and need your own setup:
+
+| What | Where | Notes |
+|---|---|---|
+| Signing team | `TUIST_TEAM_ID=XXXXXXXXXX tuist generate` | Bundle id and App Group (`group.anymetrics.app`) are in [`Project.swift`](Project.swift) and the entitlements; change them for your team |
+| Firebase | `AnyMetrics/GoogleService-Info.plist` | Replace with your project's file. Debug builds send no analytics |
+| Builder API (AI generation) | `TUIST_BUILDER_API_URL=https://… tuist generate` | Not in this repository. Contract: [docs/builder-api.md](docs/builder-api.md). Defaults to `http://127.0.0.1:3000`; Debug builds can switch servers in the Dev Menu |
+| Sign in with Apple | Capability in `AnyMetrics.entitlements` | Needs a team that has it enabled |
+| Sign in with Google | `GOOGLE_CLIENT_ID` build setting | Empty by default; the button reports "not set up" |
+| Sign in with GitHub | `GitHubClientID` in `Project.swift` | The AnyMetrics OAuth app. Point it at yours, with the `anymetrics://callback` redirect |
+| Credits (StoreKit) | [`CreditProducts.swift`](AnyMetrics/Service/Store/CreditProducts.swift) | Products `app.anymetrics.credits.{5,15,40}` must exist in your App Store Connect and on your server |
 
 ---
 

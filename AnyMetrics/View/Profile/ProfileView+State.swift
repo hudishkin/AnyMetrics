@@ -16,6 +16,7 @@ extension ProfileView {
     enum VAction: ActionProtocol {
         case load
         case logOut
+        case deleteAccount
         case signIn(BuilderAPI.SignInProvider)
     }
 

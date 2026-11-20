@@ -86,6 +86,18 @@ final class AuthSession: ObservableObject {
         )
     }
 
+    /// Keeps the shared account in step with a fresh `/v1/me` response.
+    func remember(_ account: BuilderAPI.Account) {
+        self.account = account
+        isSignedIn = true
+    }
+
+    /// Reads `/v1/me` again. The balance changes on the server when a generation starts.
+    func refreshAccount() async {
+        guard let me = try? await authorized({ try await $0.me() }) else { return }
+        remember(me)
+    }
+
     /// Account id to pass as StoreKit `appAccountToken`. Falls back to the stored id when `/v1/me` has not returned.
     var userID: UUID? {
         account?.user.id ?? tokens.load(serverID: servers.current.id)?.userID
@@ -164,6 +176,14 @@ final class AuthSession: ObservableObject {
             publishCurrent()
             throw error
         }
+    }
+
+    /// Deletes the account on the current server and drops its session. Other servers keep theirs.
+    func deleteAccount() async throws {
+        let serverID = servers.current.id
+        try await authorized { try await $0.deleteAccount() }
+        try tokens.save(nil, serverID: serverID)
+        publishCurrent()
     }
 
     /// Runs a signed-in call. A 401 clears only the session for the current server.

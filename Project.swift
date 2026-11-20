@@ -3,7 +3,8 @@ import ProjectDescription
 let version = "3.2"
 let buildNumber = "1"
 let bundleId = "app.anymetrics.AnyMetrics"
-let teamId = "Q424U5CAPS"
+let teamId = Environment.teamId.getString(default: "Q424U5CAPS")
+let builderAPIURL = Environment.builderApiUrl.getString(default: "")
 
 let appInfoPlist: [String: Plist.Value] = [
     "NSAppTransportSecurity": .dictionary([
@@ -41,7 +42,8 @@ let appInfoPlist: [String: Plist.Value] = [
         ])
     ]),
     "GitHubClientID": .string("Ov23li1wn9UEvvgRhPUa"),
-    "GoogleClientID": .string("$(GOOGLE_CLIENT_ID)")
+    "GoogleClientID": .string("$(GOOGLE_CLIENT_ID)"),
+    "BuilderAPIURL": .string("$(BUILDER_API_URL)")
 ]
 
 let widgetInfoPlist: [String: Plist.Value] = [
@@ -172,7 +174,8 @@ let appTarget: Target = .target(
             "OTHER_LDFLAGS": "$(inherited) -ObjC",
             "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics",
             "GITHUB_CLIENT_ID": .string(""),
-            "GOOGLE_CLIENT_ID": .string("")
+            "GOOGLE_CLIENT_ID": .string(""),
+            "BUILDER_API_URL": .string(builderAPIURL)
         ]
     )
 )

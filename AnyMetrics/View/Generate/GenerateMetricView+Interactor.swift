@@ -129,6 +129,15 @@ extension GenerateMetricView {
                         )
                         guard let jobID = record.jobId else { return }
                         await updater { $0.jobID = jobID }
+                        await AuthSession.shared.refreshAccount()
+                    } catch let error as BuilderAPI.ClientError where error.failure?.code == "PAYMENT_REQUIRED" {
+                        await updater {
+                            $0.userLines = []
+                            $0.draft = text
+                            $0.generationError = nil
+                        }
+                        self.notifications.send(.paymentRequired(text))
+                        await AuthSession.shared.refreshAccount()
                     } catch {
                         let kept = GenerationJobService.shared.jobs.contains {
                             $0.idempotencyKey == current.idempotencyKey && $0.jobId == nil
@@ -168,7 +177,7 @@ extension GenerateMetricView {
                 }
                 switch client {
                 case .missingSession:
-                    return AnyMetricsStrings.Error.unknown("A session token is required.")
+                    return AnyMetricsStrings.Generate.signInRequired
                 case .status(let code, _):
                     return AnyMetricsStrings.Error.httpStatus(code)
                 case .transport(let urlError):
