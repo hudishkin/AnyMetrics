@@ -223,24 +223,24 @@ Only on your device, together with the rest of the metric. See [Privacy & analyt
 **Requirements:** iOS 16.0+, Xcode 15+, [Tuist](https://tuist.io). The Tuist version is pinned in [`mise.toml`](mise.toml); with [mise](https://mise.jdx.dev) run `mise install`.
 
 ```bash
-tuist install
-tuist generate
+cp generate.example.sh generate.sh   # optional: your team, API and sign-in ids, ignored by git
+./generate.sh                         # or: tuist install && tuist generate
 ```
 
 Open the generated workspace in Xcode and run. Run unit tests with the `AnyMetrics` scheme (`AnyMetricsTests` target).
 
 ### Running a fork
 
-Widgets, metrics and the Gallery work as is. A few things are tied to the AnyMetrics App Store app and need your own setup:
+Widgets, metrics and the Gallery work as is. A few things are tied to the AnyMetrics App Store app and need your own setup. The `TUIST_*` variables go into `generate.sh`:
 
 | What | Where | Notes |
 |---|---|---|
-| Signing team | `TUIST_TEAM_ID=XXXXXXXXXX tuist generate` | Bundle id and App Group (`group.anymetrics.app`) are in [`Project.swift`](Project.swift) and the entitlements; change them for your team |
+| Signing team | `TUIST_TEAM_ID` | Bundle id and App Group (`group.anymetrics.app`) are in [`Project.swift`](Project.swift) and the entitlements; change them for your team |
 | Firebase | `AnyMetrics/GoogleService-Info.plist` | Replace with your project's file. Debug builds send no analytics |
-| Builder API (AI generation) | `TUIST_BUILDER_API_URL=https://… tuist generate` | Not in this repository. Contract: [docs/builder-api.md](docs/builder-api.md). Defaults to `http://127.0.0.1:3000`; Debug builds can switch servers in the Dev Menu |
+| Builder API (AI generation) | `TUIST_BUILDER_API_URL` | Not in this repository. Contract: [docs/builder-api.md](docs/builder-api.md). Defaults to `http://127.0.0.1:3000`; Debug builds can switch servers in the Dev Menu |
 | Sign in with Apple | Capability in `AnyMetrics.entitlements` | Needs a team that has it enabled |
-| Sign in with Google | `GOOGLE_CLIENT_ID` build setting | Empty by default; the button reports "not set up" |
-| Sign in with GitHub | `GitHubClientID` in `Project.swift` | The AnyMetrics OAuth app. Point it at yours, with the `anymetrics://callback` redirect |
+| Sign in with Google | `TUIST_GOOGLE_CLIENT_ID` | Empty by default; the button reports "not set up" |
+| Sign in with GitHub | `TUIST_GITHUB_CLIENT_ID` | Empty by default. Use your OAuth app with the `anymetrics://callback` redirect |
 | Credits (StoreKit) | [`CreditProducts.swift`](AnyMetrics/Service/Store/CreditProducts.swift) | Products `app.anymetrics.credits.{5,15,40}` must exist in your App Store Connect and on your server |
 
 ---

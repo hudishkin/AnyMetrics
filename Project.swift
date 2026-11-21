@@ -1,10 +1,25 @@
 import ProjectDescription
 
-let version = "3.2"
-let buildNumber = "1"
+let version = Environment.marketingVersion.getString(default: "4.0")
+let buildNumber = Environment.buildNumber.getString(default: "1")
 let bundleId = "app.anymetrics.AnyMetrics"
-let teamId = Environment.teamId.getString(default: "Q424U5CAPS")
+let teamId = Environment.teamId.getString(default: "")
+let appStoreSigning = Environment.appStoreSigning.getBoolean(default: false)
 let builderAPIURL = Environment.builderApiUrl.getString(default: "")
+let gitHubClientID = Environment.githubClientId.getString(default: "")
+let googleClientID = Environment.googleClientId.getString(default: "")
+
+/// Profiles are looked up by the default name of `apple-actions/download-provisioning-profiles`.
+func signing(profileFor targetBundleId: String?) -> SettingsDictionary {
+    guard appStoreSigning else {
+        return ["CODE_SIGN_STYLE": "Automatic", "CODE_SIGN_IDENTITY": "Apple Development"]
+    }
+    var settings: SettingsDictionary = ["CODE_SIGN_STYLE": "Manual", "CODE_SIGN_IDENTITY": "Apple Distribution"]
+    if let targetBundleId {
+        settings["PROVISIONING_PROFILE_SPECIFIER"] = .string("AppStore \(targetBundleId)")
+    }
+    return settings
+}
 
 let appInfoPlist: [String: Plist.Value] = [
     "NSAppTransportSecurity": .dictionary([
@@ -41,7 +56,7 @@ let appInfoPlist: [String: Plist.Value] = [
             ])
         ])
     ]),
-    "GitHubClientID": .string("Ov23li1wn9UEvvgRhPUa"),
+    "GitHubClientID": .string("$(GITHUB_CLIENT_ID)"),
     "GoogleClientID": .string("$(GOOGLE_CLIENT_ID)"),
     "BuilderAPIURL": .string("$(BUILDER_API_URL)")
 ]
@@ -94,12 +109,12 @@ let sharedTarget: Target = .target(
         .external(name: "SwiftSoup")
     ],
     settings: .settings(
-        base: [
+        base: signing(profileFor: nil).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
             "SWIFT_VERSION": "5.0"
-        ]
+        ]) { $1 }
     )
 )
 
@@ -158,12 +173,10 @@ let appTarget: Target = .target(
         .external(name: "VVSI")
     ],
     settings: .settings(
-        base: [
+        base: signing(profileFor: bundleId).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
-            "CODE_SIGN_STYLE": "Automatic",
-            "CODE_SIGN_IDENTITY": "Apple Development",
             "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
             "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
             "DEVELOPMENT_ASSET_PATHS": "\"AnyMetrics/Preview Content\"",
@@ -173,10 +186,10 @@ let appTarget: Target = .target(
             "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks",
             "OTHER_LDFLAGS": "$(inherited) -ObjC",
             "INFOPLIST_KEY_CFBundleDisplayName": "AnyMetrics",
-            "GITHUB_CLIENT_ID": .string(""),
-            "GOOGLE_CLIENT_ID": .string(""),
+            "GITHUB_CLIENT_ID": .string(gitHubClientID),
+            "GOOGLE_CLIENT_ID": .string(googleClientID),
             "BUILDER_API_URL": .string(builderAPIURL)
-        ]
+        ]) { $1 }
     )
 )
 
@@ -202,12 +215,10 @@ let widgetTarget: Target = .target(
         .sdk(name: "WidgetKit", type: .framework)
     ],
     settings: .settings(
-        base: [
+        base: signing(profileFor: "\(bundleId).WidgetExtension").merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
-            "CODE_SIGN_STYLE": "Automatic",
-            "CODE_SIGN_IDENTITY": "Apple Development",
             "SWIFT_VERSION": "5.0",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) WIDGET_EXTENSION",
             "TARGETED_DEVICE_FAMILY": "1,2",
@@ -215,7 +226,7 @@ let widgetTarget: Target = .target(
             "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks",
             "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
             "ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME": "WidgetBackground"
-        ]
+        ]) { $1 }
     )
 )
 
@@ -236,17 +247,15 @@ let intentTarget: Target = .target(
         .sdk(name: "Intents", type: .framework)
     ],
     settings: .settings(
-        base: [
+        base: signing(profileFor: "\(bundleId).IntentExtension").merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
-            "CODE_SIGN_STYLE": "Automatic",
-            "CODE_SIGN_IDENTITY": "Apple Development",
             "SWIFT_VERSION": "5.0",
             "TARGETED_DEVICE_FAMILY": "1,2",
             "SKIP_INSTALL": "YES",
             "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
-        ]
+        ]) { $1 }
     )
 )
 

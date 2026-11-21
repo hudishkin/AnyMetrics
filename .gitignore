@@ -89,3 +89,4 @@ iOSInjectionProject/
 .cursor/*
 
 .env
+generate.sh
