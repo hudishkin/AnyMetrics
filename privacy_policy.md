@@ -1,14 +1,15 @@
 # AnyMetrics Privacy Policy
 
-**Effective date:** October 19, 2026
+**Effective date:** November 20, 2026
 
 AnyMetrics is a free, open-source iOS app by Semen Khudyshkin. This policy explains what data the app handles and where it goes. The source code is public, so every statement here can be checked.
 
 ## Short version
 
 - Your metrics — URLs, headers, API keys, request bodies, responses and values — stay on your device.
+- An account is needed only for AI generation. If you use it, the AnyMetrics server receives your sign-in details, what you type into the generator, and your credit purchases. You can delete the account in the app.
 - The app sends anonymous usage events and crash reports to Google Firebase so I can improve it.
-- No accounts, no ads, no advertising identifier (IDFA), no selling or sharing of data for marketing.
+- No ads, no advertising identifier (IDFA), no selling or sharing of data for marketing.
 
 ## Data stored on your device
 
@@ -19,6 +20,20 @@ This data is not synced to iCloud and is never sent to me. Deleting the app dele
 ## Requests to your endpoints
 
 The app and its widget send HTTP requests directly from your device to the URLs you configure — nowhere else. These requests contain whatever URL, headers and body you set up. The services you call are governed by their own privacy policies.
+
+## Account and AI generation
+
+Everything except AI generation works without an account.
+
+**Sign-in.** To generate metrics you sign in with Apple, Google or GitHub. The provider gives the AnyMetrics server a sign-in token, from which the server learns your account ID and, if the provider shares them, your name and email. With Sign in with Apple you can hide your email. The app keeps a session token in the iOS Keychain.
+
+**Generation.** The server receives the description you type, your device language, and your answers to follow-up questions. It uses them to find a public data source and build a metric, which comes back to the app. Your saved metrics, their URLs, headers and API keys are never sent.
+
+**Credits.** Purchases go through the App Store; the app never sees your payment details. After a purchase the app sends Apple's signed transaction to the server so it can add credits to your account. The server keeps your credit balance.
+
+**Deleting your account.** Profile → ⋯ → Delete account closes the account on the server and signs it out on every device. It cannot be signed into again. The account record, balance, purchases and generation history are kept on the server until they are removed later. Metrics on your device are not affected.
+
+The full list of server calls and their contents is in [docs/builder-api.md](docs/builder-api.md).
 
 ## Usage analytics
 
@@ -52,6 +67,7 @@ When you share or export a metric, the app creates an image and/or a JSON file a
 ## Your choices
 
 - Deleting the app removes all locally stored data and resets the Firebase identifiers on your device.
+- Deleting your account in the app closes it on the server and signs out every device. To have its data erased right away, contact me at the address below.
 - To request deletion of analytics data associated with your device, contact me at the address below.
 
 ## Children

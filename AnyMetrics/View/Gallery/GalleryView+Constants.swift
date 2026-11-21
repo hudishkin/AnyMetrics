@@ -25,6 +25,11 @@ extension GalleryView {
         static let createNewIcon: CGFloat = 16
         static let createNewVSpacing: CGFloat = 16
         static let createNewHSpacing: CGFloat = 12
+        static let emptyIconSize: CGFloat = 40
+        static let emptyFont = Font.system(size: 15, weight: .regular, design: .default)
+        static let emptySpacing: CGFloat = 14
+        static let emptyVerticalPadding: CGFloat = 40
+        static let emptyHorizontalPadding: CGFloat = 24
     }
 
 }

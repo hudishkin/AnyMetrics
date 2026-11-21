@@ -43,7 +43,7 @@ final class StarterMetricTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(value.frame.height, 0.50)
         XCTAssertLessThanOrEqual(title.y + title.height, value.frame.y + 0.001)
         XCTAssertLessThanOrEqual(value.frame.y + value.frame.height, measure.y + 0.001)
-        XCTAssertLessThanOrEqual(measure.y + measure.height, updated.y + 0.001)
+        XCTAssertLessThanOrEqual(measure.x + measure.width, updated.x + 0.001)
 
         guard case .gradient(let spec) = small.background.fill else {
             return XCTFail("Starter widget should use a custom gradient")
@@ -186,7 +186,7 @@ final class StarterMetricTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(value.frame.height, 0.50)
         XCTAssertLessThanOrEqual(title.y + title.height, value.frame.y + 0.001)
         XCTAssertLessThanOrEqual(value.frame.y + value.frame.height, measure.y + 0.001)
-        XCTAssertLessThanOrEqual(measure.y + measure.height, updated.y + 0.001)
+        XCTAssertLessThanOrEqual(measure.x + measure.width, updated.x + 0.001)
 
         guard case .gradient(let spec) = small.background.fill else {
             return XCTFail("Quote widget should use a custom gradient")

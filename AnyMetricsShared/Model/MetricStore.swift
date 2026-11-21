@@ -75,9 +75,11 @@ open class MetricStore {
     }
 
     /// Keeps a newer successful value when a slower refresh finishes later and fails.
+    /// A metric that has already left the library is not put back.
     @discardableResult
     public func saveRefresh(_ metric: Metric) -> Metric {
-        if let existing = metrics[metric.id], Self.shouldKeepStored(existing, insteadOf: metric) {
+        guard let existing = metrics[metric.id] else { return metric }
+        if Self.shouldKeepStored(existing, insteadOf: metric) {
             return existing
         }
         addMetric(metric: metric)
@@ -97,11 +99,17 @@ open class MetricStore {
     }
 
     public func removeMetric(id: UUID) {
-        var localMetrics = metrics
-        localMetrics[id] = nil
-        metrics = localMetrics
+        removeFromLibrary(id: id)
         WidgetBackgroundStore.shared.deleteAll(for: id)
         MetricResultImageStore.shared.deleteAll(for: id)
+    }
+
+    /// Drops the metric from this library and leaves its widget files in place.
+    public func removeFromLibrary(id: UUID) {
+        var localMetrics = metrics
+        guard localMetrics[id] != nil else { return }
+        localMetrics[id] = nil
+        metrics = localMetrics
     }
 
     @discardableResult

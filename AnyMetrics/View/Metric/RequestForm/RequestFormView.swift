@@ -107,9 +107,8 @@ struct RequestFormView: View {
                         activeSheet = .add
                     } label: {
                         HStack {
-                            AnyMetricsAsset.Assets.plus.swiftUIImage
-                                .resizable()
-                                .renderingMode(.template)
+                            Image(systemName: "plus")
+                                .font(.system(size: Constants.createNewIcon, weight: .thin))
                                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
                                 .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
                             Text(AnyMetricsStrings.Addmetric.Button.addHttpHeader)
@@ -129,11 +128,8 @@ struct RequestFormView: View {
                     } label: {
                         HStack {
                             Constants.requestImage
-                                .resizable()
-                                .renderingMode(.template)
+                                .font(.system(size: Constants.createNewIcon, weight: .thin))
                                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                                .frame(width: Constants.createNewIcon, height: Constants.createNewIcon)
-                                .aspectRatio(contentMode: .fit)
                             Text(AnyMetricsStrings.Addmetric.Button.makeRequest)
                                 .font(Constants.mainButtonFont)
                                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
@@ -262,7 +258,7 @@ private extension RequestFormView {
         static let zero: CGFloat = 0
         static let mainButtonFont = Font.body.weight(.semibold)
         static let createNewIcon: CGFloat = 16
-        static let requestImage = AnyMetricsAsset.Assets.request.swiftUIImage
+        static let requestImage = Image(systemName: "paperplane")
         static let requestBodyMinHeight: CGFloat = 100
         static let opacityEnable: CGFloat = 1.0
         static let opacityDisable: CGFloat = 0.4

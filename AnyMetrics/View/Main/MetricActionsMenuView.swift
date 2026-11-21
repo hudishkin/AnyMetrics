@@ -17,12 +17,16 @@ struct MetricActionsMenuView: View {
     }
 
     var onRefresh: () -> Void
+    var onCopyValue: () -> Void
     var onEditRequest: () -> Void
     var onEditTheme: () -> Void
     var onDuplicate: () -> Void
     var onExport: () -> Void
     var onShare: () -> Void
     var onDelete: () -> Void
+    var deleteTitle: String = AnyMetricsStrings.Metric.Actions.delete
+    var deleteIcon: String = "trash"
+    var deleteIsDestructive: Bool = true
 
     @State
     private var sheetHeight: CGFloat = 420
@@ -57,6 +61,11 @@ struct MetricActionsMenuView: View {
                     action: onRefresh
                 )
                 actionRow(
+                    title: AnyMetricsStrings.Metric.Actions.copyValue,
+                    icon: "doc.on.clipboard",
+                    action: onCopyValue
+                )
+                actionRow(
                     title: AnyMetricsStrings.Metric.Actions.export,
                     icon: "square.and.arrow.up.on.square",
                     action: onExport
@@ -72,9 +81,9 @@ struct MetricActionsMenuView: View {
                 .padding(.vertical, 4)
 
             actionRow(
-                title: AnyMetricsStrings.Metric.Actions.delete,
-                icon: "trash",
-                color: Constants.deleteColor,
+                title: deleteTitle,
+                icon: deleteIcon,
+                color: deleteIsDestructive ? Constants.deleteColor : Constants.textColor,
                 action: onDelete
             )
         }
@@ -143,6 +152,7 @@ private struct ActionsFittedSheetModifier: ViewModifier {
 #Preview {
     MetricActionsMenuView(
         onRefresh: {},
+        onCopyValue: {},
         onEditRequest: {},
         onEditTheme: {},
         onDuplicate: {},

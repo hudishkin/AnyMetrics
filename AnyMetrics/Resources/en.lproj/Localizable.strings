@@ -25,8 +25,14 @@
 
 "metric.add.title" = "Add Metric";
 "metric.add.custom" = "Create metric";
+"metric.add.manual" = "Add manually";
+"metric.add.import-row" = "Import";
+"metric.add.generate-ai" = "Generate by AI";
 "metric.actions.update-value" = "Refresh";
+"metric.actions.copy-value" = "Copy value";
 "metric.actions.delete" = "Remove";
+"metric.actions.hide" = "Hide";
+"metric.actions.hide-message" = "This metric will be hidden from the home screen and stay in Personal. Add it back with +, or delete it there.";
 "metric.actions.edit" = "Edit";
 "metric.actions.edit-request" = "Edit request";
 "metric.actions.edit-theme" = "Edit theme";
@@ -80,8 +86,14 @@
 
 "gallery.no-metric-message" = "If you didn't find the metric,\nyou can add it manually ↑.\n\nOr send the message with the metric information,\nwe'll add it to the gallery.";
 "gallery.button.send" = "Send information";
+"gallery.button.subscribe" = "Start. Subscribe";
+"gallery.button.unsubscribe" = "Stop. Unsubscribe";
 "gallery.message.subject" = "[AnyMetrics] Can't find metric";
 "gallery.title" = "Gallery";
+
+"catalog.personal" = "Personal";
+"catalog.empty" = "Metrics you add manually, import, or generate stay here. Removing one from the home screen only hides it.";
+"catalog.delete" = "Delete";
 
 // MARK: - Add/Edit Metric
 
@@ -156,7 +168,6 @@
 
 "addmetric.error.cannot-save" = "Could not create the metric. Check the URL and required fields, then try again.";
 
-"addmetric.field.widget-design" = "Widget design";
 "addmetric.design.glass-circle" = "Glass";
 "addmetric.design.rounded-card" = "Card";
 "addmetric.design.minimal" = "Minimal";
@@ -169,7 +180,6 @@
 "addmetric.design.undo" = "Undo";
 "addmetric.design.redo" = "Redo";
 "addmetric.design.plain" = "Plain";
-"addmetric.design.choose-design" = "Choose design";
 "addmetric.design.custom" = "Custom";
 "addmetric.design.edit-selected" = "Edit";
 "addmetric.design.edit-design" = "Edit design";
@@ -261,6 +271,57 @@
 "info.gallery" = "Suggest a metric";
 "info.mail-subject" = "[AnyMetrics] Feedback";
 "info.version" = "Version %@";
+
+// MARK: - Profile
+
+"profile.title" = "Profile";
+"profile.signed-out" = "Sign in to keep your balance on this account.";
+"profile.sign-in-unavailable" = "Sign-in is not available.";
+"profile.name-unknown" = "Account";
+"profile.id" = "ID";
+"profile.balance" = "Balance";
+"profile.free-attempts" = "%@ free";
+"profile.generated-items" = "Generated Items";
+"profile.metric-count-one" = "%@ metric";
+"profile.metric-count-few" = "%@ metrics";
+"profile.metric-count-many" = "%@ metrics";
+"profile.top-up" = "Top Up";
+"profile.paid" = "Purchases";
+"profile.paid-yes" = "Yes";
+"profile.paid-no" = "No";
+"profile.log-out" = "Log out";
+"profile.log-out-confirm" = "Log out of this account on this device?";
+"profile.delete-account" = "Delete account";
+"profile.delete-account-confirm" = "Delete this account and its data? This can't be undone.";
+"profile.more" = "More";
+"profile.sign-in-heading" = "Sign in";
+"profile.select-method" = "Select method";
+"profile.sign-in-apple" = "Sign in with Apple";
+"profile.sign-in-google" = "Sign in with Google";
+"profile.sign-in-github" = "Sign in with GitHub";
+"profile.provider-not-configured" = "Sign in with %@ is not set up in this build.";
+"profile.load-failed" = "Couldn't load the account.";
+"profile.retry" = "Try again";
+
+// MARK: - Top Up
+
+"top-up.headline" = "Let AI build your metrics";
+"top-up.subtitle" = "Describe what you want to track. AI finds a data source, builds the request, and checks the value.";
+"top-up.balance" = "You have %@";
+"top-up.generations-one" = "%@ generation";
+"top-up.generations-few" = "%@ generations";
+"top-up.generations-many" = "%@ generations";
+"top-up.per-generation" = "%@ per generation";
+"top-up.best" = "Best value";
+"top-up.save" = "Save %@";
+"top-up.no-expiry" = "Don't expire after a month. Use them anytime";
+"top-up.one-time" = "One-time purchase, no subscription";
+"top-up.buy" = "Buy for %@";
+"top-up.terms" = "Terms";
+"top-up.empty" = "Credit packs are not available right now.";
+"top-up.load-failed" = "Couldn't load credit packs.";
+"top-up.pending" = "This purchase is waiting for approval.";
+"top-up.unavailable" = "This pack can't be purchased right now.";
 
 // MARK: - Review
 
@@ -359,4 +420,46 @@
 "dev-menu.show-widget-instructions" = "Show widget instructions";
 "dev-menu.show-review-prompt" = "Show review prompt";
 "dev-menu.reset-review" = "Reset review prompts";
+"dev-menu.server" = "API server";
+"dev-menu.server-local" = "Local";
+"dev-menu.server-custom" = "Custom";
+"dev-menu.server-url-placeholder" = "https://api.example.com";
+"dev-menu.server-apply" = "Use this server";
+"dev-menu.server-invalid" = "Enter an http or https URL";
+"dev-menu.simulation" = "Simulation";
+"dev-menu.simulation-footer" = "The next search is a simulation: no model call and no credit charge.";
+
+// MARK: - Generate
+
+"generate.title" = "Generate";
+"generate.greeting" = "I'll find the data you want to see and keep an eye on updates.";
+"generate.examples" = "Metric examples";
+"generate.placeholder" = "Describe your metric";
+"generate.waiting" = "One moment…";
+"generate.searching" = "Working on it";
+"generate.status.finding" = "Finding a data source";
+"generate.status.checking" = "Checking the data";
+"generate.status.creating" = "Creating your metric";
+"generate.answer-placeholder" = "Your answer";
+"generate.try-again" = "Try again";
+"generate.generate-new" = "Generate new";
+"generate.no-credits" = "You're out of generations. You can top up when you send";
+"generate.prompt-too-long" = "Describe the metric in 2000 characters or fewer.";
+"generate.sign-in-required" = "Sign in to generate a metric.";
+"generate.send" = "Send";
+"generate.history" = "History";
+"generate.history.empty" = "Your requests will appear here.";
+"generate.more" = "More";
+"generate.reset" = "Reset";
+"generate.reset.message" = "The metric you're creating will be cleared.";
+"generate.example.people-in-space" = "People in space";
+"generate.example.iss" = "Where is the ISS";
+"generate.example.bitcoin" = "Bitcoin price";
+"generate.example.dollar" = "Dollar rate";
+"generate.example.apple" = "Apple stock";
+"generate.example.spacex" = "Next SpaceX launch";
+"generate.example.fear-greed" = "Fear & Greed";
+"generate.example.moon" = "Moon phase";
+"generate.example.weather" = "Weather now";
+"generate.example.gold" = "Gold price";
 

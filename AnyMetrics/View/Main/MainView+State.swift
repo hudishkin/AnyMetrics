@@ -6,6 +6,7 @@ extension MainView {
 
     struct VState: StateProtocol {
         var metrics: Metrics = [:]
+        var personalMetrics: Metrics = [:]
     }
 
     enum VAction: ActionProtocol {
@@ -14,7 +15,10 @@ extension MainView {
         // case openSheet(ActiveSheet)
         case addMetric(Metric)
         case addMetricAndRefresh(Metric)
+        case addPersonalMetricAndRefresh(Metric)
         case removeMetric(UUID)
+        case deletePersonalMetric(UUID)
+        case migratePersonalCatalog
         case refreshMetric(UUID)
         case duplicateMetric(Metric)
         case refreshAllMetrics

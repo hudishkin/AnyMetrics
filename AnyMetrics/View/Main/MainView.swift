@@ -9,6 +9,7 @@ struct MainView: View {
         var id: String { "\(self)" }
         case addMetrics
         case info
+        case profile
         case editRequest(Metric)
         case editTheme(Metric)
     }
@@ -53,64 +54,18 @@ struct MainView: View {
     var offerSecondMetric = false
     @State
     var reviewPromptScheduled = false
-    /// Метрики, которые уже были на экране в момент первого появления дашборда.
     @State
     private var startupMetricIDs: Set<UUID>?
-#if DEBUG
-    @State
-    var showDevMenu = false
-#endif
-
-    let columns = Constants.collumns
 
     var body: some View {
         ZStack(alignment: .bottom) {
             ZStack(alignment: .top) {
                 // MARK: - Content
-                if viewState.state.metrics.isEmpty {
-                    DashboardEmptyStateView()
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: Constants.spacing) {
-                            ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
-                                MetricView(
-                                    metric: metric,
-                                    appearsImmediately: appearsImmediately(metric.id),
-                                    refreshMetric: { uuid in
-                                        viewState.trigger(.refreshMetric(uuid))
-                                    },
-                                    deletehMetric: { uuid in
-                                        viewState.trigger(.removeMetric(uuid))
-                                    },
-                                    editRequest: { metric in
-                                        sheetType = .editRequest(metric)
-                                    },
-                                    editTheme: { metric in
-                                        sheetType = .editTheme(metric)
-                                    },
-                                    duplicateMetric: { metric in
-                                        viewState.trigger(.duplicateMetric(metric))
-                                    },
-                                    shareMetric: { metric in
-                                        shareMetric = metric
-                                    },
-                                    exportMetric: { metric in
-                                        exportMetric = metric
-                                    },
-                                    onOverlayChange: { presented in
-                                        let wasPresented = isMetricOverlayPresented
-                                        isMetricOverlayPresented = presented
-                                        if wasPresented && !presented {
-                                            scheduleReviewPromptIfNeeded()
-                                        }
-                                    }
-                                )
-                                .frame(width: Constants.size, height: Constants.size)
-                            }
-                        }
-                        .padding(.horizontal, Constants.gridHorizontalPadding)
-
-                        Spacer(minLength: Constants.bottomPadding)
+                GeometryReader { proxy in
+                    if viewState.state.metrics.isEmpty {
+                        DashboardEmptyStateView()
+                    } else {
+                        metricsGrid(containerSize: proxy.size)
                     }
                 }
             }
@@ -133,7 +88,17 @@ struct MainView: View {
                     .interactiveDismiss(canDismissSheet: $allowDismissed)
                     .environmentObject(viewState)
             case .info:
-                InfoView()
+                InfoView(
+                    onShowOnboarding: {
+                        showOnboarding = true
+                    },
+                    onShowReviewPrompt: {
+                        showReviewPrompt = true
+                    }
+                )
+            case .profile:
+                ProfileView()
+                    .environmentObject(viewState)
             case .editRequest(let metric):
                 metricEditor(
                     metric: metric,
@@ -229,20 +194,6 @@ struct MainView: View {
             }
             .environmentObject(viewState)
         }
-#if DEBUG
-        .sheet(isPresented: $showDevMenu, onDismiss: {
-            presentQueuedSurfaces()
-        }) {
-            DevMenuView(
-                onShowOnboarding: {
-                    showOnboarding = true
-                },
-                onShowReviewPrompt: {
-                    showReviewPrompt = true
-                }
-            )
-        }
-#endif
         .onReceive(viewState.notifications) { notification in
             switch notification {
             case .showWidgetInstructions(let metric, let offerSecond):
@@ -265,6 +216,55 @@ struct MainView: View {
 
     }
 
+    private func metricsGrid(containerSize: CGSize) -> some View {
+        let columnCount = Constants.columnCount(for: containerSize)
+        let cardSide = Constants.cardSide(for: containerSize.width, columns: columnCount)
+
+        return ScrollView {
+            LazyVGrid(columns: Constants.gridItems(count: columnCount), spacing: Constants.spacing) {
+                ForEach(viewState.state.metrics.values.sorted(by: { $0.created > $1.created })) { metric in
+                    MetricView(
+                        metric: metric,
+                        appearsImmediately: appearsImmediately(metric.id),
+                        keepsInPersonalCatalog: viewState.state.personalMetrics[metric.id] != nil,
+                        refreshMetric: { uuid in
+                            viewState.trigger(.refreshMetric(uuid))
+                        },
+                        deletehMetric: { uuid in
+                            viewState.trigger(.removeMetric(uuid))
+                        },
+                        editRequest: { metric in
+                            sheetType = .editRequest(metric)
+                        },
+                        editTheme: { metric in
+                            sheetType = .editTheme(metric)
+                        },
+                        duplicateMetric: { metric in
+                            viewState.trigger(.duplicateMetric(metric))
+                        },
+                        shareMetric: { metric in
+                            shareMetric = metric
+                        },
+                        exportMetric: { metric in
+                            exportMetric = metric
+                        },
+                        onOverlayChange: { presented in
+                            let wasPresented = isMetricOverlayPresented
+                            isMetricOverlayPresented = presented
+                            if wasPresented && !presented {
+                                scheduleReviewPromptIfNeeded()
+                            }
+                        }
+                    )
+                    .frame(width: cardSide, height: cardSide)
+                }
+            }
+            .padding(.horizontal, Constants.gridHorizontalPadding)
+
+            Spacer(minLength: Constants.bottomPadding)
+        }
+    }
+
     private var dashboardHeader: some View {
         ZStack {
             Text(AnyMetricsStrings.dashboard)
@@ -275,18 +275,7 @@ struct MainView: View {
             HStack(spacing: 8) {
                 aboutButton
                 Spacer(minLength: 0)
-#if DEBUG
-                Button {
-                    showDevMenu = true
-                } label: {
-                    Text("</>")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                        .padding(Constants.titleInset)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(Constants.titleCorner)
-                }
-#endif
+                profileButton
             }
         }
         .padding(.horizontal, Constants.padding)
@@ -298,11 +287,9 @@ struct MainView: View {
             ImpactHelper.impactButton()
             sheetType = .addMetrics
         } label: {
-            AnyMetricsAsset.Assets.plus.swiftUIImage
-                .resizable()
-                .renderingMode(.template)
+            Image(systemName: "plus")
+                .font(.system(size: Constants.addButtonSize - Constants.addButtonPadding * 2, weight: .thin))
                 .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                .padding(Constants.addButtonPadding)
                 .frame(width: Constants.addButtonSize, height: Constants.addButtonSize)
                 .contentShape(Circle())
         }
@@ -311,33 +298,37 @@ struct MainView: View {
         .padding()
     }
 
-    @ViewBuilder
     private var aboutButton: some View {
-        if #available(iOS 26.0, *) {
-            Button {
-                sheetType = .info
-            } label: {
-                Image(systemName: "info")
-                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-        } else {
-            Button {
-                sheetType = .info
-            } label: {
-                Image(systemName: "info")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
-                    .padding(Constants.infoInset)
-                    .background(.ultraThinMaterial, in: Circle())
-            }
-            .buttonStyle(.plain)
+        headerCircleButton(systemName: "info", accessibilityLabel: AnyMetricsStrings.appName) {
+            sheetType = .info
         }
     }
 
+    private var profileButton: some View {
+        headerCircleButton(systemName: "person", accessibilityLabel: AnyMetricsStrings.Profile.title) {
+            sheetType = .profile
+        }
+    }
+
+    private func headerCircleButton(
+        systemName: String,
+        accessibilityLabel: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(AnyMetricsAsset.Assets.baseText.swiftUIColor)
+                .frame(width: Constants.headerButtonSide, height: Constants.headerButtonSide)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .modifier(HeaderButtonChrome())
+        .accessibilityLabel(accessibilityLabel)
+    }
+
     private var canPresentReviewPrompt: Bool {
-        var isReady = sheetType == nil
+        sheetType == nil
             && widgetInstructionsMetric == nil
             && pendingWidgetInstructionsMetric == nil
             && exportMetric == nil
@@ -348,14 +339,10 @@ struct MainView: View {
             && !showOnboarding
             && !showReviewPrompt
             && errorMessage == nil
-#if DEBUG
-        isReady = isReady && !showDevMenu
-#endif
-        return isReady
     }
 
     private var canPresentError: Bool {
-        var isReady = sheetType == nil
+        sheetType == nil
             && widgetInstructionsMetric == nil
             && exportMetric == nil
             && shareMetric == nil
@@ -365,10 +352,6 @@ struct MainView: View {
             && !showOnboarding
             && !showReviewPrompt
             && errorMessage == nil
-#if DEBUG
-        isReady = isReady && !showDevMenu
-#endif
-        return isReady
     }
 
     private var canPresentWidgetInstructions: Bool {
@@ -401,7 +384,7 @@ struct MainView: View {
                 metric: metric,
                 entry: entry,
                 action: { updatedMetric in
-                    viewState.trigger(.addMetricAndRefresh(updatedMetric))
+                    viewState.trigger(.addPersonalMetricAndRefresh(updatedMetric))
                     sheetType = nil
                 }
             )
@@ -546,7 +529,16 @@ struct MainView: View {
     }
 }
 
-/// На iOS 26 кнопка — интерактивное стекло. На старых версиях остаётся прежний материал.
+private struct HeaderButtonChrome: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            content.background(.ultraThinMaterial, in: Circle())
+        }
+    }
+}
+
 private struct AddMetricButtonChrome: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {

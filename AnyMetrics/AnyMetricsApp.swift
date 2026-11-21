@@ -10,6 +10,11 @@ struct AnyMetricsApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
+                .task {
+                    guard !isPreview else { return }
+                    await AuthSession.shared.restore()
+                    await GenerationJobService.shared.resume()
+                }
         }
     }
 }

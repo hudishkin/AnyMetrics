@@ -92,29 +92,30 @@ public extension WidgetAppearance {
                 fill: .statusGradient,
                 usesGlassEffect: false
             ),
+            // 16pt content margins on a ~170pt canvas.
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.06, y: 0.045, width: 0.88, height: 0.13),
-                    alignment: .center,
+                    frame: NormalizedRect(x: 0.094, y: 0.075, width: 0.812, height: 0.17),
+                    alignment: .leading,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.07, y: 0.185, width: 0.86, height: 0.52),
-                    alignment: .center,
+                    frame: NormalizedRect(x: 0.094, y: 0.26, width: 0.812, height: 0.52),
+                    alignment: .leading,
                     color: .adaptive(.value)
                 ),
                 .init(
                     kind: .measure,
-                    frame: NormalizedRect(x: 0.08, y: 0.715, width: 0.84, height: 0.12),
-                    alignment: .center,
+                    frame: NormalizedRect(x: 0.094, y: 0.79, width: 0.46, height: 0.14),
+                    alignment: .leading,
                     color: .adaptive(.onPastelSecondary)
                 ),
                 .init(
                     kind: .updated,
-                    frame: NormalizedRect(x: 0.08, y: 0.845, width: 0.84, height: 0.11),
-                    alignment: .center,
+                    frame: NormalizedRect(x: 0.56, y: 0.79, width: 0.346, height: 0.14),
+                    alignment: .trailing,
                     color: .adaptive(.onPastelSecondary)
                 )
             ]
@@ -237,28 +238,29 @@ public extension WidgetAppearance {
                 fill: .statusGradient,
                 usesGlassEffect: false
             ),
+            // 16pt content margins on a ~329×155pt canvas.
             elements: [
                 .init(
                     kind: .title,
-                    frame: NormalizedRect(x: 0.05, y: 0.05, width: 0.90, height: 0.13),
+                    frame: NormalizedRect(x: 0.049, y: 0.08, width: 0.902, height: 0.18),
                     alignment: .leading,
                     color: .adaptive(.palettePrimary)
                 ),
                 .init(
                     kind: .value,
-                    frame: NormalizedRect(x: 0.05, y: 0.19, width: 0.90, height: 0.56),
+                    frame: NormalizedRect(x: 0.049, y: 0.26, width: 0.902, height: 0.53),
                     alignment: .leading,
                     color: .adaptive(.value)
                 ),
                 .init(
                     kind: .measure,
-                    frame: NormalizedRect(x: 0.05, y: 0.80, width: 0.45, height: 0.12),
+                    frame: NormalizedRect(x: 0.049, y: 0.79, width: 0.50, height: 0.14),
                     alignment: .leading,
                     color: .adaptive(.onPastelSecondary)
                 ),
                 .init(
                     kind: .updated,
-                    frame: NormalizedRect(x: 0.50, y: 0.80, width: 0.45, height: 0.12),
+                    frame: NormalizedRect(x: 0.55, y: 0.79, width: 0.401, height: 0.14),
                     alignment: .trailing,
                     color: .adaptive(.onPastelSecondary)
                 )

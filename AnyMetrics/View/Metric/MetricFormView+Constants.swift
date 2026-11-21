@@ -21,7 +21,7 @@ extension MetricFormView {
         static let buttonBackground = AnyMetricsAsset.Assets.baseText.swiftUIColor
         static let buttonTextColor = AnyMetricsAsset.Assets.addMetricTint.swiftUIColor
         static let createNewIcon: CGFloat = 16
-        static let requestImage = AnyMetricsAsset.Assets.request.swiftUIImage
+        static let requestImage = Image(systemName: "paperplane")
         static let imageFAQ = Image(systemName: "questionmark.circle.fill")
         static let faqSize: CGFloat = 20
         static let opacityEnable: CGFloat = 1.0

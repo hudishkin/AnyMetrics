@@ -15,12 +15,19 @@ extension MainView {
         var initialState: MainView.VState
 
         var metricStore: MetricStore
+        var personalMetricStore: MetricStore
+        private var migrationTokens = Set<AnyCancellable>()
+        private var didMigratePersonalCatalog = false
 
         init(di: DI = .shared) {
             self.metricStore = di.metricStore
+            self.personalMetricStore = di.personalMetricStore
             AppSettings.completeOnboardingForExistingLibrary(hasMetrics: !metricStore.metrics.isEmpty)
             ReviewHandler.recordAppLaunchIfNeeded()
-            initialState = .init(metrics: metricStore.metrics)
+            initialState = .init(
+                metrics: metricStore.metrics,
+                personalMetrics: personalMetricStore.metrics
+            )
             AnalyticsEvents.syncLibrary(metricStore.metrics)
         }
 
@@ -59,7 +66,10 @@ extension MainView {
                         self.refreshStoredMetric(id: metric.id, updater: updater)
                     }
                 }
-            case .onAppear, .refreshAllMetrics, .syncMetrics:
+            case .onAppear:
+                migratePersonalCatalogIfNeeded(updater: updater)
+                fallthrough
+            case .refreshAllMetrics, .syncMetrics:
                 Task { @MainActor in
                     guard let state = await state() else { return }
 
@@ -93,50 +103,44 @@ extension MainView {
                     )
                 }
             case .addMetric(let metric):
-                let isNew = metricStore.metrics[metric.id] == nil
-                metricStore.addMetric(metric: metric)
-                if !isNew {
-                    AnalyticsEvents.metricEdited(type: metric.type, resultKind: metric.resultKind)
-                }
-                AnalyticsEvents.syncLibrary(metricStore.metrics)
-                Task { @MainActor in
-                    await updater {
-                        $0.metrics = self.metricStore.metrics
-                    }
-                    WidgetCenter.shared.reloadAllTimelines()
-                    self.notifyAfterSavingNewMetric(metric, isNew: isNew)
-                }
+                install(metric, refresh: false, rememberInPersonal: false, updater: updater)
 
             case .addMetricAndRefresh(let metric):
-                let isNew = metricStore.metrics[metric.id] == nil
-                metricStore.addMetric(metric: metric)
-                if !isNew {
-                    AnalyticsEvents.metricEdited(type: metric.type, resultKind: metric.resultKind)
-                }
-                AnalyticsEvents.syncLibrary(metricStore.metrics)
-                let metricID = metric.id
-                Task { @MainActor in
-                    await updater {
-                        $0.metrics = self.metricStore.metrics
-                    }
-                    WidgetCenter.shared.reloadAllTimelines()
-                    self.refreshStoredMetric(id: metricID, updater: updater)
-                    self.notifyAfterSavingNewMetric(metric, isNew: isNew)
-                }
+                install(metric, refresh: true, rememberInPersonal: false, updater: updater)
+
+            case .addPersonalMetricAndRefresh(let metric):
+                install(metric, refresh: true, rememberInPersonal: true, updater: updater)
 
             case .removeMetric(let id):
+                if personalMetricStore.metrics[id] != nil {
+                    if let current = metricStore.metrics[id] {
+                        personalMetricStore.addMetric(metric: current)
+                    }
+                    metricStore.removeFromLibrary(id: id)
+                } else {
+                    let isStarter = StarterMetric.isStarter(id)
+                    metricStore.removeMetric(id: id)
+                    AnalyticsEvents.metricDeleted(isStarter: isStarter)
+                }
+                AnalyticsEvents.syncLibrary(metricStore.metrics)
+                publishLibraries(updater: updater)
+            case .deletePersonalMetric(let id):
                 let isStarter = StarterMetric.isStarter(id)
-                metricStore.removeMetric(id: id)
+                personalMetricStore.removeFromLibrary(id: id)
+                if metricStore.metrics[id] != nil {
+                    metricStore.removeMetric(id: id)
+                } else {
+                    WidgetBackgroundStore.shared.deleteAll(for: id)
+                    MetricResultImageStore.shared.deleteAll(for: id)
+                }
                 AnalyticsEvents.metricDeleted(isStarter: isStarter)
                 AnalyticsEvents.syncLibrary(metricStore.metrics)
-                Task { @MainActor in
-                    await updater {
-                        $0.metrics = self.metricStore.metrics
-                    }
-                    WidgetCenter.shared.reloadAllTimelines()
-                }
+                publishLibraries(updater: updater)
+            case .migratePersonalCatalog:
+                migratePersonalCatalogIfNeeded(updater: updater)
             case .duplicateMetric(let metric):
                 let copy = metric.duplicated()
+                personalMetricStore.addMetric(metric: copy)
                 metricStore.addMetric(metric: copy)
                 AnalyticsEvents.metricAdded(
                     source: AnalyticsEvents.Source.duplicate,
@@ -144,12 +148,7 @@ extension MainView {
                     resultKind: copy.resultKind
                 )
                 AnalyticsEvents.syncLibrary(metricStore.metrics)
-                Task { @MainActor in
-                    await updater {
-                        $0.metrics = self.metricStore.metrics
-                    }
-                    WidgetCenter.shared.reloadAllTimelines()
-                }
+                publishLibraries(updater: updater)
             case .refreshMetric(let id):
                 Task { @MainActor in
                     guard let state = await state() else { return }
@@ -173,6 +172,86 @@ extension MainView {
                     }
                 }
             }
+        }
+
+        private func install(
+            _ metric: Metric,
+            refresh: Bool,
+            rememberInPersonal: Bool,
+            updater: @escaping StateUpdater<S>
+        ) {
+            let isNewToDashboard = metricStore.metrics[metric.id] == nil
+            let isFirstSave = isNewToDashboard && personalMetricStore.metrics[metric.id] == nil
+            if rememberInPersonal || personalMetricStore.metrics[metric.id] != nil {
+                personalMetricStore.addMetric(metric: metric)
+            }
+            if !isNewToDashboard {
+                AnalyticsEvents.metricEdited(type: metric.type, resultKind: metric.resultKind)
+            }
+            metricStore.addMetric(metric: metric)
+            AnalyticsEvents.syncLibrary(metricStore.metrics)
+            let metricID = metric.id
+            Task { @MainActor in
+                await updater {
+                    $0.metrics = self.metricStore.metrics
+                    $0.personalMetrics = self.personalMetricStore.metrics
+                }
+                WidgetCenter.shared.reloadAllTimelines()
+                if refresh {
+                    self.refreshStoredMetric(id: metricID, updater: updater)
+                }
+                self.notifyAfterSavingNewMetric(metric, isNew: isFirstSave)
+            }
+        }
+
+        private func publishLibraries(updater: @escaping StateUpdater<S>) {
+            Task { @MainActor in
+                await updater {
+                    $0.metrics = self.metricStore.metrics
+                    $0.personalMetrics = self.personalMetricStore.metrics
+                }
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+        }
+
+        /// Copies home-screen metrics that are not in the gallery into Personal
+        /// when that catalog is still empty.
+        private func migratePersonalCatalogIfNeeded(updater: @escaping StateUpdater<S>) {
+            guard !didMigratePersonalCatalog else { return }
+            guard personalMetricStore.metrics.isEmpty else {
+                didMigratePersonalCatalog = true
+                return
+            }
+            guard !metricStore.metrics.isEmpty else { return }
+
+            didMigratePersonalCatalog = true
+            GalleryService.load()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] completion in
+                    if case .failure = completion {
+                        self?.didMigratePersonalCatalog = false
+                    }
+                } receiveValue: { [weak self] gallery in
+                    guard let self else { return }
+                    let galleryIDs = Set(gallery.flatMap { $0.metrics.map(\.id) })
+                    let adopted = PersonalCatalog.metricsToAdopt(
+                        dashboard: self.metricStore.metrics,
+                        personal: self.personalMetricStore.metrics,
+                        galleryIDs: galleryIDs
+                    )
+                    guard !adopted.isEmpty, self.personalMetricStore.metrics.isEmpty else { return }
+                    var stored = self.personalMetricStore.metrics
+                    for metric in adopted {
+                        stored[metric.id] = metric
+                    }
+                    self.personalMetricStore.metrics = stored
+                    Task { @MainActor in
+                        await updater {
+                            $0.personalMetrics = self.personalMetricStore.metrics
+                        }
+                    }
+                }
+                .store(in: &migrationTokens)
         }
 
         private func notifyAfterSavingNewMetric(_ metric: Metric, isNew: Bool) {

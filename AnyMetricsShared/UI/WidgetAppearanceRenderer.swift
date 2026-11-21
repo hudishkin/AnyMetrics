@@ -305,18 +305,15 @@ public struct WidgetAppearanceRenderer: View {
 
     private func font(for element: WidgetElementSpec, text: String) -> Font {
         let scale = CGFloat(element.resolvedFontScale)
-        let inWidget = usesWidgetChrome
         let design = resolvedDesign(for: element, text: text)
         switch element.kind {
         case .title:
-            let base: CGFloat = inWidget ? (sizeKey == .medium ? 16 : 15) : (sizeKey == .medium ? 17 : 16)
+            let base: CGFloat = sizeKey == .medium ? 14 : 13
             return .system(size: base * scale, weight: .semibold, design: design)
         case .measure:
-            let base: CGFloat = inWidget ? 12 : 13
-            return .system(size: base * scale, weight: .medium, design: design)
+            return .system(size: 13 * scale, weight: .medium, design: design)
         case .updated:
-            let base: CGFloat = inWidget ? 10 : 11
-            return .system(size: base * scale, weight: .medium, design: design)
+            return .system(size: 11 * scale, weight: .medium, design: design)
         case .value:
             return valueFont(for: text, scale: scale, design: design)
         }
@@ -344,38 +341,39 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private func valueFont(for text: String, scale: CGFloat, design: Font.Design) -> Font {
-        let inWidget = usesWidgetChrome
         let base: CGFloat
         if sizeKey == .medium {
             switch text.count {
-            case ..<4: base = inWidget ? 44 : 48
-            case ..<6: base = inWidget ? 38 : 42
-            case ..<10: base = inWidget ? 32 : 36
-            case ..<15: base = inWidget ? 26 : 30
+            case ..<4: base = 52
+            case ..<6: base = 44
+            case ..<10: base = 36
+            case ..<15: base = 30
             default: base = 18
             }
         } else {
             switch text.count {
-            case ..<4: base = inWidget ? 26 : 40
-            case ..<6: base = inWidget ? 22 : 34
-            case ..<10: base = inWidget ? 18 : 28
-            case ..<15: base = inWidget ? 15 : 22
+            case ..<4: base = 46
+            case ..<6: base = 40
+            case ..<10: base = 30
+            case ..<15: base = 22
             default: base = 12
             }
         }
         let size = base * scale
-        return .system(size: size, weight: size < 22 ? .medium : .semibold, design: design)
+        return .system(size: size, weight: size < 22 ? .medium : .bold, design: design)
+            .monospacedDigit()
     }
 
-    /// Short values stay monospaced counters. Long prose (quotes) uses the system face so more words fit on a line.
+    /// Short values are rounded counters. Long prose (quotes) uses the system face so more words fit on a line.
     private func valueDesign(for text: String) -> Font.Design {
         if isStatusMetric { return .rounded }
-        return text.count >= 15 ? .default : .monospaced
+        return text.count >= 15 ? .default : .rounded
     }
 
     private func lineLimit(for kind: WidgetElementKind) -> Int {
         switch kind {
-        case .title, .measure: return 2
+        case .title: return 2
+        case .measure: return 1
         case .value:
             if isStatusMetric { return 1 }
             // Quotes need four lines on both the square and the wide widget.
@@ -403,18 +401,17 @@ public struct WidgetAppearanceRenderer: View {
         MetricDisplayHelpers.showsStaleUpdate(for: metric)
     }
 
-    /// Darker red on a light status fill; the asset red on photos and designed gradients.
+    /// Light coral on the dark default fill; the asset red on photos and designed gradients.
     private var valueFailureColor: Color {
-        let onStatusGradient = appearance.background.fill == .statusGradient
-        if onStatusGradient && colorScheme != .dark {
-            return Color(red: 0.78, green: 0.16, blue: 0.16)
+        if appearance.background.fill == .statusGradient {
+            return Color(red: 1, green: 0.71, blue: 0.71)
         }
         return palette.textErrorColor
     }
 
     private func resolveColor(_ spec: WidgetColorSpec, for kind: WidgetElementKind) -> Color {
         if kind == .updated && showsStaleUpdate {
-            return palette.textErrorColor
+            return valueFailureColor
         }
         // Designed gradients store a hex, so they never reach the adaptive value token.
         // Status keeps Good/Bad; only a stale number or an empty error is recolored.
@@ -434,8 +431,8 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private func adaptiveColor(_ token: WidgetAdaptiveColor, for kind: WidgetElementKind) -> Color {
+        // The default fill is always a dark gradient, in both color schemes.
         let onStatusGradient = appearance.background.fill == .statusGradient
-        let onDarkGradient = onStatusGradient && colorScheme == .dark
 
         switch token {
         case .primary:
@@ -443,24 +440,20 @@ public struct WidgetAppearanceRenderer: View {
         case .secondary:
             return Color.secondary
         case .palettePrimary:
-            if onDarkGradient { return Color.white.opacity(0.92) }
+            if onStatusGradient { return Color.white.opacity(0.85) }
             return palette.textColor
         case .paletteSecondary:
-            if onDarkGradient { return Color.white.opacity(0.6) }
+            if onStatusGradient { return Color.white.opacity(0.65) }
             return palette.secondaryText
         case .onPastelSecondary:
-            if onDarkGradient { return Color.white.opacity(0.6) }
+            if onStatusGradient { return Color.white.opacity(0.65) }
             return Color(white: 0.32)
         case .value:
+            // Good / Bad is carried by the fill itself.
+            if onStatusGradient { return .white }
             if isStatusMetric {
-                if metric.resultWithError {
-                    return onStatusGradient && !onDarkGradient
-                        ? Color(red: 0.78, green: 0.16, blue: 0.16)
-                        : palette.textErrorColor
-                }
-                return palette.textSuccessColor
+                return metric.resultWithError ? palette.textErrorColor : palette.textSuccessColor
             }
-            if onDarkGradient { return .white }
             if appearance.background.fill == .system { return Color.primary }
             return palette.textColor
         }
@@ -564,10 +557,11 @@ public struct WidgetAppearanceRenderer: View {
                     mesh: spec.mesh
                 )
             case .statusGradient:
-                LinearGradient(
+                gradientFill(
                     colors: statusPalette.colors,
-                    startPoint: statusPalette.start,
-                    endPoint: statusPalette.end
+                    start: statusPalette.start,
+                    end: statusPalette.end,
+                    mesh: statusPalette.mesh
                 )
             case .image(let ref):
                 imageFill(ref)
@@ -585,7 +579,7 @@ public struct WidgetAppearanceRenderer: View {
     }
 
     private var statusPalette: WidgetStatusGradients.Palette {
-        WidgetStatusGradients.palette(for: metric, colorScheme: colorScheme)
+        WidgetStatusGradients.palette(for: metric)
     }
 
     @ViewBuilder
@@ -731,86 +725,64 @@ private struct CanvasEditGestureModifier: ViewModifier {
 
 // MARK: - Status gradients
 
+/// Default fill: status metrics get good/bad, everything else a dark mesh picked by metric id.
+/// Every palette is dark enough for white type in both color schemes.
 enum WidgetStatusGradients {
     struct Palette {
         var colors: [Color]
-        var start: UnitPoint
-        var end: UnitPoint
+        var start: UnitPoint = .topTrailing
+        var end: UnitPoint = .bottomLeading
+        var mesh: WidgetMeshVariant?
     }
 
-    static func palette(for metric: Metric, colorScheme: ColorScheme) -> Palette {
-        let isDark = colorScheme == .dark
+    static func palette(for metric: Metric) -> Palette {
         let hasStatus = metric.type == .checkStatus || ((metric.rules?.type ?? .none) != .none)
         // Empty + failed refresh (not status Bad); stale refresh keeps previous gradient.
         let showsError = metric.refreshFailed && metric.result.isEmpty
             && metric.resultKind != .image && !hasStatus
 
         if hasStatus {
-            if metric.resultWithError {
-                return isDark ? darkBad : lightBad
-            }
-            return isDark ? darkGood : lightGood
+            return metric.resultWithError ? bad : good
         }
-        if showsError { return isDark ? darkBad : lightBad }
-        return isDark ? darkDefault : lightDefault
+        if showsError { return bad }
+        return autoPalette(for: metric.id)
     }
 
-    private static let diagonalStart = UnitPoint.topTrailing
-    private static let diagonalEnd = UnitPoint.bottomLeading
+    /// Same id keeps the same background across launches (FNV-1a over the UUID bytes).
+    private static func autoPalette(for id: UUID) -> Palette {
+        let uuid = id.uuid
+        let bytes: [UInt8] = [
+            uuid.0, uuid.1, uuid.2, uuid.3, uuid.4, uuid.5, uuid.6, uuid.7,
+            uuid.8, uuid.9, uuid.10, uuid.11, uuid.12, uuid.13, uuid.14, uuid.15
+        ]
+        let hash = bytes.reduce(UInt32(2166136261)) { ($0 ^ UInt32($1)) &* 16777619 }
+        return autoPalettes[Int(hash % UInt32(autoPalettes.count))]
+    }
 
-    private static let lightDefault = Palette(
-        colors: [
-            Color(red: 0.99, green: 0.94, blue: 0.86),
-            Color(red: 0.96, green: 0.86, blue: 0.76)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
+    /// Gallery gradients whose corners stay dark under the leading title and the bottom row.
+    private static let autoPalettes: [Palette] = [
+        Palette(colors: colors(0x4C1D95, 0xD946EF, 0x2563EB), mesh: .gleam),
+        Palette(colors: colors(0x0B1026, 0x4C1D95, 0xDB2777), mesh: .bloom),
+        Palette(colors: colors(0x0C0A09, 0x7C2D12, 0xEA580C), mesh: .orbit),
+        Palette(colors: colors(0x312E81, 0x7C3AED, 0xE11D48), mesh: .bloom),
+        Palette(colors: colors(0x4C0519, 0xBE123C, 0xC2410C), mesh: .bloom),
+        Palette(colors: colors(0x0F172A, 0x1D4ED8, 0x0F766E), mesh: .orbit),
+        Palette(colors: colors(0x0E7490, 0x6D28D9, 0xDB2777), mesh: .bloom)
+    ]
 
-    private static let darkDefault = Palette(
-        colors: [
-            Color(red: 0.22, green: 0.16, blue: 0.12),
-            Color(red: 0.14, green: 0.10, blue: 0.08)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
+    private static let good = Palette(colors: colors(0x022C22, 0x065F46, 0x059669), mesh: .bloom)
+    private static let bad = Palette(colors: colors(0x4C0519, 0x9F1239, 0xE11D48), mesh: .bloom)
 
-    private static let lightGood = Palette(
-        colors: [
-            Color(red: 0.873, green: 0.962, blue: 0.802),
-            Color(red: 0.709, green: 0.871, blue: 0.577)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
-
-    private static let darkGood = Palette(
-        colors: [
-            Color(red: 0.10, green: 0.22, blue: 0.12),
-            Color(red: 0.14, green: 0.28, blue: 0.16)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
-
-    private static let lightBad = Palette(
-        colors: [
-            Color(red: 1, green: 0.908, blue: 0.887),
-            Color(red: 0.917, green: 0.716, blue: 0.672)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
-
-    private static let darkBad = Palette(
-        colors: [
-            Color(red: 0.24, green: 0.12, blue: 0.10),
-            Color(red: 0.32, green: 0.14, blue: 0.12)
-        ],
-        start: diagonalStart,
-        end: diagonalEnd
-    )
+    private static func colors(_ hexes: UInt32...) -> [Color] {
+        hexes.map { hex in
+            Color(
+                .sRGB,
+                red: Double((hex >> 16) & 0xFF) / 255,
+                green: Double((hex >> 8) & 0xFF) / 255,
+                blue: Double(hex & 0xFF) / 255
+            )
+        }
+    }
 }
 
 /// Mesh on iOS 18. Earlier systems keep the linear ramp.
@@ -861,11 +833,13 @@ public struct WidgetShareBackdrop: View {
     public var body: some View {
         switch metric.resolvedAppearance.small.background.fill {
         case .statusGradient:
-            let palette = WidgetStatusGradients.palette(for: metric, colorScheme: .light)
-            LinearGradient(
-                colors: palette.colors.map(ShareGradientLighten.color),
-                startPoint: palette.start,
-                endPoint: palette.end
+            let palette = WidgetStatusGradients.palette(for: metric)
+            WidgetGradientFill(
+                colors: palette.colors,
+                start: palette.start,
+                end: palette.end,
+                mesh: palette.mesh,
+                lightened: true
             )
         case .gradient(let spec):
             WidgetGradientFill(
@@ -878,7 +852,7 @@ public struct WidgetShareBackdrop: View {
         case .solid(let spec):
             ShareGradientLighten.color(color(from: spec))
         case .system, .image:
-            let palette = WidgetStatusGradients.palette(for: metric, colorScheme: .light)
+            let palette = WidgetStatusGradients.palette(for: metric)
             LinearGradient(
                 colors: palette.colors.map(ShareGradientLighten.color),
                 startPoint: palette.start,

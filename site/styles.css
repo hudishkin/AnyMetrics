@@ -1,0 +1,271 @@
+:root {
+  --bg: #141414;
+  --ink: #1c1c1c;
+  --paper: #fffdf8;
+  --muted: #5c574e;
+  --cream: #f4efe6;
+  --line: rgba(255, 253, 248, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--cream);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 22px 20px 48px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+}
+
+nav {
+  display: flex;
+  gap: 18px;
+  font-size: 15px;
+}
+
+nav a {
+  text-decoration: none;
+  opacity: 0.72;
+}
+
+nav a:hover { opacity: 1; }
+
+.hero { padding: 64px 0 28px; }
+
+.kicker {
+  margin: 0 0 16px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c8bba6;
+}
+
+h1 {
+  margin: 0;
+  max-width: 16ch;
+  font-size: clamp(40px, 6.4vw, 68px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 720;
+}
+
+.lede {
+  max-width: 38ch;
+  margin: 20px 0 0;
+  font-size: 19px;
+  color: #e7dfd2;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 28px 0 40px;
+}
+
+.actions img { display: block; height: 44px; width: auto; }
+
+.text-link {
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 28px;
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  font-weight: 680;
+}
+
+.steps, .features, .note { padding: 48px 0 8px; }
+
+.steps ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.steps li {
+  margin: 0;
+  padding: 22px 22px 20px;
+  border-radius: 24px;
+  background:
+    linear-gradient(165deg, #f8efdc 0%, #e7f3e0 42%, #f6d978 100%);
+  color: var(--ink);
+}
+
+.steps li:nth-child(2) {
+  background:
+    linear-gradient(165deg, #f7e7c4 0%, #f6d56a 55%, #f0a04a 100%);
+}
+
+.steps li:nth-child(3) {
+  background:
+    linear-gradient(165deg, #e5f3ea 0%, #f6e7a8 48%, #f08a2c 100%);
+}
+
+.step-label {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a624f;
+}
+
+.steps strong {
+  display: block;
+  margin: 10px 0 12px;
+  font-size: 40px;
+  letter-spacing: -0.04em;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.steps p, .features p, .note p { margin: 0; }
+
+.features ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.features li {
+  margin: 0;
+  padding: 20px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.features h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.features p, .note p, footer {
+  color: #c9c0b2;
+  font-size: 15px;
+}
+
+.note {
+  margin-top: 20px;
+  padding: 22px 24px;
+  border-radius: 20px;
+  background: #1d1d1d;
+}
+
+.legal {
+  max-width: 66ch;
+  padding: 56px 0 8px;
+}
+
+.legal h1 {
+  max-width: none;
+  font-size: clamp(36px, 5vw, 56px);
+}
+
+.legal h2 {
+  margin: 32px 0 8px;
+  font-size: 22px;
+}
+
+.legal p { margin: 0 0 12px; }
+
+.legal p,
+.legal li { color: #e7dfd2; }
+
+.legal ul {
+  margin: 0 0 12px;
+  padding-left: 1.15em;
+}
+
+.legal li { margin: 0 0 8px; }
+
+.legal a {
+  color: #f6e7a8;
+  text-underline-offset: 3px;
+}
+
+.legal strong {
+  color: var(--cream);
+  font-weight: 650;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+footer p { margin: 0; }
+
+footer a { margin-right: 14px; }
+
+a:focus-visible {
+  outline: 2px solid #f6d56a;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (max-width: 800px) {
+  .hero { padding-top: 40px; }
+
+  .steps ol, .features ul { grid-template-columns: 1fr; }
+
+  header { align-items: flex-start; flex-wrap: wrap; }
+
+  nav { flex-wrap: wrap; gap: 10px 14px; font-size: 14px; }
+}

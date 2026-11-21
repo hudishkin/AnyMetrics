@@ -87,3 +87,6 @@ iOSInjectionProject/
 
 .props/*
 .cursor/*
+
+.env
+generate.sh
