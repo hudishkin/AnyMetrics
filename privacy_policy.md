@@ -1,6 +1,6 @@
 # AnyMetrics Privacy Policy
 
-**Effective date:** November 20, 2026
+**Effective date:** November 22, 2026
 
 AnyMetrics is a free, open-source iOS app by Semen Khudyshkin. This policy explains what data the app handles and where it goes. The source code is public, so every statement here can be checked.
 
@@ -8,6 +8,7 @@ AnyMetrics is a free, open-source iOS app by Semen Khudyshkin. This policy expla
 
 - Your metrics — URLs, headers, API keys, request bodies, responses and values — stay on your device.
 - An account is needed only for AI generation. If you use it, the AnyMetrics server receives your sign-in details, what you type into the generator, and your credit purchases. You can delete the account in the app.
+- With Sign in with Google, AnyMetrics receives only your Google account ID, email and name. It does not access any other Google data and never sells or shares it.
 - The app sends anonymous usage events and crash reports to Google Firebase so I can improve it.
 - No ads, no advertising identifier (IDFA), no selling or sharing of data for marketing.
 
@@ -34,6 +35,26 @@ Everything except AI generation works without an account.
 **Deleting your account.** Profile → ⋯ → Delete account closes the account on the server and signs it out on every device. It cannot be signed into again. The account record, balance, purchases and generation history are kept on the server until they are removed later. Metrics on your device are not affected.
 
 The full list of server calls and their contents is in [docs/builder-api.md](docs/builder-api.md).
+
+## Google user data
+
+AnyMetrics uses Google Sign-In only to authenticate you. We access your name and email address and use them solely to create and identify your account. We do not use Google user data to train AI models and do not use Google APIs to generate images, including non-consensual intimate imagery. AnyMetrics' use of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
+
+This section describes what AnyMetrics receives when you choose **Sign in with Google**. Google sign-in is optional. It is used only to create and sign in to your AnyMetrics account, which you need for AI generation.
+
+**Data accessed.** The app requests only the `openid`, `email` and `profile` scopes. From the ID token that Google returns, the AnyMetrics server reads your Google account ID, your email address and your name. AnyMetrics does not request access to Gmail, Google Drive, Contacts, Calendar or any other Google service, and does not use your profile photo.
+
+**How it is used.** Your Google account ID, email and name are used only to create and identify your AnyMetrics account, to show your name and email on the Profile screen, to link credit purchases to your account, and to stop a deleted account from being signed into again. They are not used for advertising, analytics or profiling, are not included in AI generation requests, and are not used to train AI or machine-learning models.
+
+**AI and image generation.** AI generation in AnyMetrics builds metric definitions from the text you type; it does not create images. AnyMetrics does not use Google APIs or Google user data to generate images, and does not generate or allow non-consensual intimate imagery.
+
+**Storage and protection.** The sign-in runs in a secure system browser window with PKCE. On your device the app exchanges Google's one-time code for an ID token and sends only that ID token to the AnyMetrics server over HTTPS. The app does not keep Google access or refresh tokens and makes no other calls to Google APIs on your behalf. The server stores your Google account ID, email and name with your account record. The app keeps its own AnyMetrics session token in the iOS Keychain.
+
+**Sharing.** Google user data is not sold, rented or shared with third parties, and is not sent to Firebase. It is disclosed only if required by law.
+
+**Retention and deletion.** The data is kept while your account exists. Profile → ⋯ → Delete account closes the account and signs it out on every device. To have your Google account ID, email and name erased from the server, email [anymetrics.app@gmail.com](mailto:anymetrics.app@gmail.com) and I will delete them and confirm by email. You can also remove AnyMetrics' access at any time in your [Google Account settings](https://myaccount.google.com/connections).
+
+**Limited Use.** AnyMetrics' use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
 ## Usage analytics
 

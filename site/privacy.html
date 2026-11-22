@@ -6,7 +6,9 @@
   <title>Privacy Policy — AnyMetrics</title>
   <meta name="description" content="What data AnyMetrics handles and where it goes. Metrics and API keys stay on your iPhone.">
   <meta name="theme-color" content="#141414">
-  <link rel="icon" href="icon.png">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,7 +19,6 @@
         AnyMetrics
       </a>
       <nav>
-        <a href="index.html#how">How it works</a>
         <a href="https://github.com/hudishkin/AnyMetricsGallery">Gallery</a>
         <a href="https://github.com/hudishkin/AnyMetrics">GitHub</a>
       </nav>
@@ -26,13 +27,14 @@
     <main>
       <article class="legal">
         <h1>Privacy Policy</h1>
-        <p class="kicker">Effective date: November 20, 2026</p>
+        <p class="kicker">Effective date: November 22, 2026</p>
         <p>AnyMetrics is a free, open-source iOS app by Semen Khudyshkin. This policy explains what data the app handles and where it goes. The source code is public, so every statement here can be checked.</p>
 
         <h2>Short version</h2>
         <ul>
           <li>Your metrics — URLs, headers, API keys, request bodies, responses and values — stay on your device.</li>
           <li>An account is needed only for AI generation. If you use it, the AnyMetrics server receives your sign-in details, what you type into the generator, and your credit purchases. You can delete the account in the app.</li>
+          <li>With Sign in with Google, AnyMetrics receives only your Google account ID, email and name. It does not access any other Google data and never sells or shares it.</li>
           <li>The app sends anonymous usage events and crash reports to Google Firebase so I can improve it.</li>
           <li>No ads, no advertising identifier (IDFA), no selling or sharing of data for marketing.</li>
         </ul>
@@ -51,6 +53,17 @@
         <p><strong>Credits.</strong> Purchases go through the App Store; the app never sees your payment details. After a purchase the app sends Apple's signed transaction to the server so it can add credits to your account. The server keeps your credit balance.</p>
         <p><strong>Deleting your account.</strong> Profile → ⋯ → Delete account closes the account on the server and signs it out on every device. It cannot be signed into again. The account record, balance, purchases and generation history are kept on the server until they are removed later. Metrics on your device are not affected.</p>
         <p>The full list of server calls and their contents is in <a href="https://github.com/hudishkin/AnyMetrics/blob/main/docs/builder-api.md">docs/builder-api.md</a>.</p>
+
+        <h2 id="google-user-data">Google user data</h2>
+        <p>AnyMetrics uses Google Sign-In only to authenticate you. We access your name and email address and use them solely to create and identify your account. We do not use Google user data to train AI models and do not use Google APIs to generate images, including non-consensual intimate imagery. AnyMetrics' use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+        <p>This section describes what AnyMetrics receives when you choose <strong>Sign in with Google</strong>. Google sign-in is optional. It is used only to create and sign in to your AnyMetrics account, which you need for AI generation.</p>
+        <p><strong>Data accessed.</strong> The app requests only the <code>openid</code>, <code>email</code> and <code>profile</code> scopes. From the ID token that Google returns, the AnyMetrics server reads your Google account ID, your email address and your name. AnyMetrics does not request access to Gmail, Google Drive, Contacts, Calendar or any other Google service, and does not use your profile photo.</p>
+        <p><strong>How it is used.</strong> Your Google account ID, email and name are used only to create and identify your AnyMetrics account, to show your name and email on the Profile screen, to link credit purchases to your account, and to stop a deleted account from being signed into again. They are not used for advertising, analytics or profiling, are not included in AI generation requests, and are not used to train AI or machine-learning models.</p>
+        <p><strong>AI and image generation.</strong> AI generation in AnyMetrics builds metric definitions from the text you type; it does not create images. AnyMetrics does not use Google APIs or Google user data to generate images, and does not generate or allow non-consensual intimate imagery.</p>
+        <p><strong>Storage and protection.</strong> The sign-in runs in a secure system browser window with PKCE. On your device the app exchanges Google's one-time code for an ID token and sends only that ID token to the AnyMetrics server over HTTPS. The app does not keep Google access or refresh tokens and makes no other calls to Google APIs on your behalf. The server stores your Google account ID, email and name with your account record. The app keeps its own AnyMetrics session token in the iOS Keychain.</p>
+        <p><strong>Sharing.</strong> Google user data is not sold, rented or shared with third parties, and is not sent to Firebase. It is disclosed only if required by law.</p>
+        <p><strong>Retention and deletion.</strong> The data is kept while your account exists. Profile → ⋯ → Delete account closes the account and signs it out on every device. To have your Google account ID, email and name erased from the server, email <a href="mailto:anymetrics.app@gmail.com">anymetrics.app@gmail.com</a> and I will delete them and confirm by email. You can also remove AnyMetrics' access at any time in your <a href="https://myaccount.google.com/connections">Google Account settings</a>.</p>
+        <p><strong>Limited Use.</strong> AnyMetrics' use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
 
         <h2>Usage analytics</h2>
         <p>The app uses <strong>Google Analytics for Firebase</strong> (without the advertising module) to understand which features are used and where people get stuck. It sends:</p>

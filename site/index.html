@@ -3,108 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AnyMetrics — HTTP endpoints as Home Screen widgets</title>
-  <meta name="description" content="Point AnyMetrics at a REST API, JSON service, or web page. Extract the value you care about and pin it to your iPhone Home Screen. Free, no ads, open source.">
+  <title>AnyMetrics</title>
+  <meta name="description" content="Any HTTP endpoint → a live widget on your iPhone.">
   <meta property="og:title" content="AnyMetrics">
   <meta property="og:description" content="Any HTTP endpoint → a live widget on your iPhone.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="preview.jpg">
-  <meta name="theme-color" content="#141414">
-  <link rel="icon" href="icon.png">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <a class="brand" href="#top">
-        <img src="icon.png" width="36" height="36" alt="">
-        AnyMetrics
-      </a>
-      <nav>
-        <a href="#how">How it works</a>
-        <a href="https://github.com/hudishkin/AnyMetricsGallery">Gallery</a>
-        <a href="https://github.com/hudishkin/AnyMetrics">GitHub</a>
-      </nav>
-    </header>
-
-    <main id="top">
-      <section class="hero">
-        <p class="kicker">iOS 16+ · Free · Open source</p>
-        <h1>Any HTTP endpoint → a live widget on your iPhone.</h1>
-        <p class="lede">Point AnyMetrics at a REST API, a JSON service, or a web page. Extract the value you care about. Pin it to your Home Screen.</p>
-        <div class="actions">
-          <a href="https://apps.apple.com/us/app/anymetrics/id1609900961">
-            <img src="appstore.png" height="44" alt="Download on the App Store">
-          </a>
-          <a class="text-link" href="https://github.com/hudishkin/AnyMetrics">Source on GitHub</a>
+<body class="home">
+  <div class="glow" aria-hidden="true"></div>
+  <main class="stage">
+    <div class="lockup">
+      <div class="robot" aria-hidden="true">
+        <div class="robot-fill"></div>
+        <div class="robot-plate">
+          <div class="mark mark-left"></div>
+          <div class="mark mark-right"></div>
         </div>
-        <img class="preview" src="preview.jpg" alt="AnyMetrics on iPhone: a home screen of API widgets, request settings, and widget styling.">
-      </section>
-
-      <section id="how" class="steps">
-        <h2>Three steps from endpoint to widget</h2>
-        <ol>
-          <li>
-            <span class="step-label">Request</span>
-            <strong>GET</strong>
-            <p>URL, method, headers, and body. The phone calls your endpoint directly.</p>
-          </li>
-          <li>
-            <span class="step-label">Extract</span>
-            <strong>stars</strong>
-            <p>A JSON path, an HTML selector, or the HTTP status. One value comes out.</p>
-          </li>
-          <li>
-            <span class="step-label">Widget</span>
-            <strong>9</strong>
-            <p>Pin it to the Home or Lock Screen. It refreshes on the schedule you pick.</p>
-          </li>
-        </ol>
-      </section>
-
-      <section class="features">
-        <h2>What it does</h2>
-        <ul>
-          <li>
-            <h3>Custom HTTP</h3>
-            <p>GET, POST, PUT, DELETE, and HEAD, with your own headers and body.</p>
-          </li>
-          <li>
-            <h3>Parsing</h3>
-            <p>JSON paths with filters and aggregates, CSS selectors, or a status check.</p>
-          </li>
-          <li>
-            <h3>Widgets</h3>
-            <p>Home Screen and Lock Screen sizes. Glass, Card, Plain, or your own colors and photo.</p>
-          </li>
-          <li>
-            <h3>Gallery</h3>
-            <p>Ready-made metrics from the community. Add one with a tap, or share yours.</p>
-          </li>
-          <li>
-            <h3>On your device</h3>
-            <p>API keys stay on the iPhone. Requests go straight to the endpoint you set.</p>
-          </li>
-          <li>
-            <h3>Optional AI</h3>
-            <p>Describe what to track. The assistant finds a public source and builds the metric.</p>
-          </li>
-        </ul>
-      </section>
-
-      <section class="note">
-        <p>Widgets, metrics, and the Gallery work without an account. Sign-in is only for AI generation.</p>
-      </section>
-    </main>
-
-    <footer>
-      <p>MIT · <a href="mailto:anymetrics.app@gmail.com">anymetrics.app@gmail.com</a></p>
-      <p>
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-        <a href="https://github.com/hudishkin/AnyMetrics">GitHub</a>
-      </p>
-    </footer>
-  </div>
+        <div class="robot-ring"></div>
+      </div>
+      <h1>AnyMetrics</h1>
+      <p class="tagline">Turn any API into an iPhone widget.</p>
+      <a class="store" href="https://apps.apple.com/us/app/anymetrics/id1609900961">
+        <img src="appstore.svg" width="120" height="40" alt="Download on the App Store">
+      </a>
+    </div>
+    <section class="google-data" aria-labelledby="google-data-title">
+      <h2 id="google-data-title">Google user data</h2>
+      <p>AnyMetrics uses Google Sign-In only to authenticate you. We access your name and email address and use them solely to create and identify your account. We do not use Google user data to train AI models and do not use Google APIs to generate images, including non-consensual intimate imagery. AnyMetrics' use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. Details are in the <a href="privacy.html#google-user-data">Privacy Policy</a>.</p>
+    </section>
+  </main>
+  <footer>
+    <a href="terms.html">Terms</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="https://github.com/hudishkin/AnyMetrics">GitHub</a>
+  </footer>
+  <script src="robot.js"></script>
+  <script src="parallax.js"></script>
 </body>
 </html>
