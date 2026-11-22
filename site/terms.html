@@ -9,6 +9,13 @@
   <link rel="icon" href="favicon.ico" sizes="32x32">
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script>
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("theme"); } catch (error) {}
+      document.documentElement.dataset.theme = theme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,6 +28,10 @@
       <nav>
         <a href="https://github.com/hudishkin/AnyMetricsGallery">Gallery</a>
         <a href="https://github.com/hudishkin/AnyMetrics">GitHub</a>
+        <button class="theme-toggle" type="button" role="switch" aria-checked="true" aria-label="Dark theme">
+          <span class="theme-sun" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></span>
+          <span class="theme-moon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
+        </button>
       </nav>
     </header>
 
@@ -67,5 +78,6 @@
       </p>
     </footer>
   </div>
+  <script src="theme.js"></script>
 </body>
 </html>

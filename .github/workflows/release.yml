@@ -11,7 +11,7 @@ concurrency:
 
 env:
   BUNDLE_ID: app.anymetrics.AnyMetrics
-  TEAM_ID: ${{ vars.TEAM_ID || 'Q424U5CAPS' }}
+  TEAM_ID: ${{ secrets.TEAM_ID || 'Q424U5CAPS' }}
 
 jobs:
   app-store:
@@ -33,8 +33,8 @@ jobs:
         with:
           bundle-id: ${{ env.BUNDLE_ID }}
           profile-type: IOS_APP_STORE
-          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Download widget profile
@@ -42,8 +42,8 @@ jobs:
         with:
           bundle-id: ${{ env.BUNDLE_ID }}.WidgetExtension
           profile-type: IOS_APP_STORE
-          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Download intent profile
@@ -51,18 +51,18 @@ jobs:
         with:
           bundle-id: ${{ env.BUNDLE_ID }}.IntentExtension
           profile-type: IOS_APP_STORE
-          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Generate project
         env:
-          BUILDER_API_URL: ${{ vars.BUILDER_API_URL }}
-          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-          GITHUB_CLIENT_ID: ${{ vars.GH_CLIENT_ID }}
+          BUILDER_API_URL: ${{ secrets.BUILDER_API_URL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
         run: |
           if [ -z "$BUILDER_API_URL" ]; then
-            echo "::error::Set the BUILDER_API_URL repository variable to the production API"
+            echo "::error::Set the BUILDER_API_URL secret to the production API"
             exit 1
           fi
           export TUIST_TEAM_ID="$TEAM_ID"
@@ -88,8 +88,8 @@ jobs:
       - name: Upload to App Store Connect
         env:
           API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          API_KEY_ID: ${{ vars.APPSTORE_API_KEY_ID }}
-          API_ISSUER_ID: ${{ vars.APPSTORE_ISSUER_ID }}
+          API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
         run: |
           set -o pipefail
           KEY_PATH="$RUNNER_TEMP/AuthKey_$API_KEY_ID.p8"
