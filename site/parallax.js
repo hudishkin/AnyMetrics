@@ -14,6 +14,8 @@
     current.y += (target.y - current.y) * 0.08;
     glow.style.transform = "translate3d(" + (current.x * -32) + "px," + (current.y * -24) + "px,0)";
     card.style.transform = "translate3d(" + (current.x * 6) + "px," + (current.y * 5) + "px,0)";
+    card.style.setProperty("--light-x", (35 + current.x * 40) + "%");
+    card.style.setProperty("--light-y", (20 + current.y * 40) + "%");
 
     var settled = Math.abs(target.x - current.x) < 0.001 && Math.abs(target.y - current.y) < 0.001;
     frame = settled ? 0 : requestAnimationFrame(render);

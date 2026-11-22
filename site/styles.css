@@ -116,19 +116,49 @@ nav a:hover { opacity: 1; }
 }
 
 .lockup {
+  --light-x: 35%;
+  --light-y: 20%;
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: min(100%, 380px);
   padding: 40px 32px 36px;
   border-radius: 32px;
-  border: 1px solid rgba(255, 253, 248, 0.14);
-  background: rgba(255, 253, 248, 0.06);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  backdrop-filter: blur(28px) saturate(160%);
+  background: linear-gradient(180deg, rgba(255, 253, 248, 0.085), rgba(255, 253, 248, 0.025) 55%, rgba(255, 253, 248, 0.04));
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 253, 248, 0.12),
-    0 24px 60px rgba(0, 0, 0, 0.18);
+    inset 0 1px 0 rgba(255, 253, 248, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    0 40px 80px rgba(0, 0, 0, 0.28);
+}
+
+/* Edge lit from the top left, fading through the sides, with a faint catch at the bottom right. */
+.lockup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(150deg, rgba(255, 253, 248, 0.42), rgba(255, 253, 248, 0.08) 30%, rgba(255, 253, 248, 0.04) 65%, rgba(255, 253, 248, 0.2));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+.lockup::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--light-x) var(--light-y), rgba(255, 253, 248, 0.10), transparent 55%);
+  pointer-events: none;
 }
 
 .robot {
