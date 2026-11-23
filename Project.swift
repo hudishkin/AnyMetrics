@@ -9,9 +9,9 @@ let builderAPIURL = Environment.builderApiUrl.getString(default: "")
 let gitHubClientID = Environment.githubClientId.getString(default: "")
 let googleClientID = Environment.googleClientId.getString(default: "")
 
-let appProfile = Environment.appProfile.getString(default: "AppStore \(bundleId)")
-let widgetProfile = Environment.widgetProfile.getString(default: "AppStore \(bundleId).WidgetExtension")
-let intentProfile = Environment.intentProfile.getString(default: "AppStore \(bundleId).IntentExtension")
+let appProfile = Environment.appProfile.getString(default: "AnyMetrics App Store")
+let widgetProfile = Environment.widgetProfile.getString(default: "AnyMetrics Widget App Store")
+let intentProfile = Environment.intentProfile.getString(default: "AnyMetrics Intent App Store")
 
 func signing(profile: String?) -> SettingsDictionary {
     guard appStoreSigning else {

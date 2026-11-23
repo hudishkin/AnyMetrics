@@ -65,11 +65,19 @@ jobs:
           INTENT_PROFILES: ${{ steps.intent-profile.outputs.profiles }}
         run: |
           profile_name() {
-            jq -er --arg preferred "$2" '([.[] | select(.name == $preferred)][0].name) // .[0].name' <<<"$1"
+            local name
+            echo "Profiles for $3:"
+            jq -r '.[] | "  - \(.name)"' <<<"$1"
+            name=$(jq -r --arg preferred "$2" '[.[] | select(.name == $preferred)][0].name // empty' <<<"$1")
+            if [ -z "$name" ]; then
+              echo "::error::No App Store profile named \"$2\" for $3. Rename the profile in Apple Developer to exactly that. Profiles named \"iOS Team Store Provisioning Profile\" are Xcode-managed and are ignored."
+              return 1
+            fi
+            printf '%s' "$name"
           }
-          app_name=$(profile_name "$APP_PROFILES" "AppStore $BUNDLE_ID") || exit 1
-          widget_name=$(profile_name "$WIDGET_PROFILES" "AppStore $BUNDLE_ID.WidgetExtension") || exit 1
-          intent_name=$(profile_name "$INTENT_PROFILES" "AppStore $BUNDLE_ID.IntentExtension") || exit 1
+          app_name=$(profile_name "$APP_PROFILES" "AnyMetrics App Store" "$BUNDLE_ID") || exit 1
+          widget_name=$(profile_name "$WIDGET_PROFILES" "AnyMetrics Widget App Store" "$BUNDLE_ID.WidgetExtension") || exit 1
+          intent_name=$(profile_name "$INTENT_PROFILES" "AnyMetrics Intent App Store" "$BUNDLE_ID.IntentExtension") || exit 1
           {
             echo "APP_PROFILE<<EOF"
             echo "$app_name"
