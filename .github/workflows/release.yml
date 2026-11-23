@@ -29,6 +29,7 @@ jobs:
           p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
 
       - name: Download app profile
+        id: app-profile
         uses: apple-actions/download-provisioning-profiles@v7
         with:
           bundle-id: ${{ env.BUNDLE_ID }}
@@ -38,6 +39,7 @@ jobs:
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Download widget profile
+        id: widget-profile
         uses: apple-actions/download-provisioning-profiles@v7
         with:
           bundle-id: ${{ env.BUNDLE_ID }}.WidgetExtension
@@ -47,6 +49,7 @@ jobs:
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Download intent profile
+        id: intent-profile
         uses: apple-actions/download-provisioning-profiles@v7
         with:
           bundle-id: ${{ env.BUNDLE_ID }}.IntentExtension
@@ -54,6 +57,33 @@ jobs:
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+      - name: Use downloaded profile names
+        env:
+          APP_PROFILES: ${{ steps.app-profile.outputs.profiles }}
+          WIDGET_PROFILES: ${{ steps.widget-profile.outputs.profiles }}
+          INTENT_PROFILES: ${{ steps.intent-profile.outputs.profiles }}
+        run: |
+          profile_name() {
+            jq -er --arg preferred "$2" '([.[] | select(.name == $preferred)][0].name) // .[0].name' <<<"$1"
+          }
+          app_name=$(profile_name "$APP_PROFILES" "AppStore $BUNDLE_ID") || exit 1
+          widget_name=$(profile_name "$WIDGET_PROFILES" "AppStore $BUNDLE_ID.WidgetExtension") || exit 1
+          intent_name=$(profile_name "$INTENT_PROFILES" "AppStore $BUNDLE_ID.IntentExtension") || exit 1
+          {
+            echo "APP_PROFILE<<EOF"
+            echo "$app_name"
+            echo "EOF"
+            echo "WIDGET_PROFILE<<EOF"
+            echo "$widget_name"
+            echo "EOF"
+            echo "INTENT_PROFILE<<EOF"
+            echo "$intent_name"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+          echo "App profile: $app_name"
+          echo "Widget profile: $widget_name"
+          echo "Intent profile: $intent_name"
 
       - name: Generate project
         env:
@@ -66,6 +96,9 @@ jobs:
             exit 1
           fi
           export TUIST_TEAM_ID="$TEAM_ID"
+          export TUIST_APP_PROFILE="$APP_PROFILE"
+          export TUIST_WIDGET_PROFILE="$WIDGET_PROFILE"
+          export TUIST_INTENT_PROFILE="$INTENT_PROFILE"
           export TUIST_BUILDER_API_URL="$BUILDER_API_URL"
           [ -n "$GOOGLE_CLIENT_ID" ] && export TUIST_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
           [ -n "$GITHUB_CLIENT_ID" ] && export TUIST_GITHUB_CLIENT_ID="$GITHUB_CLIENT_ID"
@@ -108,9 +141,9 @@ jobs:
             <key>manageAppVersionAndBuildNumber</key><false/>
             <key>provisioningProfiles</key>
             <dict>
-              <key>$BUNDLE_ID</key><string>AppStore $BUNDLE_ID</string>
-              <key>$BUNDLE_ID.WidgetExtension</key><string>AppStore $BUNDLE_ID.WidgetExtension</string>
-              <key>$BUNDLE_ID.IntentExtension</key><string>AppStore $BUNDLE_ID.IntentExtension</string>
+              <key>$BUNDLE_ID</key><string>$APP_PROFILE</string>
+              <key>$BUNDLE_ID.WidgetExtension</key><string>$WIDGET_PROFILE</string>
+              <key>$BUNDLE_ID.IntentExtension</key><string>$INTENT_PROFILE</string>
             </dict>
           </dict>
           </plist>

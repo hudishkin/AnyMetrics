@@ -9,14 +9,17 @@ let builderAPIURL = Environment.builderApiUrl.getString(default: "")
 let gitHubClientID = Environment.githubClientId.getString(default: "")
 let googleClientID = Environment.googleClientId.getString(default: "")
 
-/// Profiles are looked up by the default name of `apple-actions/download-provisioning-profiles`.
-func signing(profileFor targetBundleId: String?) -> SettingsDictionary {
+let appProfile = Environment.appProfile.getString(default: "AppStore \(bundleId)")
+let widgetProfile = Environment.widgetProfile.getString(default: "AppStore \(bundleId).WidgetExtension")
+let intentProfile = Environment.intentProfile.getString(default: "AppStore \(bundleId).IntentExtension")
+
+func signing(profile: String?) -> SettingsDictionary {
     guard appStoreSigning else {
         return ["CODE_SIGN_STYLE": "Automatic", "CODE_SIGN_IDENTITY": "Apple Development"]
     }
     var settings: SettingsDictionary = ["CODE_SIGN_STYLE": "Manual", "CODE_SIGN_IDENTITY": "Apple Distribution"]
-    if let targetBundleId {
-        settings["PROVISIONING_PROFILE_SPECIFIER"] = .string("AppStore \(targetBundleId)")
+    if let profile {
+        settings["PROVISIONING_PROFILE_SPECIFIER"] = .string(profile)
     }
     return settings
 }
@@ -109,7 +112,7 @@ let sharedTarget: Target = .target(
         .external(name: "SwiftSoup")
     ],
     settings: .settings(
-        base: signing(profileFor: nil).merging([
+        base: signing(profile: nil).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
@@ -173,7 +176,7 @@ let appTarget: Target = .target(
         .external(name: "VVSI")
     ],
     settings: .settings(
-        base: signing(profileFor: bundleId).merging([
+        base: signing(profile: appProfile).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
@@ -215,7 +218,7 @@ let widgetTarget: Target = .target(
         .sdk(name: "WidgetKit", type: .framework)
     ],
     settings: .settings(
-        base: signing(profileFor: "\(bundleId).WidgetExtension").merging([
+        base: signing(profile: widgetProfile).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
@@ -247,7 +250,7 @@ let intentTarget: Target = .target(
         .sdk(name: "Intents", type: .framework)
     ],
     settings: .settings(
-        base: signing(profileFor: "\(bundleId).IntentExtension").merging([
+        base: signing(profile: intentProfile).merging([
             "DEVELOPMENT_TEAM": .string(teamId),
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
