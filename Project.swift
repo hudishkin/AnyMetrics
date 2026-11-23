@@ -1,6 +1,6 @@
 import ProjectDescription
 
-let version = Environment.marketingVersion.getString(default: "4.0")
+let version = Environment.marketingVersion.getString(default: "4.0.0")
 let buildNumber = Environment.buildNumber.getString(default: "1")
 let bundleId = "app.anymetrics.AnyMetrics"
 let teamId = Environment.teamId.getString(default: "")

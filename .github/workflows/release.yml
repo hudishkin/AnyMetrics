@@ -134,7 +134,6 @@ jobs:
           [ -n "$GOOGLE_CLIENT_ID" ] && export TUIST_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID"
           [ -n "$GITHUB_CLIENT_ID" ] && export TUIST_GITHUB_CLIENT_ID="$GITHUB_CLIENT_ID"
           [ "$GITHUB_REF_TYPE" = "tag" ] && export TUIST_MARKETING_VERSION="${GITHUB_REF_NAME#v}"
-          export TUIST_BUILD_NUMBER="$(date -u +%Y%m%d%H%M)"
           export TUIST_APP_STORE_SIGNING=1
           tuist install
           tuist generate --no-open
@@ -169,7 +168,7 @@ jobs:
             <key>teamID</key><string>$TEAM_ID</string>
             <key>signingStyle</key><string>manual</string>
             <key>uploadSymbols</key><true/>
-            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>manageAppVersionAndBuildNumber</key><true/>
             <key>provisioningProfiles</key>
             <dict>
               <key>$BUNDLE_ID</key><string>$APP_PROFILE</string>
