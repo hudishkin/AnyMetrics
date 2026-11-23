@@ -59,25 +59,48 @@ jobs:
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
 
       - name: Use downloaded profile names
-        env:
-          APP_PROFILES: ${{ steps.app-profile.outputs.profiles }}
-          WIDGET_PROFILES: ${{ steps.widget-profile.outputs.profiles }}
-          INTENT_PROFILES: ${{ steps.intent-profile.outputs.profiles }}
         run: |
-          profile_name() {
-            local name
-            echo "Profiles for $3:"
-            jq -r '.[] | "  - \(.name)"' <<<"$1"
-            name=$(jq -r --arg preferred "$2" '[.[] | select(.name == $preferred)][0].name // empty' <<<"$1")
-            if [ -z "$name" ]; then
-              echo "::error::No App Store profile named \"$2\" for $3. Rename the profile in Apple Developer to exactly that. Profiles named \"iOS Team Store Provisioning Profile\" are Xcode-managed and are ignored."
-              return 1
+          pick_profile() {
+            local bundle_id="$1"
+            local preferred="$2"
+            local dir="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+            local chosen="" fallback="" file plist name app_id managed
+            echo "Profiles for $bundle_id:" >&2
+            for file in "$dir"/*.mobileprovision; do
+              plist=$(security cms -D -i "$file" 2>/dev/null) || continue
+              name=$(printf '%s' "$plist" | plutil -extract Name raw -)
+              app_id=$(printf '%s' "$plist" | plutil -extract Entitlements.application-identifier raw -)
+              managed=$(printf '%s' "$plist" | plutil -extract IsXcodeManaged raw - 2>/dev/null || true)
+              case "$app_id" in
+                *."$bundle_id") ;;
+                *) continue ;;
+              esac
+              echo "  - $name (managed=${managed:-false})" >&2
+              if [ "$managed" = "true" ]; then
+                rm -f "$file"
+                continue
+              fi
+              if [ "$name" = "$preferred" ]; then
+                chosen=$name
+              elif [ -z "$fallback" ]; then
+                fallback=$name
+              fi
+            done
+            if [ -n "$chosen" ]; then
+              printf '%s' "$chosen"
+              return 0
             fi
-            printf '%s' "$name"
+            if [ -n "$fallback" ]; then
+              echo "Using \"$fallback\" for $bundle_id." >&2
+              printf '%s' "$fallback"
+              return 0
+            fi
+            echo "::error::No manually managed App Store profile for $bundle_id. Create one in Apple Developer, include the Apple Distribution certificate from the .p12, and keep the Xcode profile \"iOS Team Store Provisioning Profile\" unused." >&2
+            return 1
           }
-          app_name=$(profile_name "$APP_PROFILES" "AnyMetrics App Store" "$BUNDLE_ID") || exit 1
-          widget_name=$(profile_name "$WIDGET_PROFILES" "AnyMetrics Widget App Store" "$BUNDLE_ID.WidgetExtension") || exit 1
-          intent_name=$(profile_name "$INTENT_PROFILES" "AnyMetrics Intent App Store" "$BUNDLE_ID.IntentExtension") || exit 1
+          app_name=$(pick_profile "$BUNDLE_ID" "AnyMetrics App Store") || exit 1
+          widget_name=$(pick_profile "$BUNDLE_ID.WidgetExtension" "AnyMetrics Widget App Store") || exit 1
+          intent_name=$(pick_profile "$BUNDLE_ID.IntentExtension" "AnyMetrics Intent App Store") || exit 1
           {
             echo "APP_PROFILE<<EOF"
             echo "$app_name"
