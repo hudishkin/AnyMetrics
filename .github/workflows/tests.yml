@@ -3,7 +3,23 @@ name: Tests
 on:
   push:
     branches: [main]
+    paths: &code
+      - "AnyMetrics/**"
+      - "AnyMetricsShared/**"
+      - "AnyMetricsTests/**"
+      - "AnyMetricsUITests/**"
+      - "Widget/**"
+      - "Intent/**"
+      - "WidgetExtension.entitlements"
+      - "Project.swift"
+      - "Tuist.swift"
+      - "Tuist/**"
+      - ".package.resolved"
+      - "mise.toml"
+      - ".github/workflows/tests.yml"
+      - "!**/*.md"
   pull_request:
+    paths: *code
 
 concurrency:
   group: tests-${{ github.ref }}

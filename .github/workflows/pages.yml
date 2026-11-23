@@ -28,9 +28,14 @@ jobs:
 
       - uses: actions/configure-pages@v5
 
+      # The name includes the attempt: a re-run keeps the previous artifact,
+      # and deploy-pages fails when a run has two named "github-pages".
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: site
 
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
